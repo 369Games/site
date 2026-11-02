@@ -188,3 +188,12 @@ button.chip.au-chip,[dir=ltr] button.chip.au-chip{margin-left:0;margin-right:0;m
 .move-bar{position:sticky;top:0;z-index:60;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 16px;padding:10px 16px;
   background:linear-gradient(90deg,#3b2a12,#6b4a1c,#3b2a12);color:#fff3c4;font-weight:600;border-bottom:2px solid var(--gold);text-align:center}
 .move-bar .btn{margin:0}
+/* Account and cloud save */
+.cloud-google{background:#fff;color:#1f1f1f;border:1px solid #dadce0;gap:10px}
+.cloud-google svg{flex:none}
+.cloud-email{gap:8px}
+.cloud-email input{flex:1 1 200px;min-width:0;padding:9px 12px;border-radius:10px;border:2px solid var(--line);background:var(--soft);color:var(--ink);font:inherit;font-size:15px}
+.cloud-pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.cloud-pick .card{display:flex;flex-direction:column;gap:6px}
+.cloud-pick small{color:var(--muted)}
+.cloud-pick .btn{margin-top:8px}

@@ -1496,7 +1496,7 @@ function viewSettings() {
     <p class="hint" id="backupAge"></p>
     <div class="row"><button class="btn ghost sm" data-a="export">📤 تصدير كود</button>
     <button class="btn ghost sm" data-a="import">📥 استيراد كود</button><button class="btn red sm" data-a="reset">🗑️ بدء من جديد</button></div>
-    <h3>🧑 شخصيتك</h3>${S.spouse ? L`<p class="hint">${S.gender ? GENDER[S.gender].e + ' ' + GENDER[S.gender].n : ''} — متزوج${gv('', L('ة'))} من ${NPC_BY[S.spouse].n} 💍</p>` : L`${genderPick('setGender', S.gender)}<p class="hint">يحدد من تقدر تتزوج من أهل القرية. ولدك أو بنتك في الجيل القادم تختاره عند التقاعد.</p>`}${langPick()}${sitePanel()}${typeof tutPanel === 'function' ? tutPanel() : ''}${typeof audioPanel === 'function' ? audioPanel() : ''}${typeof statsPanel === 'function' ? statsPanel() : ''}</div></div>`;
+    <h3>🧑 شخصيتك</h3>${S.spouse ? L`<p class="hint">${S.gender ? GENDER[S.gender].e + ' ' + GENDER[S.gender].n : ''} — متزوج${gv('', L('ة'))} من ${NPC_BY[S.spouse].n} 💍</p>` : L`${genderPick('setGender', S.gender)}<p class="hint">يحدد من تقدر تتزوج من أهل القرية. ولدك أو بنتك في الجيل القادم تختاره عند التقاعد.</p>`}${langPick()}${sitePanel()}${typeof tutPanel === 'function' ? tutPanel() : ''}${typeof audioPanel === 'function' ? audioPanel() : ''}${typeof statsPanel === 'function' ? statsPanel() : ''}${typeof cloudPanel === 'function' ? cloudPanel() : ''}</div></div>`;
 }
 function updSettings() {
   const ba = $('backupAge');
@@ -1664,7 +1664,7 @@ const VIEWS = {
   village: [viewVillage, () => {}, () => [dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => [have(n.love) > 0, have(n.like) > 0])]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, S.skills.fish.l, S.tools.rod, S.leg.gen]],
   legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length]; }],
-  settings: [viewSettings, updSettings, () => [S.gender, S.spouse]],
+  settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0]],
 };
 
 function render(force) {

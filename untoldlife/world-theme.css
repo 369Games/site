@@ -24,16 +24,16 @@ body{background:radial-gradient(ellipse at 50% 0,#81965c18,transparent 70%),repe
 .world-sky-decor{position:absolute;inset:0;z-index:2;pointer-events:none;-webkit-mask-image:var(--horizon-mask);mask-image:var(--horizon-mask);-webkit-mask-size:100% 140%;mask-size:100% 140%;-webkit-mask-position:center bottom;mask-position:center bottom;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;mask-mode:alpha}
 #top:after{z-index:1;background:linear-gradient(0deg,#203b2533,transparent 30%);pointer-events:none}
 .world-land{position:absolute;inset:0;background-position:center bottom;background-size:100% 140%;background-repeat:no-repeat;pointer-events:none;z-index:3;filter:brightness(var(--terrain-light,1)) var(--terrain-season,saturate(1));will-change:opacity;transition:opacity .6s linear,filter 1.5s}
-.world-land-day{background-image:url('assets/art/terrain-day.png');opacity:calc(1 - var(--night-mix,0))}
-.world-land-night{background-image:url('assets/art/terrain-night.png');opacity:var(--night-mix,0)}
+.world-land-day{background-image:url('assets/art/terrain-day.webp');opacity:calc(1 - var(--night-mix,0))}
+.world-land-night{background-image:url('assets/art/terrain-night.webp');opacity:var(--night-mix,0)}
 #top[data-phase=dawn] .world-land-day,#top[data-phase=dusk] .world-land-day{filter:brightness(var(--terrain-light,1)) var(--terrain-season,saturate(1)) sepia(.2) saturate(1.1)}
 #top .stars{z-index:1;transition:opacity .6s}.stars i{width:2px;height:2px;box-shadow:0 0 4px #f5eac288}
 #top .sun,#top .moon{z-index:2;position:absolute;display:block;transform:translate(50%,-50%);transition:right .2s linear,top .2s linear,opacity .8s;filter:none;border:0;border-radius:50%;rotate:0deg!important}
 #top .sun{width:100px;height:100px;background:none;box-shadow:none;animation:none}
-#top .sun:before{content:'';position:absolute;inset:0;background:url('assets/art/sky/sun.png') center/contain no-repeat;animation:solar-breath 9s ease-in-out infinite;filter:drop-shadow(0 0 9px #ffdf8a33)}
+#top .sun:before{content:'';position:absolute;inset:0;background:url('assets/art/sky/sun.webp') center/contain no-repeat;animation:solar-breath 9s ease-in-out infinite;filter:drop-shadow(0 0 9px #ffdf8a33)}
 #top[data-phase=dawn] .sun:before,#top[data-phase=dusk] .sun:before{filter:sepia(.18) saturate(1.3) hue-rotate(-10deg) drop-shadow(0 0 12px #f3bd7333)}
 #top .moon{width:88px;height:88px;background:none;box-shadow:none}
-#top .moon:before{content:'';position:absolute;inset:0;background:url('assets/art/sky/moon.png') center/contain no-repeat;filter:drop-shadow(0 0 8px #d7e6df26)}
+#top .moon:before{content:'';position:absolute;inset:0;background:url('assets/art/sky/moon.webp') center/contain no-repeat;filter:drop-shadow(0 0 8px #d7e6df26)}
 #top .moon:after{content:'';position:absolute;inset:23%;border-radius:50%;box-shadow:inset calc(-.23 * var(--moon-shadow,8px)) 0 5px #16264066;pointer-events:none}
 .world-clouds{position:absolute;inset:0;overflow:hidden;z-index:2;pointer-events:none;opacity:var(--cloud-opacity,1);filter:brightness(var(--cloud-light,1));transition:opacity 1.5s,filter 1.5s}
 .world-cloud{position:absolute;left:var(--cloud-x);top:var(--cloud-y);width:clamp(130px,12vw,280px);height:auto;max-width:none;object-fit:contain;transform:scale(var(--cloud-scale,1));transform-origin:center;image-rendering:auto;filter:drop-shadow(0 3px 3px #385b6e12);animation:cloud-drift var(--cloud-duration,140s) linear var(--cloud-delay,0s) infinite alternate;will-change:transform}

@@ -15,7 +15,14 @@ function cloudCfg() { const c = siteConfig().firebase; return c && c.apiKey ? c 
 function cloudScript(src) {
   return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
 }
-function cloudDoc() { return CLOUD.db.collection('players').doc(CLOUD.user.uid).collection('saves').doc('untoldlife'); }
+// The database library is big, so it loads only once a player is signed in (guests never download it).
+async function cloudDoc() {
+  if (!CLOUD.db) {
+    CLOUD.dbLoad = CLOUD.dbLoad || cloudScript(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-firestore-compat.js`).then(() => { CLOUD.db = firebase.firestore(); });
+    await CLOUD.dbLoad;
+  }
+  return CLOUD.db.collection('players').doc(CLOUD.user.uid).collection('saves').doc('untoldlife');
+}
 function cloudRefresh() { if (typeof tab !== 'undefined' && tab === 'settings') lastSig = ''; cloudChip(); }
 function cloudChip() {
   const c = document.getElementById('cloudChip'); if (!c) return;
@@ -38,9 +45,9 @@ async function cloudInit() {
   if (!c || location.protocol === 'file:') return;
   CLOUD.on = true;
   try {
-    for (const m of ['app', 'auth', 'firestore']) await cloudScript(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-${m}-compat.js`);
+    for (const m of ['app', 'auth']) await cloudScript(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-${m}-compat.js`);
     firebase.initializeApp(c);
-    CLOUD.auth = firebase.auth(); CLOUD.db = firebase.firestore();
+    CLOUD.auth = firebase.auth();
     // Sign-in emails and Google's screens follow the game's language.
     CLOUD.auth.languageCode = ({ zh: 'zh-CN', pt: 'pt-BR' })[LANG] || LANG;
     await cloudEmailFinish();
@@ -90,14 +97,14 @@ async function cloudUpload(force) {
   if (!force && play === CLOUD.lastPlay) return;
   CLOUD.busy = true;
   try {
-    await cloudDoc().set({ game: 'untoldlife', save: encodeSave(S), ...cloudSummary(S), t: Date.now() });
+    await (await cloudDoc()).set({ game: 'untoldlife', save: encodeSave(S), ...cloudSummary(S), t: Date.now() });
     CLOUD.last = Date.now(); CLOUD.lastPlay = play; CLOUD.err = '';
   } catch (e) { CLOUD.err = 'sync'; }
   CLOUD.busy = false; cloudRefresh();
 }
 async function cloudOnSignIn() {
   let snap;
-  try { snap = await cloudDoc().get(); } catch (e) { CLOUD.err = 'sync'; return cloudRefresh(); }
+  try { snap = await (await cloudDoc()).get(); } catch (e) { CLOUD.err = 'sync'; return cloudRefresh(); }
   const who = CLOUD.user.email || '';
   if (!snap.exists) {
     if (S.started) { await cloudUpload(true); log(L`☁️ ربطت حسابك (${who}). تقدمك صار محفوظ في السحابة`, 'good'); }
@@ -136,7 +143,7 @@ async function cloudSignOut() {
 async function cloudDelete() {
   if (!CLOUD.user || !confirm(L('متأكد؟ بنحذف حسابك وحفظك من السحابة نهائياً. الحفظ اللي في هذا الجهاز يبقى.'))) return;
   try {
-    await cloudDoc().delete();
+    await (await cloudDoc()).delete();
     try { await CLOUD.user.delete(); }
     catch (e) {
       if (e.code !== 'auth/requires-recent-login') throw e;

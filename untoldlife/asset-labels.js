@@ -29,9 +29,9 @@ function labelImageElement(element,file,key=''){
  element.dataset.assetPurpose=meta?meta.purpose:'صورة تحتاج إلى تعريف في سجل الأصول';
 }
 for(const [selector,file] of [
- ['.world-land-day','assets/art/terrain-day.png'],['.world-land-night','assets/art/terrain-night.png'],
- ['#sun','assets/art/sky/sun.png'],['#moon','assets/art/sky/moon.png'],
- ['.world-sky-decor','assets/art/sky/horizon-mask.svg'],['.brand-wordmark','assets/art/brand/untoldlife-wordmark.png']
+ ['.world-land-day','assets/art/terrain-day.webp'],['.world-land-night','assets/art/terrain-night.webp'],
+ ['#sun','assets/art/sky/sun.webp'],['#moon','assets/art/sky/moon.webp'],
+ ['.world-sky-decor','assets/art/sky/horizon-mask.svg'],['.brand-wordmark','assets/art/brand/untoldlife-wordmark.webp']
 ])labelImageElement(document.querySelector(selector),file);
 // Existing static images are labeled before icon() replaces them with current artwork.
 document.querySelectorAll('img[src^="assets/"]').forEach(img=>labelImageElement(img,img.getAttribute('src')));

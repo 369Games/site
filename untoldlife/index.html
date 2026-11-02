@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>UntoldLife</title>
-<link rel="stylesheet" href="style.css?v=51">
-<link rel="stylesheet" href="world-theme.css?v=51">
-<link rel="stylesheet" href="assets/art/sky/horizon-mask.css?v=51">
-<link rel="stylesheet" href="brand-theme.css?v=51">
-<link rel="stylesheet" href="art-pass2.css?v=51">
+<link rel="stylesheet" href="style.css?v=52">
+<link rel="stylesheet" href="world-theme.css?v=52">
+<link rel="stylesheet" href="assets/art/sky/horizon-mask.css?v=52">
+<link rel="stylesheet" href="brand-theme.css?v=52">
+<link rel="stylesheet" href="art-pass2.css?v=52">
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "d00635426d214e93938126001ce4a104"}'></script>
 </head>
 <body>
@@ -27,7 +27,7 @@
     <canvas id="weatherCanvas" aria-hidden="true"></canvas>
   </div>
   <div class="brand">
-    <h1><img class="brand-wordmark" src="assets/art/brand/untoldlife-wordmark.png" width="2172" height="724" alt="UntoldLife" fetchpriority="high" decoding="async"></h1>
+    <h1><img class="brand-wordmark" src="assets/art/brand/untoldlife-wordmark.webp" width="2172" height="724" alt="UntoldLife" fetchpriority="high" decoding="async"></h1>
     <span class="brand-season-seal" aria-hidden="true"></span>
     <span class="sub">حياة لم تُروَ بعد — <span id="hName"></span></span>
   </div>
@@ -63,32 +63,32 @@
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="modal" class="hidden" role="dialog" aria-modal="true" aria-label="رسالة من الوادي"><div class="mbox" id="mbox"></div></div>
 
-<script src="lang-en.js?v=51"></script>
-<script src="lang-es.js?v=51"></script>
-<script src="lang-pt.js?v=51"></script>
-<script src="lang-ru.js?v=51"></script>
-<script src="lang-zh.js?v=51"></script>
-<script src="i18n.js?v=51"></script>
+<script>
+// Load only the chosen language's translations (Arabic needs none). Switching language reloads the page.
+(function () { var l = ''; try { l = localStorage.getItem('untoldlife_lang') || ''; } catch (e) {}
+  if (/^(en|es|pt|ru|zh)$/.test(l)) document.write("<script src='lang-" + l + ".js?v=52'><\/script>"); })();
+</script>
+<script src="i18n.js?v=52"></script>
 <script src="assets/sprites.js"></script>
-<script src="assets/art.js?v=51"></script>
-<script src="assets/cutouts.js?v=51"></script>
-<script src="assets/season-portraits.js?v=51"></script>
-<script src="assets/legacy-art.js?v=51"></script>
-<script src="assets/pass2-art.js?v=51"></script>
-<script src="assets/image-metadata.js?v=51"></script>
-<script src="asset-labels.js?v=51"></script>
-<script src="ui-v2.js?v=51"></script>
-<script src="visuals.js?v=51"></script>
-<script src="world-scene.js?v=51"></script>
-<script src="site-config.js?v=51"></script>
-<script src="game.js?v=51"></script>
-<script src="tutorial.js?v=51"></script>
-<script src="feedback.js?v=51"></script>
-<script src="stats.js?v=51"></script>
-<script src="move.js?v=51"></script>
-<script src="cloud.js?v=51"></script>
-<script src="patchnotes.js?v=51"></script>
-<script src="assets/music/tracks.js?v=51"></script>
-<script src="audio.js?v=51"></script>
+<script src="assets/art.js?v=52"></script>
+<script src="assets/cutouts.js?v=52"></script>
+<script src="assets/season-portraits.js?v=52"></script>
+<script src="assets/legacy-art.js?v=52"></script>
+<script src="assets/pass2-art.js?v=52"></script>
+<script src="assets/image-metadata.js?v=52"></script>
+<script src="asset-labels.js?v=52"></script>
+<script src="ui-v2.js?v=52"></script>
+<script src="visuals.js?v=52"></script>
+<script src="world-scene.js?v=52"></script>
+<script src="site-config.js?v=52"></script>
+<script src="game.js?v=52"></script>
+<script src="tutorial.js?v=52"></script>
+<script src="feedback.js?v=52"></script>
+<script src="stats.js?v=52"></script>
+<script src="move.js?v=52"></script>
+<script src="cloud.js?v=52"></script>
+<script src="patchnotes.js?v=52"></script>
+<script src="assets/music/tracks.js?v=52"></script>
+<script src="audio.js?v=52"></script>
 </body>
 </html>

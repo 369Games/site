@@ -252,62 +252,62 @@ const PASS2_ART=[
   },
   {
     "key": "npc-leila-0",
-    "file": "art/portraits/leila-neutral-v2.png",
+    "file": "art/portraits/leila-neutral-v2.webp",
     "category": "pass2"
   },
   {
     "key": "npc-leila-1",
-    "file": "art/portraits/leila-friendly-v2.png",
+    "file": "art/portraits/leila-friendly-v2.webp",
     "category": "pass2"
   },
   {
     "key": "npc-leila-2",
-    "file": "art/portraits/leila-joyful-v2.png",
+    "file": "art/portraits/leila-joyful-v2.webp",
     "category": "pass2"
   },
   {
     "key": "npc-noura-0",
-    "file": "art/portraits/noura-neutral-v2.png",
+    "file": "art/portraits/noura-neutral-v2.webp",
     "category": "pass2"
   },
   {
     "key": "npc-noura-1",
-    "file": "art/portraits/noura-friendly-v2.png",
+    "file": "art/portraits/noura-friendly-v2.webp",
     "category": "pass2"
   },
   {
     "key": "npc-noura-2",
-    "file": "art/portraits/noura-joyful-v2.png",
+    "file": "art/portraits/noura-joyful-v2.webp",
     "category": "pass2"
   },
   {
     "key": "npc-raad-0",
-    "file": "art/portraits/raad-neutral-v2.png",
+    "file": "art/portraits/raad-neutral-v2.webp",
     "category": "pass2"
   },
   {
     "key": "npc-raad-1",
-    "file": "art/portraits/raad-friendly-v2.png",
+    "file": "art/portraits/raad-friendly-v2.webp",
     "category": "pass2"
   },
   {
     "key": "npc-raad-2",
-    "file": "art/portraits/raad-joyful-v2.png",
+    "file": "art/portraits/raad-joyful-v2.webp",
     "category": "pass2"
   },
   {
     "key": "npc-smith-0",
-    "file": "art/portraits/smith-neutral-v2.png",
+    "file": "art/portraits/smith-neutral-v2.webp",
     "category": "pass2"
   },
   {
     "key": "npc-smith-1",
-    "file": "art/portraits/smith-friendly-v2.png",
+    "file": "art/portraits/smith-friendly-v2.webp",
     "category": "pass2"
   },
   {
     "key": "npc-smith-2",
-    "file": "art/portraits/smith-joyful-v2.png",
+    "file": "art/portraits/smith-joyful-v2.webp",
     "category": "pass2"
   },
   {

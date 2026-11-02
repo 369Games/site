@@ -42,8 +42,8 @@ function updateWorldClouds(state){
   for(let i=0;i<count;i++){
     const variant=state.weather==='rain'?'storm':state.weather==='cloudy'&&i%2===0?'storm':i%3===1?'wispy':'puffy';
     const cloud=document.createElement('img');
-    cloud.className='world-cloud cloud-'+variant;cloud.src='assets/art/sky/cloud-'+variant+'.png';cloud.alt='';cloud.draggable=false;
-    labelImageElement(cloud,'assets/art/sky/cloud-'+variant+'.png');
+    cloud.className='world-cloud cloud-'+variant;cloud.src='assets/art/sky/cloud-'+variant+'.webp';cloud.alt='';cloud.draggable=false;
+    labelImageElement(cloud,'assets/art/sky/cloud-'+variant+'.webp');
     const x=overcast?[-8,8,28,43,62,78,93][i]:[3,39,75][i];
     cloud.style.cssText=`--cloud-x:${x}%;--cloud-y:${[0,4,9,1,7,3,11][i]}%;--cloud-scale:${[1,.85,1.1,.9,1.15,.8,1][i]};--cloud-duration:${100+i*19}s;--cloud-delay:-${i*17+9}s`;
     children.push(cloud);

@@ -1,5 +1,5 @@
 /* Stable source identities; assets/cutouts.js maps them to individual PNG files. */
-const ART_SHEETS={items:{file:'art/items.png',cols:8,rows:8},world:{file:'art/world.png',cols:8,rows:4},portraits:{file:'art/characters.png',cols:5,rows:3}};
+const ART_SHEETS={items:{file:'art/items.webp',cols:8,rows:8},world:{file:'art/world.webp',cols:8,rows:4},portraits:{file:'art/characters.webp',cols:5,rows:3}};
 const ART={};
 ['turnip','garlic','potato','strawberry','broccoli','cucumber','tomato','corn','bellpepper','watermelon','mushroom','eggplant','apple','pumpkin','grape','carrot','onion','sweetpotato','pepper','chestnut','saffron','dates','mango','pineapple','chicken','cow','sheep','bee','egg','milk','wool','honey','copper','iron','silver','gold_ore','mithril','adamant','gem','chest','sardine','shrimp','crab','tropical','puffer','squid','octopus','shark','hoe','can','pick','sword','armor','rod','coin','heart','sprout','seedbag','basket','scroll','anvil','gear','tree','village'].forEach((id,i)=>ART[id]={sheet:'items',index:i});
 for(let i=0;i<14;i++)ART['monster-'+i]={sheet:'world',index:i};

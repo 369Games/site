@@ -871,7 +871,7 @@ function doRetire() {
   log(L`🌱 بدأ الجيل ${LG.gen}: ${S.name} ${gv(L('يستلم'), L('تستلم'))} مزرعة العائلة`, 'season');
   if (S.gen.ch) { const c = CHALLENGES.find(x => x.id === S.gen.ch); log(L`🏆 تحدي هذا الجيل: ${c.e} ${c.n} — ${goalText(c)}`, 'season'); }
   save(); RS = null;
-  log(L('💾 جيل جديد! وقت مناسب تنزّل نسخة من حفظك من «المزيد»'), 'new');
+  if (!(typeof CLOUD !== 'undefined' && CLOUD.user)) log(L('💾 جيل جديد! وقت مناسب تنزّل نسخة من حفظك من «المزيد»'), 'new');
   showLetter(old, gain, heir);
 }
 function showLetter(o, gain, heir) {
@@ -1499,15 +1499,24 @@ function viewSettings() {
     <li>💤 اللعبة تكمل حتى لو أغلقت الصفحة (حتى ${12 + 6 * P('t_offline')} ساعة) وتحفظ تلقائياً كل 10 ثوانٍ.</li>
   </ul></div>
   <div class="panel"><h2>📊 الإحصائيات</h2><div id="statsBox"></div>
-    <h3>💾 الحفظ</h3><div class="row">
-    <button class="btn" data-a="save">💾 حفظ الآن</button><button class="btn gold" data-a="saveDownload">⬇️ نزّل ملف الحفظ</button>
-    <button class="btn blue" data-a="saveUpload">⬆️ ارفع ملف حفظ</button></div>
-    <p class="hint" id="backupAge"></p>
-    <div class="row"><button class="btn ghost sm" data-a="export">📤 تصدير كود</button>
-    <button class="btn ghost sm" data-a="import">📥 استيراد كود</button><button class="btn red sm" data-a="reset">🗑️ بدء من جديد</button></div>
+    <h3>💾 الحفظ</h3><div id="saveBox"></div>
     <h3>🧑 شخصيتك</h3>${S.spouse ? L`<p class="hint">${S.gender ? GENDER[S.gender].e + ' ' + GENDER[S.gender].n : ''} — متزوج${gv('', L('ة'))} من ${NPC_BY[S.spouse].n} 💍</p>` : L`${genderPick('setGender', S.gender)}<p class="hint">يحدد من تقدر تتزوج من أهل القرية. ولدك أو بنتك في الجيل القادم تختاره عند التقاعد.</p>`}${langPick()}${sitePanel()}${typeof tutPanel === 'function' ? tutPanel() : ''}${typeof audioPanel === 'function' ? audioPanel() : ''}${typeof statsPanel === 'function' ? statsPanel() : ''}${typeof cloudPanel === 'function' ? cloudPanel() : ''}</div></div>`;
 }
+// Save section: with a cloud account the save takes care of itself and the file is tucked away;
+// without one, the file buttons are the backup, with a nudge to link an account.
+function savePanel() {
+  const cloud = typeof CLOUD !== 'undefined' && CLOUD.user;
+  const files = `<div class="row"><button class="btn gold" data-a="saveDownload">${L('⬇️ نزّل ملف الحفظ')}</button><button class="btn blue" data-a="saveUpload">${L('⬆️ ارفع ملف حفظ')}</button></div>`;
+  const reset = `<div class="row"><button class="btn red sm" data-a="reset">${L('🗑️ بدء من جديد')}</button></div>`;
+  if (cloud) return `<p class="hint">${L('✅ حفظك ينحفظ تلقائياً في هذا الجهاز وفي السحابة. ما تحتاج تسوي شي.')}</p>
+    <details class="save-more"><summary>${L('نسخة احتياطية يدوية')}</summary>${files}<p class="hint" id="backupAge"></p>${reset}</details>`;
+  const linkable = typeof CLOUD !== 'undefined' && CLOUD.on && CLOUD.ready && !CLOUD.err;
+  return `<p class="hint">${linkable ? L('حفظك في هذا الجهاز بس. اربط حسابك من «☁️ الحساب والحفظ السحابي» تحت عشان ينحفظ في السحابة، أو نزّل ملف احتياطي.') : L('حفظك ينحفظ تلقائياً في هذا الجهاز. نزّل ملف احتياطي عشان ما يضيع لو انمسحت بيانات المتصفح.')}</p>
+    ${files}<p class="hint" id="backupAge"></p>${reset}`;
+}
 function updSettings() {
+  const sb = $('saveBox');
+  if (sb) { const html = savePanel(); if (sb._html !== html) { sb._html = html; const open = sb.querySelector('details[open]'); sb.innerHTML = pixelHTML(html); if (open) { const d = sb.querySelector('details'); if (d) d.open = true; } } }
   const ba = $('backupAge');
   if (ba) { const t = backupAt(), txt = t ? L`💡 ملف الحفظ يحمي تقدمك لو انمسحت بيانات المتصفح أو غيّرت جهازك. آخر نسخة نزّلتها: قبل ${ftime((Date.now() - t) / 1000)}` : L('💡 ملف الحفظ يحمي تقدمك لو انمسحت بيانات المتصفح أو غيّرت جهازك. ما نزّلت أي نسخة للحين.'); if (ba.textContent !== txt) ba.textContent = txt; }
   const b = $('statsBox'); if (!b) return;

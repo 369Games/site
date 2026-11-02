@@ -21,3 +21,5 @@ a{color:var(--gold)}
 .back{margin-top:30px!important}
 footer{padding:24px 0 40px;color:#8f7b5c;font-size:13px;text-align:center;border-top:1px solid var(--line)}
 footer a{color:#b59d74}
+.brand-logo{width:38px;height:38px}
+.studio-logo{display:block;width:min(320px,70%);height:auto;margin:6px auto 22px}

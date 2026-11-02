@@ -7,13 +7,25 @@
 const CLOUD = { on: false, ready: false, user: null, last: 0, lastPlay: -1, busy: false, err: '', sentTo: '', pending: null };
 const FB_VER = '10.14.1';
 const EMAIL_KEY = 'untoldlife_email', NUDGE_KEY = 'untoldlife_cloud_nudge';
+const PREV_KEY = 'untoldlife_save_prev';   // the save that lost to the other one, kept just in case
+const LOADED_KEY = 'untoldlife_cloud_loaded';
+const SYNC_MS = 30000;
 
 function cloudCfg() { const c = siteConfig().firebase; return c && c.apiKey ? c : null; }
 function cloudScript(src) {
   return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
 }
 function cloudDoc() { return CLOUD.db.collection('players').doc(CLOUD.user.uid).collection('saves').doc('untoldlife'); }
-function cloudRefresh() { if (typeof tab !== 'undefined' && tab === 'settings') lastSig = ''; }
+function cloudRefresh() { if (typeof tab !== 'undefined' && tab === 'settings') lastSig = ''; cloudChip(); }
+function cloudChip() {
+  const c = document.getElementById('cloudChip'); if (!c) return;
+  const show = CLOUD.on && CLOUD.ready && CLOUD.err !== 'load' && S && S.started;
+  c.classList.toggle('hidden', !show); if (!show) return;
+  const state = !CLOUD.user ? 'off' : CLOUD.err === 'sync' ? 'warn' : 'on';
+  const txt = state === 'off' ? L('☁️ غير محفوظ بالسحابة') : state === 'warn' ? L('☁️ ما انرفع، بنحاول') : L('☁️ محفوظ بالسحابة');
+  if (c.dataset.state !== state || c.textContent !== txt) { c.dataset.state = state; c.textContent = txt; }
+  c.title = CLOUD.user ? (CLOUD.user.email || '') : L('اضغط واربط حسابك عشان ما يضيع تقدمك');
+}
 function cloudFail(e) {
   const code = (e && e.code) || '';
   if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return;
@@ -92,23 +104,24 @@ async function cloudOnSignIn() {
   const d = snap.data(), info = readSave(d.save);
   if (!info) return cloudUpload(true);
   if (!S.started) return cloudApply(info);
-  const here = cloudSummary(S);
-  if (d.name === here.name && d.gen === here.gen && Math.abs((d.play || 0) - here.play) < 60) {
-    CLOUD.lastPlay = d.play; CLOUD.last = d.t || 0; cloudRefresh();
-    return cloudUpload();
+  // No question: keep whichever save got further (generation first, then play time).
+  // The other one is kept on this device as a backup, so nothing is ever lost.
+  const here = cloudSummary(S), there = cloudSummary(info.st);
+  const ahead = (there.gen - here.gen) || (there.play - here.play);
+  if (ahead > 60 || there.gen > here.gen) {
+    try { localStorage.setItem(PREV_KEY, encodeSave(S)); } catch (e) { /* */ }
+    return cloudApply(info);
   }
-  // Two different saves: the player picks which one to keep.
-  CLOUD.pending = info;
-  const c = cloudSummary(info.st), day = d.t ? new Date(d.t).toLocaleString(LANG === 'ar' ? 'ar' : LANG) : '';
-  openModal(L`<h2>☁️ عندك حفظين</h2><p class="hint">لقينا حفظ في السحابة يختلف عن اللي في هذا الجهاز. اختر وش تبي تكمل فيه، والثاني يروح.</p>
-  <div class="cloud-pick"><div class="card"><b>📱 هذا الجهاز</b><small>${here.name} • الجيل ${here.gen}</small><small>⏳ ${ftime(here.play)}</small><button class="btn" data-a="cloudKeepLocal">كمّل بهذا</button></div>
-  <div class="card"><b>☁️ السحابة</b><small>${c.name} • الجيل ${c.gen}</small><small>⏳ ${ftime(c.play)} • ${day}</small><button class="btn gold" data-a="cloudKeepCloud">كمّل بهذا</button></div></div>`);
+  if (there.gen !== here.gen || Math.abs(there.play - here.play) > 60 || there.name !== here.name) { try { localStorage.setItem(PREV_KEY, d.save); } catch (e) { /* */ } }
+  CLOUD.lastPlay = there.play; CLOUD.last = d.t || 0; cloudRefresh();
+  return cloudUpload(true);
 }
 function cloudApply(info) {
   saveBlocked = false;
   S = migrate(info.st); S.last = Date.now();
   markMod(info.mod || saveOddity(S));
   save(); saveBlocked = true;
+  try { sessionStorage.setItem(LOADED_KEY, String(S.leg.gen)); } catch (e) { /* */ }
   location.reload();
 }
 
@@ -151,7 +164,7 @@ function cloudPanel() {
   }
   const who = esc(CLOUD.user.email || CLOUD.user.displayName || '');
   const when = CLOUD.err === 'sync' ? L('⚠️ آخر محاولة رفع ما نجحت، بنحاول مرة ثانية') : CLOUD.last ? L`آخر رفع: قبل ${ftime(Math.max(1, (Date.now() - CLOUD.last) / 1000))}` : L('ما رفعنا شي للحين');
-  return h + L`<p class="hint">✅ متصل: <b>${who}</b><br>${when}. الحفظ يترفع تلقائياً كل دقيقتين.</p>
+  return h + L`<p class="hint">✅ متصل: <b>${who}</b><br>${when}. الحفظ يترفع تلقائياً كل 30 ثانية.</p>
   <div class="row"><button class="btn gold sm" data-a="cloudUpload">☁️ ارفع الحين</button><button class="btn ghost sm" data-a="cloudOut">تسجيل خروج</button><button class="btn red sm" data-a="cloudDelete">حذف الحساب</button></div>`;
 }
 
@@ -160,11 +173,13 @@ A.cloudEmail = () => cloudEmailSend();
 A.cloudUpload = async () => { await cloudUpload(true); if (!CLOUD.err) toast(L('☁️ انرفع حفظك')); };
 A.cloudOut = () => cloudSignOut();
 A.cloudDelete = () => cloudDelete();
-A.cloudKeepCloud = () => { const p = CLOUD.pending; CLOUD.pending = null; closeModal(); if (p) cloudApply(p); };
-A.cloudKeepLocal = () => { CLOUD.pending = null; closeModal(); cloudUpload(true); toast(L('☁️ حفظ هذا الجهاز صار في السحابة')); };
+A.cloudChip = () => {
+  A.tab('settings'); render(true);
+  setTimeout(() => { const el = document.querySelector('[data-a=cloudGoogle], [data-a=cloudUpload]'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
+};
 
 // Sync while playing, and when the page is hidden or closed.
-setInterval(() => cloudUpload(), 120000);
+setInterval(() => cloudUpload(), SYNC_MS);
 document.addEventListener('visibilitychange', () => { if (document.hidden) cloudUpload(); });
 // One gentle suggestion to link an account, after the first retirement or an hour of play.
 setInterval(() => {
@@ -176,4 +191,8 @@ setInterval(() => {
   toast(L('☁️ اربط حسابك عشان ما يضيع تقدمك'));
 }, 30000);
 
-cloudInit();
+setInterval(cloudChip, 2000);
+cloudInit().then(() => {
+  let g = null; try { g = sessionStorage.getItem(LOADED_KEY); sessionStorage.removeItem(LOADED_KEY); } catch (e) { /* */ }
+  if (g) log(L`☁️ كمّلنا من حفظك في السحابة (الجيل ${g}) لأنه أبعد من حفظ هذا الجهاز`, 'good');
+});

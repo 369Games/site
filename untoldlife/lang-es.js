@@ -819,6 +819,10 @@
 "انقل حفظي والعب هناك": "Llevar mi partida y jugar allí",
 "عندك حفظ هنا ({0}، الجيل {1}). تبي تستبدله بحفظك من الموقع القديم ({2}، الجيل {3})؟": "Ya tienes una partida aquí ({0}, generación {1}). ¿Reemplazarla con tu partida del sitio anterior ({2}, generación {3})?",
 "تبي تكمل حفظك من الموقع القديم ({0}، الجيل {1})؟": "¿Seguir con tu partida del sitio anterior ({0}, generación {1})?",
+"☁️ غير محفوظ بالسحابة": "☁️ Sin guardar en la nube",
+"☁️ ما انرفع، بنحاول": "☁️ No se subió, reintentando",
+"☁️ محفوظ بالسحابة": "☁️ Guardado en la nube",
+"اضغط واربط حسابك عشان ما يضيع تقدمك": "Toca para vincular una cuenta y no perder tu progreso",
 "❌ ما فيه اتصال بالإنترنت": "❌ Sin conexión a internet",
 "❌ صار خطأ، جرّب مرة ثانية": "❌ Algo salió mal, inténtalo de nuevo",
 "❌ اكتب بريدك صح": "❌ Escribe un correo válido",
@@ -826,7 +830,6 @@
 "اكتب بريدك عشان نكمل الدخول:": "Escribe tu correo para terminar de entrar:",
 "❌ رابط الدخول انتهى أو استُخدم قبل، اطلب رابط جديد": "❌ Este enlace caducó o ya se usó, pide uno nuevo",
 "☁️ ربطت حسابك ({0}). تقدمك صار محفوظ في السحابة": "☁️ Cuenta vinculada ({0}). Tu progreso ya está guardado en la nube",
-"<h2>☁️ عندك حفظين</h2><p class=\"hint\">لقينا حفظ في السحابة يختلف عن اللي في هذا الجهاز. اختر وش تبي تكمل فيه، والثاني يروح.</p>\n  <div class=\"cloud-pick\"><div class=\"card\"><b>📱 هذا الجهاز</b><small>{0} • الجيل {1}</small><small>⏳ {2}</small><button class=\"btn\" data-a=\"cloudKeepLocal\">كمّل بهذا</button></div>\n  <div class=\"card\"><b>☁️ السحابة</b><small>{3} • الجيل {4}</small><small>⏳ {5} • {6}</small><button class=\"btn gold\" data-a=\"cloudKeepCloud\">كمّل بهذا</button></div></div>": "<h2>☁️ Tienes dos partidas</h2><p class=\"hint\">Encontramos una partida en la nube distinta a la de este dispositivo. Elige con cuál seguir; la otra se reemplazará.</p>\n  <div class=\"cloud-pick\"><div class=\"card\"><b>📱 Este dispositivo</b><small>{0} • generación {1}</small><small>⏳ {2}</small><button class=\"btn\" data-a=\"cloudKeepLocal\">Seguir con esta</button></div>\n  <div class=\"card\"><b>☁️ Nube</b><small>{3} • generación {4}</small><small>⏳ {5} • {6}</small><button class=\"btn gold\" data-a=\"cloudKeepCloud\">Seguir con esta</button></div></div>",
 "👋 سجلت خروج. حفظك باقي في هذا الجهاز": "👋 Sesión cerrada. Tu partida sigue en este dispositivo",
 "متأكد؟ بنحذف حسابك وحفظك من السحابة نهائياً. الحفظ اللي في هذا الجهاز يبقى.": "¿Seguro? Borraremos para siempre tu cuenta y tu partida en la nube. La partida de este dispositivo se queda.",
 "حذفنا حفظك من السحابة. عشان نحذف الحساب نفسه، سجل دخول من جديد واضغط حذف مرة ثانية": "Borramos tu partida en la nube. Para borrar la cuenta, vuelve a entrar y pulsa borrar otra vez.",
@@ -840,9 +843,9 @@
 "⚠️ آخر محاولة رفع ما نجحت، بنحاول مرة ثانية": "⚠️ La última subida falló, lo intentaremos de nuevo",
 "آخر رفع: قبل {0}": "Última subida: hace {0}",
 "ما رفعنا شي للحين": "Aún no se subió nada",
-"<p class=\"hint\">✅ متصل: <b>{0}</b><br>{1}. الحفظ يترفع تلقائياً كل دقيقتين.</p>\n  <div class=\"row\"><button class=\"btn gold sm\" data-a=\"cloudUpload\">☁️ ارفع الحين</button><button class=\"btn ghost sm\" data-a=\"cloudOut\">تسجيل خروج</button><button class=\"btn red sm\" data-a=\"cloudDelete\">حذف الحساب</button></div>": "<p class=\"hint\">✅ Conectado: <b>{0}</b><br>{1}. Tu partida se sube sola cada dos minutos.</p>\n  <div class=\"row\"><button class=\"btn gold sm\" data-a=\"cloudUpload\">☁️ Subir ahora</button><button class=\"btn ghost sm\" data-a=\"cloudOut\">Cerrar sesión</button><button class=\"btn red sm\" data-a=\"cloudDelete\">Borrar cuenta</button></div>",
+"<p class=\"hint\">✅ متصل: <b>{0}</b><br>{1}. الحفظ يترفع تلقائياً كل 30 ثانية.</p>\n  <div class=\"row\"><button class=\"btn gold sm\" data-a=\"cloudUpload\">☁️ ارفع الحين</button><button class=\"btn ghost sm\" data-a=\"cloudOut\">تسجيل خروج</button><button class=\"btn red sm\" data-a=\"cloudDelete\">حذف الحساب</button></div>": "<p class=\"hint\">✅ Conectado: <b>{0}</b><br>{1}. Tu partida se sube sola cada 30 segundos.</p>\n  <div class=\"row\"><button class=\"btn gold sm\" data-a=\"cloudUpload\">☁️ Subir ahora</button><button class=\"btn ghost sm\" data-a=\"cloudOut\">Cerrar sesión</button><button class=\"btn red sm\" data-a=\"cloudDelete\">Borrar cuenta</button></div>",
 "☁️ انرفع حفظك": "☁️ Partida subida",
-"☁️ حفظ هذا الجهاز صار في السحابة": "☁️ La partida de este dispositivo ya está en la nube",
 "☁️ نصيحة: اربط حسابك من «المزيد» عشان ما يضيع تقدمك وتكمل من أي جهاز": "☁️ Consejo: vincula una cuenta en «Más» para no perder nunca tu progreso y seguir en cualquier dispositivo",
-"☁️ اربط حسابك عشان ما يضيع تقدمك": "☁️ Vincula una cuenta para no perder tu progreso"
+"☁️ اربط حسابك عشان ما يضيع تقدمك": "☁️ Vincula una cuenta para no perder tu progreso",
+"☁️ كمّلنا من حفظك في السحابة (الجيل {0}) لأنه أبعد من حفظ هذا الجهاز": "☁️ Seguimos con tu partida de la nube (generación {0}) porque va más avanzada que la de este dispositivo"
 };

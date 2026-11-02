@@ -819,6 +819,10 @@
 "انقل حفظي والعب هناك": "Move my save and play there",
 "عندك حفظ هنا ({0}، الجيل {1}). تبي تستبدله بحفظك من الموقع القديم ({2}، الجيل {3})؟": "You already have a save here ({0}, generation {1}). Replace it with your save from the old site ({2}, generation {3})?",
 "تبي تكمل حفظك من الموقع القديم ({0}، الجيل {1})؟": "Continue your save from the old site ({0}, generation {1})?",
+"☁️ غير محفوظ بالسحابة": "☁️ Not saved to cloud",
+"☁️ ما انرفع، بنحاول": "☁️ Upload failed, retrying",
+"☁️ محفوظ بالسحابة": "☁️ Saved to cloud",
+"اضغط واربط حسابك عشان ما يضيع تقدمك": "Tap to link an account so your progress isn't lost",
 "❌ ما فيه اتصال بالإنترنت": "❌ No internet connection",
 "❌ صار خطأ، جرّب مرة ثانية": "❌ Something went wrong, try again",
 "❌ اكتب بريدك صح": "❌ Please enter a valid email",
@@ -826,7 +830,6 @@
 "اكتب بريدك عشان نكمل الدخول:": "Enter your email to finish signing in:",
 "❌ رابط الدخول انتهى أو استُخدم قبل، اطلب رابط جديد": "❌ This sign-in link expired or was already used, ask for a new one",
 "☁️ ربطت حسابك ({0}). تقدمك صار محفوظ في السحابة": "☁️ Account linked ({0}). Your progress is now saved in the cloud",
-"<h2>☁️ عندك حفظين</h2><p class=\"hint\">لقينا حفظ في السحابة يختلف عن اللي في هذا الجهاز. اختر وش تبي تكمل فيه، والثاني يروح.</p>\n  <div class=\"cloud-pick\"><div class=\"card\"><b>📱 هذا الجهاز</b><small>{0} • الجيل {1}</small><small>⏳ {2}</small><button class=\"btn\" data-a=\"cloudKeepLocal\">كمّل بهذا</button></div>\n  <div class=\"card\"><b>☁️ السحابة</b><small>{3} • الجيل {4}</small><small>⏳ {5} • {6}</small><button class=\"btn gold\" data-a=\"cloudKeepCloud\">كمّل بهذا</button></div></div>": "<h2>☁️ You have two saves</h2><p class=\"hint\">We found a cloud save that differs from the one on this device. Choose which one to keep; the other will be replaced.</p>\n  <div class=\"cloud-pick\"><div class=\"card\"><b>📱 This device</b><small>{0} • generation {1}</small><small>⏳ {2}</small><button class=\"btn\" data-a=\"cloudKeepLocal\">Continue with this</button></div>\n  <div class=\"card\"><b>☁️ Cloud</b><small>{3} • generation {4}</small><small>⏳ {5} • {6}</small><button class=\"btn gold\" data-a=\"cloudKeepCloud\">Continue with this</button></div></div>",
 "👋 سجلت خروج. حفظك باقي في هذا الجهاز": "👋 Signed out. Your save stays on this device",
 "متأكد؟ بنحذف حسابك وحفظك من السحابة نهائياً. الحفظ اللي في هذا الجهاز يبقى.": "Are you sure? We'll permanently delete your account and cloud save. The save on this device stays.",
 "حذفنا حفظك من السحابة. عشان نحذف الحساب نفسه، سجل دخول من جديد واضغط حذف مرة ثانية": "Your cloud save is deleted. To delete the account itself, sign in again and press delete once more.",
@@ -840,9 +843,9 @@
 "⚠️ آخر محاولة رفع ما نجحت، بنحاول مرة ثانية": "⚠️ The last upload didn't go through, we'll try again",
 "آخر رفع: قبل {0}": "Last upload: {0} ago",
 "ما رفعنا شي للحين": "Nothing uploaded yet",
-"<p class=\"hint\">✅ متصل: <b>{0}</b><br>{1}. الحفظ يترفع تلقائياً كل دقيقتين.</p>\n  <div class=\"row\"><button class=\"btn gold sm\" data-a=\"cloudUpload\">☁️ ارفع الحين</button><button class=\"btn ghost sm\" data-a=\"cloudOut\">تسجيل خروج</button><button class=\"btn red sm\" data-a=\"cloudDelete\">حذف الحساب</button></div>": "<p class=\"hint\">✅ Signed in: <b>{0}</b><br>{1}. Your save uploads automatically every two minutes.</p>\n  <div class=\"row\"><button class=\"btn gold sm\" data-a=\"cloudUpload\">☁️ Upload now</button><button class=\"btn ghost sm\" data-a=\"cloudOut\">Sign out</button><button class=\"btn red sm\" data-a=\"cloudDelete\">Delete account</button></div>",
+"<p class=\"hint\">✅ متصل: <b>{0}</b><br>{1}. الحفظ يترفع تلقائياً كل 30 ثانية.</p>\n  <div class=\"row\"><button class=\"btn gold sm\" data-a=\"cloudUpload\">☁️ ارفع الحين</button><button class=\"btn ghost sm\" data-a=\"cloudOut\">تسجيل خروج</button><button class=\"btn red sm\" data-a=\"cloudDelete\">حذف الحساب</button></div>": "<p class=\"hint\">✅ Signed in: <b>{0}</b><br>{1}. Your save uploads automatically every 30 seconds.</p>\n  <div class=\"row\"><button class=\"btn gold sm\" data-a=\"cloudUpload\">☁️ Upload now</button><button class=\"btn ghost sm\" data-a=\"cloudOut\">Sign out</button><button class=\"btn red sm\" data-a=\"cloudDelete\">Delete account</button></div>",
 "☁️ انرفع حفظك": "☁️ Save uploaded",
-"☁️ حفظ هذا الجهاز صار في السحابة": "☁️ This device's save is now in the cloud",
 "☁️ نصيحة: اربط حسابك من «المزيد» عشان ما يضيع تقدمك وتكمل من أي جهاز": "☁️ Tip: link an account in «More» so your progress is never lost and you can continue on any device",
-"☁️ اربط حسابك عشان ما يضيع تقدمك": "☁️ Link an account so your progress isn't lost"
+"☁️ اربط حسابك عشان ما يضيع تقدمك": "☁️ Link an account so your progress isn't lost",
+"☁️ كمّلنا من حفظك في السحابة (الجيل {0}) لأنه أبعد من حفظ هذا الجهاز": "☁️ Continued from your cloud save (generation {0}) because it's further along than this device's save"
 };

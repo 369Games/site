@@ -202,3 +202,10 @@ button.chip.au-chip,[dir=ltr] button.chip.au-chip{margin-left:0;margin-right:0;m
 .mine-jump .row{margin:6px 0 0;gap:6px}
 .mine-jump .btn.here{border-color:var(--gold);color:var(--gold);background:var(--selbg)}
 .mine-jump .btn .px{width:20px;height:20px;vertical-align:-4px}
+/* Cloud status in the top bar, next to the generation */
+button.chip.cloud-chip,[dir=ltr] button.chip.cloud-chip{margin-left:0;margin-right:0}
+button.chip.cloud-chip[data-state=off]{color:#f3cf86;border-color:#e2bc6c88;background:#e2bc6c1f;animation:cloud-nudge 2.6s ease-in-out infinite}
+button.chip.cloud-chip[data-state=on]{color:#bfe3a0;border-color:#a6bd7066;background:#a6bd701a}
+button.chip.cloud-chip[data-state=warn]{color:#f0a37a;border-color:#f0a37a66}
+@keyframes cloud-nudge{0%,100%{box-shadow:0 0 0 0 #e2bc6c00}50%{box-shadow:0 0 0 3px #e2bc6c33}}
+@media (prefers-reduced-motion:reduce){button.chip.cloud-chip[data-state=off]{animation:none}}

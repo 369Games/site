@@ -819,6 +819,10 @@
 "انقل حفظي والعب هناك": "Levar meu jogo e jogar lá",
 "عندك حفظ هنا ({0}، الجيل {1}). تبي تستبدله بحفظك من الموقع القديم ({2}، الجيل {3})؟": "Você já tem um jogo aqui ({0}, geração {1}). Substituir pelo seu jogo do site antigo ({2}, geração {3})?",
 "تبي تكمل حفظك من الموقع القديم ({0}، الجيل {1})؟": "Continuar seu jogo do site antigo ({0}, geração {1})?",
+"☁️ غير محفوظ بالسحابة": "☁️ Não salvo na nuvem",
+"☁️ ما انرفع، بنحاول": "☁️ Envio falhou, tentando de novo",
+"☁️ محفوظ بالسحابة": "☁️ Salvo na nuvem",
+"اضغط واربط حسابك عشان ما يضيع تقدمك": "Toque para vincular uma conta e não perder seu progresso",
 "❌ ما فيه اتصال بالإنترنت": "❌ Sem conexão com a internet",
 "❌ صار خطأ، جرّب مرة ثانية": "❌ Algo deu errado, tente de novo",
 "❌ اكتب بريدك صح": "❌ Digite um e-mail válido",
@@ -826,7 +830,6 @@
 "اكتب بريدك عشان نكمل الدخول:": "Digite seu e-mail para terminar de entrar:",
 "❌ رابط الدخول انتهى أو استُخدم قبل، اطلب رابط جديد": "❌ Este link expirou ou já foi usado, peça um novo",
 "☁️ ربطت حسابك ({0}). تقدمك صار محفوظ في السحابة": "☁️ Conta vinculada ({0}). Seu progresso agora está salvo na nuvem",
-"<h2>☁️ عندك حفظين</h2><p class=\"hint\">لقينا حفظ في السحابة يختلف عن اللي في هذا الجهاز. اختر وش تبي تكمل فيه، والثاني يروح.</p>\n  <div class=\"cloud-pick\"><div class=\"card\"><b>📱 هذا الجهاز</b><small>{0} • الجيل {1}</small><small>⏳ {2}</small><button class=\"btn\" data-a=\"cloudKeepLocal\">كمّل بهذا</button></div>\n  <div class=\"card\"><b>☁️ السحابة</b><small>{3} • الجيل {4}</small><small>⏳ {5} • {6}</small><button class=\"btn gold\" data-a=\"cloudKeepCloud\">كمّل بهذا</button></div></div>": "<h2>☁️ Você tem dois jogos salvos</h2><p class=\"hint\">Encontramos um jogo salvo na nuvem diferente do deste aparelho. Escolha com qual continuar; o outro será substituído.</p>\n  <div class=\"cloud-pick\"><div class=\"card\"><b>📱 Este aparelho</b><small>{0} • geração {1}</small><small>⏳ {2}</small><button class=\"btn\" data-a=\"cloudKeepLocal\">Continuar com este</button></div>\n  <div class=\"card\"><b>☁️ Nuvem</b><small>{3} • geração {4}</small><small>⏳ {5} • {6}</small><button class=\"btn gold\" data-a=\"cloudKeepCloud\">Continuar com este</button></div></div>",
 "👋 سجلت خروج. حفظك باقي في هذا الجهاز": "👋 Você saiu. Seu jogo continua neste aparelho",
 "متأكد؟ بنحذف حسابك وحفظك من السحابة نهائياً. الحفظ اللي في هذا الجهاز يبقى.": "Tem certeza? Vamos apagar para sempre sua conta e seu jogo na nuvem. O jogo deste aparelho continua.",
 "حذفنا حفظك من السحابة. عشان نحذف الحساب نفسه، سجل دخول من جديد واضغط حذف مرة ثانية": "Apagamos seu jogo da nuvem. Para apagar a conta, entre de novo e toque em apagar outra vez.",
@@ -840,9 +843,9 @@
 "⚠️ آخر محاولة رفع ما نجحت، بنحاول مرة ثانية": "⚠️ O último envio falhou, vamos tentar de novo",
 "آخر رفع: قبل {0}": "Último envio: há {0}",
 "ما رفعنا شي للحين": "Nada enviado ainda",
-"<p class=\"hint\">✅ متصل: <b>{0}</b><br>{1}. الحفظ يترفع تلقائياً كل دقيقتين.</p>\n  <div class=\"row\"><button class=\"btn gold sm\" data-a=\"cloudUpload\">☁️ ارفع الحين</button><button class=\"btn ghost sm\" data-a=\"cloudOut\">تسجيل خروج</button><button class=\"btn red sm\" data-a=\"cloudDelete\">حذف الحساب</button></div>": "<p class=\"hint\">✅ Conectado: <b>{0}</b><br>{1}. Seu jogo é enviado sozinho a cada dois minutos.</p>\n  <div class=\"row\"><button class=\"btn gold sm\" data-a=\"cloudUpload\">☁️ Enviar agora</button><button class=\"btn ghost sm\" data-a=\"cloudOut\">Sair</button><button class=\"btn red sm\" data-a=\"cloudDelete\">Apagar conta</button></div>",
+"<p class=\"hint\">✅ متصل: <b>{0}</b><br>{1}. الحفظ يترفع تلقائياً كل 30 ثانية.</p>\n  <div class=\"row\"><button class=\"btn gold sm\" data-a=\"cloudUpload\">☁️ ارفع الحين</button><button class=\"btn ghost sm\" data-a=\"cloudOut\">تسجيل خروج</button><button class=\"btn red sm\" data-a=\"cloudDelete\">حذف الحساب</button></div>": "<p class=\"hint\">✅ Conectado: <b>{0}</b><br>{1}. Seu jogo é enviado sozinho a cada 30 segundos.</p>\n  <div class=\"row\"><button class=\"btn gold sm\" data-a=\"cloudUpload\">☁️ Enviar agora</button><button class=\"btn ghost sm\" data-a=\"cloudOut\">Sair</button><button class=\"btn red sm\" data-a=\"cloudDelete\">Apagar conta</button></div>",
 "☁️ انرفع حفظك": "☁️ Jogo enviado",
-"☁️ حفظ هذا الجهاز صار في السحابة": "☁️ O jogo deste aparelho agora está na nuvem",
 "☁️ نصيحة: اربط حسابك من «المزيد» عشان ما يضيع تقدمك وتكمل من أي جهاز": "☁️ Dica: vincule uma conta em «Mais» para nunca perder seu progresso e continuar em qualquer aparelho",
-"☁️ اربط حسابك عشان ما يضيع تقدمك": "☁️ Vincule uma conta para não perder seu progresso"
+"☁️ اربط حسابك عشان ما يضيع تقدمك": "☁️ Vincule uma conta para não perder seu progresso",
+"☁️ كمّلنا من حفظك في السحابة (الجيل {0}) لأنه أبعد من حفظ هذا الجهاز": "☁️ Continuamos do seu jogo na nuvem (geração {0}) porque está mais avançado que o deste aparelho"
 };

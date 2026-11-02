@@ -1083,10 +1083,39 @@ function toolCost(l) {
 function bCost(b) { return Math.round(b.cost * Math.pow(b.mult || 1, S.bld[b.id] || 0)); }
 function refreshCost() { return 25 * Math.pow(rankIdx() + 1, 2); }
 
+/* Human click limit for the buttons that pay per click (dig, cast).
+   A fast hand manages about 10 clicks a second, so anything faster is ignored: an auto-clicker gains nothing over a person.
+   Human clicks are never evenly spaced; a machine-steady rhythm makes the character "tired" (3 clicks/s) for 20 s.
+   Clicks made by scripts (not a real mouse or finger) don't count at all. */
+const WORK_ACTIONS = { dig: 1, cast: 1 };
+const CLICK_CAP = 10, TIRED_MS = 20000;
+const clicks = { times: [], gaps: [], prev: 0, tired: 0, last: 0, warned: 0 };
+function workClickOk(e) {
+  if (!e.isTrusted) return false;
+  const now = performance.now();
+  if (clicks.prev) { clicks.gaps.push(now - clicks.prev); if (clicks.gaps.length > 24) clicks.gaps.shift(); }
+  clicks.prev = now;
+  if (now < clicks.tired) { if (now - clicks.last < 333) return false; clicks.last = now; return true; }
+  const g = clicks.gaps;
+  if (g.length >= 24) {
+    const mean = g.reduce((a, b) => a + b, 0) / g.length, sd = Math.sqrt(g.reduce((a, b) => a + (b - mean) ** 2, 0) / g.length);
+    if (mean < 250 && sd < 6) {
+      clicks.tired = now + TIRED_MS; clicks.gaps = [];
+      if (now - clicks.warned > 60000) { clicks.warned = now; toast(L('😮‍💨 إيدك تعبت! ضغطاتك منتظمة مرة كأنها آلة 🤖 ارتاح شوي')); }
+      if (typeof track === 'function') track('autoclick');
+      return false;
+    }
+  }
+  const t = clicks.times; t.push(now);
+  while (t.length && now - t[0] > 1000) t.shift();
+  if (t.length > CLICK_CAP) { t.pop(); return false; }
+  return true;
+}
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-a]');
   if (!b || b.disabled) return;
   const fn = A[b.dataset.a]; if (!fn) return;
+  if (WORK_ACTIONS[b.dataset.a] && !workClickOk(e)) return;
   const earnedBefore = S.gold, harvestsBefore = S.stats.harvests;
   const selectedPlot = b.dataset.a === 'plot' ? S.farm.plots[+b.dataset.v] : null;
   const harvested = b.dataset.a === 'harvestAll' ? S.farm.plots.filter(isReady).slice(0,6).map(p=>p.c) : selectedPlot && isReady(selectedPlot) ? [selectedPlot.c] : [];

@@ -941,6 +941,7 @@ const A = {
   mineUp: () => { if (S.mine.depth > 1) { S.mine.depth--; S.mine.prog = 0; } },
   mineDown: () => { if (S.mine.depth < S.mine.max) { S.mine.depth++; S.mine.prog = 0; } },
   mineDeep: () => { S.mine.depth = S.mine.max; S.mine.prog = 0; },
+  mineTo: v => { const f = Math.floor(+v); if (f >= 1 && f <= S.mine.max) { S.mine.depth = f; S.mine.prog = 0; } },
   dunToggle: () => {
     const D = S.dun; D.active = !D.active;
     if (D.active) { D.resting = S.hero.hp < heroMaxHp() * 0.2; D.enemy = null; log(L`🗡️ دخلت الزنزانة — الطابق ${D.floor}`); }
@@ -1270,7 +1271,13 @@ function viewMine() {
     <div class="kv"><span>قوة الضربة</span><span id="m_click"></span></div>
     <div class="kv"><span>${icon('worker-miner',24)} العمال: ${S.mine.miners}</span><span id="m_rate"></span></div>
     <div class="row">${costBtn('hireMiner', undefined, minerCost(), L`${icon('worker-miner',24)} وظّف عامل (${fmt(minerCost())}💰)`)}${owned('miners') ? togBtn('miners') : ''}</div>
-    <div class="row"><button class="btn ghost sm" data-a="mineUp" id="m_up">⬆️ اصعد</button><button class="btn ghost sm" data-a="mineDown" id="m_down">⬇️ انزل</button><button class="btn ghost sm" data-a="mineDeep" id="m_deep">⏬ للأعمق</button></div>
+    <div class="row"><button class="btn ghost sm" data-a="mineUp" id="m_up">⬆️ اصعد</button><button class="btn ghost sm" data-a="mineDown" id="m_down">⬇️ انزل</button></div>
+    <div class="mine-jump"><small class="hint">🧭 انتقل لطابق:</small><div class="row">
+      <button class="btn ghost sm" data-a="mineTo" data-v="1">⏫ الأعلى</button>
+      ${ORES.filter(o => o.depth > 1).map(o => o.depth <= S.mine.max
+        ? `<button class="btn ghost sm" data-a="mineTo" data-v="${o.depth}">${icon(o, 24)} ${o.n} • ${o.depth}</button>`
+        : `<button class="btn ghost sm" disabled title="${L`من الطابق ${o.depth}`}">🔒 ${o.n}</button>`).join('')}
+      <button class="btn ghost sm" data-a="mineDeep" id="m_deep">⏬ الأعمق</button></div></div>
     <p class="hint" id="m_capmsg"></p>
   </div></div>
   <h3>المعادن حسب العمق</h3><div class="ores">`;
@@ -1288,6 +1295,8 @@ function updMine() {
   $('m_click').textContent = mineMult().toFixed(1);
   $('m_rate').textContent = L`${minerRate().toFixed(1)} / ث`;
   $('m_up').disabled = m.depth <= 1; $('m_down').disabled = m.depth >= m.max; $('m_deep').disabled = m.depth >= m.max;
+  document.querySelectorAll('.mine-jump [data-a=mineTo]').forEach(b => b.classList.toggle('here', +b.dataset.v === m.depth));
+  $('m_deep').classList.toggle('here', m.depth === m.max);
   $('m_capmsg').textContent = capped ? L('⚠️ الفأس الحالي لا يستطيع الحفر أعمق — طوّره عند الحداد.') : '';
   for (const o of ORES) $('ore_' + o.id).classList.toggle('on', o.depth <= m.depth);
 }
@@ -1654,7 +1663,7 @@ function updLegacy() {
 const VIEWS = {
   farm: [viewFarm, updFarm, () => [S.off, S.leg.gen, zoneMode, S.bld.zoning, S.farm.plots.length, S.farm.seed, S.skills.farm.l, S.tools.can, S.season, S.weather, S.bld.harvester, S.bld.planter, S.bld.sprinkler, S.bld.greenhouse, hearts('mayor')]],
   barn: [viewBarn, updBarn, () => [S.off, S.skills.ranch.l, barnCap(), S.bld.rancher, ...ANIMALS.map(a => S.barn.n[a.id] || 0), S.barn.q, S.barn.br && S.barn.br.a, S.barn.br2 && S.barn.br2.a, S.barn.pity, BREEDABLE.map(id => ['p', 'g'].map(to => breedBlock(ANIMALS.find(x => x.id === id), to) + Math.round(breedChance(id, to) * 100)))]],
-  mine: [viewMine, updMine, () => [S.off, S.mine.miners, S.tools.pick]],
+  mine: [viewMine, updMine, () => [S.off, S.mine.miners, S.tools.pick, ORES.filter(o => o.depth <= S.mine.max).length]],
   guild: [viewGuild, updGuild, () => {
     const D = S.dun, g = S.guild;
     return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100)))];

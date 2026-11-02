@@ -197,3 +197,8 @@ button.chip.au-chip,[dir=ltr] button.chip.au-chip{margin-left:0;margin-right:0;m
 .cloud-pick .card{display:flex;flex-direction:column;gap:6px}
 .cloud-pick small{color:var(--muted)}
 .cloud-pick .btn{margin-top:8px}
+/* Mine: jump to an ore's floor */
+.mine-jump{margin-top:6px}
+.mine-jump .row{margin:6px 0 0;gap:6px}
+.mine-jump .btn.here{border-color:var(--gold);color:var(--gold);background:var(--selbg)}
+.mine-jump .btn .px{width:20px;height:20px;vertical-align:-4px}

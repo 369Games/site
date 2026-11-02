@@ -1,0 +1,2 @@
+'use strict';
+window.SITE_CONFIG = {"feedback": "", "home": "../", "stats": {"action": "https://docs.google.com/forms/d/e/1FAIpQLScgFjN8sXeo_liMM4UZiDUV_WKffveCyb3_FmzuDJvvhe1gNQ/formResponse", "fields": {"player": "entry.861999462", "event": "entry.1280068605", "value": "entry.1852699654", "gen": "entry.2004498555", "minutes": "entry.116070147", "lang": "entry.766778548", "device": "entry.630277217", "version": "entry.826512125"}}, "moveFrom": "https://369games.github.io/"};

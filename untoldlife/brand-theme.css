@@ -1,0 +1,16 @@
+/* Original clockwork countryside identity, centered independently of RTL layout. */
+#top{--brand-accent:#e7b9cf;--brand-glow:#e4a5b932;--brand-season-icon:url('assets/art/seasons/spring.png')}
+#top[data-season="1"]{--brand-accent:#f5ce6a;--brand-glow:#f2cb7038;--brand-season-icon:url('assets/art/seasons/summer.png')}
+#top[data-season="2"]{--brand-accent:#e9a15d;--brand-glow:#d6926338;--brand-season-icon:url('assets/art/seasons/autumn.png')}
+#top[data-season="3"]{--brand-accent:#b8e2ed;--brand-glow:#aed8ee30;--brand-season-icon:url('assets/art/seasons/winter.png')}
+#top .brand{position:absolute;z-index:6;top:8px;left:50%;right:auto;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;width:clamp(300px,34vw,560px);max-width:calc(100% - 28px);padding:0;margin:0;border:0;border-radius:0;background:none;box-shadow:none;backdrop-filter:none;isolation:isolate;text-align:center}
+#top .brand:before{content:'';position:absolute;inset:12% 10% 28%;z-index:-1;background:radial-gradient(ellipse,var(--brand-glow),transparent 68%);pointer-events:none}
+#top .brand h1{width:100%;margin:0;font-size:32px;line-height:1;letter-spacing:0;text-align:center}
+#top .brand h1:before{display:none}
+.brand-wordmark{display:block;width:100%;height:auto;max-width:100%;image-rendering:auto;filter:drop-shadow(0 2px 1px #102c2f80) drop-shadow(0 5px 9px #132c3526)}
+.brand-season-seal{position:relative;display:block;flex:none;width:26px;height:26px;margin:-5px 0 0;background:var(--brand-season-icon) center/contain no-repeat;filter:drop-shadow(0 1px 2px #102c2f66)}
+.brand-season-seal:before,.brand-season-seal:after{content:'';position:absolute;top:50%;width:60px;height:1px;opacity:.85}
+.brand-season-seal:before{right:calc(100% + 9px);background:linear-gradient(90deg,transparent,var(--brand-accent))}
+.brand-season-seal:after{left:calc(100% + 9px);background:linear-gradient(90deg,var(--brand-accent),transparent)}
+#top .brand .sub{display:block;margin:3px 0 0;color:#fff2d8;font-size:12px;font-weight:500;line-height:1.8;text-align:center;text-shadow:0 1px 3px #102d27,0 1px 7px #102d27bb}
+@media(max-width:600px){#top .brand{top:11px;width:340px;max-width:calc(100% - 30px);padding:0}#top .brand h1{font-size:28px}.brand-season-seal{width:22px;height:22px;margin-top:-3px}.brand-season-seal:before,.brand-season-seal:after{width:46px}#top .brand .sub{font-size:11px}}

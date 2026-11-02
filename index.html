@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>369Games</title>
+<meta name="description" content="369Games — idle games that keep going while you're away.">
+<meta property="og:title" content="369Games">
+<meta property="og:description" content="Idle games that keep going while you're away. Play UntoldLife free in your browser.">
+<meta property="og:image" content="img/untoldlife-cover.jpg">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<style>
+@font-face{font-family:Plex;src:url('untoldlife/assets/fonts/PlexArabic-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:Plex;src:url('untoldlife/assets/fonts/PlexArabic-SemiBold.ttf') format('truetype');font-weight:600 900;font-display:swap}
+:root{--bg:#14100c;--panel:#2a2119;--panel2:#33281d;--line:#57442f;--ink:#f2e5c4;--muted:#c6b08a;--gold:#e2bc6c;--gold2:#c9973f;--green:#a6bd70}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Plex,system-ui,'Segoe UI',Tahoma,'Microsoft YaHei','PingFang SC',sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+:root[lang=zh-Hans] body{font-family:Plex,'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif}
+a{color:inherit}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+/* top bar */
+.top{position:absolute;inset:0 0 auto 0;z-index:3}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:.5px;text-decoration:none;color:var(--ink)}
+.brand-mark{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(145deg,var(--gold),var(--gold2));color:#2a1d0e;font-size:14px;font-weight:900;letter-spacing:-.5px;box-shadow:0 2px 0 #0006}
+.lang{appearance:none;background:#00000066;color:var(--ink);border:1px solid #ffffff2a;border-radius:9px;padding:7px 12px;font:inherit;font-size:14px;cursor:pointer;backdrop-filter:blur(6px)}
+.lang option{background:var(--panel);color:var(--ink)}
+/* hero */
+.hero{position:relative;min-height:440px;display:flex;align-items:flex-end;background:#0b0d14 url('img/hero-night.jpg') center bottom/cover no-repeat;overflow:hidden}
+.hero:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#0b0d1499 0%,#14100c00 35%,#14100cdd 80%,var(--bg) 100%)}
+.hero .wrap{position:relative;z-index:2;padding-bottom:40px;width:100%}
+.hero h1{margin:0;font-size:clamp(34px,6vw,58px);line-height:1.15;font-weight:800;text-shadow:0 3px 18px #000a}
+.hero h1 span{color:var(--gold)}
+.hero p{margin:10px 0 0;max-width:560px;font-size:clamp(15px,2.2vw,18px);color:#eadbb8;text-shadow:0 2px 10px #000c}
+/* sections */
+section{padding:34px 0}
+h2{font-size:24px;margin:0 0 18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 6px 0 #0005}
+.cover{position:relative;aspect-ratio:16/8;background:#0d0a07 center/cover no-repeat;display:grid;place-items:center}
+.cover img.logo{width:78%;max-width:340px;filter:drop-shadow(0 6px 10px #0009)}
+.badge{position:absolute;top:10px;inset-inline-start:10px;background:#000000aa;border:1px solid var(--gold);color:var(--gold);font-size:12px;font-weight:700;padding:2px 10px;border-radius:99px}
+.body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.body h3{margin:0;font-size:21px}
+.body p{margin:0;color:var(--muted);font-size:15px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tags span{font-size:12px;border:1px solid var(--line);border-radius:99px;padding:1px 10px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:auto;padding:11px 18px;border-radius:10px;border:0;font:inherit;font-weight:800;font-size:16px;text-decoration:none;cursor:pointer;background:linear-gradient(180deg,#b9d07f,#86a24f);color:#1d250f;box-shadow:0 3px 0 #4f6229}
+.btn:hover{filter:brightness(1.07)}
+.btn:focus-visible,.lang:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.btn.gold{background:linear-gradient(180deg,var(--gold),var(--gold2));color:#2a1d0e;box-shadow:0 3px 0 #7a5a22}
+.soon .cover{font-size:58px}
+.soon .body .btn{background:#ffffff10;color:var(--muted);box-shadow:none;cursor:default}
+.kingdom{background:radial-gradient(circle at 50% 120%,#f4c96a 0,#a8742b 30%,#3b1f4f 75%)}
+.neon{background:linear-gradient(160deg,#0b0620 0%,#2b0b4a 45%,#09303f 100%);text-shadow:0 0 12px #ff2bd6,0 0 24px #00e5ff}
+.neon:after{content:'';position:absolute;inset:auto 0 0 0;height:45%;background:repeating-linear-gradient(90deg,#00e5ff22 0 1px,transparent 1px 28px),repeating-linear-gradient(0deg,#ff2bd622 0 1px,transparent 1px 18px);transform:perspective(200px) rotateX(55deg);transform-origin:bottom}
+.feedback{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px}
+.feedback h2{margin:0 0 4px}
+.feedback p{margin:0;color:var(--muted)}
+.feedback .btn{margin:0}
+footer{padding:26px 0 40px;color:#8f7b5c;font-size:13px;text-align:center}
+footer a{color:#b59d74}
+@media (max-width:600px){.hero{min-height:380px}.grid{grid-template-columns:1fr}section{padding:26px 0}}
+</style>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "d00635426d214e93938126001ce4a104"}'></script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="./"><span class="brand-mark">369</span>369Games</a>
+  <select class="lang" id="lang" aria-label="Language">
+    <option value="ar">العربية</option><option value="en">English</option><option value="es">Español</option>
+    <option value="pt">Português</option><option value="ru">Русский</option><option value="zh">简体中文</option>
+  </select>
+</div></header>
+
+<div class="hero"><div class="wrap">
+  <h1 data-t="heroTitle"></h1>
+  <p data-t="heroText"></p>
+</div></div>
+
+<main class="wrap">
+  <section>
+    <h2 data-t="gamesTitle"></h2>
+    <div class="grid">
+      <article class="card">
+        <div class="cover" style="background-image:url('img/untoldlife-cover.jpg')">
+          <span class="badge" data-t="beta"></span>
+          <img class="logo" src="img/untoldlife-logo.png" alt="UntoldLife">
+        </div>
+        <div class="body">
+          <h3>UntoldLife</h3>
+          <p data-t="ulText"></p>
+          <div class="tags"><span data-t="tag1"></span><span data-t="tag2"></span><span data-t="tag3"></span></div>
+          <a class="btn" href="untoldlife/" data-t="play"></a>
+        </div>
+      </article>
+      <article class="card soon">
+        <div class="cover kingdom" aria-hidden="true">👑</div>
+        <div class="body">
+          <h3 data-t="soon1Title"></h3>
+          <p data-t="soon1Text"></p>
+          <span class="btn" data-t="soon"></span>
+        </div>
+      </article>
+      <article class="card soon">
+        <div class="cover neon" aria-hidden="true">🌃</div>
+        <div class="body">
+          <h3 data-t="soon2Title"></h3>
+          <p data-t="soon2Text"></p>
+          <span class="btn" data-t="soon"></span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="fbSection" hidden>
+    <div class="feedback">
+      <div><h2 data-t="fbTitle"></h2><p data-t="fbText"></p></div>
+      <a class="btn gold" id="fbLink" target="_blank" rel="noopener" data-t="fbBtn"></a>
+    </div>
+  </section>
+</main>
+
+<footer>© <span id="year"></span> 369Games · <a href="about.html" data-t="about"></a> · <a href="privacy.html" data-t="privacy"></a></footer>
+
+<script>
+'use strict';
+const FEEDBACK_URL = '';
+const T = {
+  ar: { about: 'عن الاستديو', privacy: 'سياسة الخصوصية', heroTitle: 'ألعاب <span>idle</span> تكمل وأنت غايب', heroText: 'عوالم صغيرة تكبر حتى لو سكّرت الصفحة. ارجع ولقى مزرعتك ومملكتك وشارعك أكبر من ما تركتهم.',
+    gamesTitle: 'ألعابنا', beta: 'نسخة تجريبية', ulText: 'ورثت مزرعة جدك في وادي الصدى. ازرع، ربِّ الحيوانات، احفر المناجم، قاتل في الزنزانة، وسلّم المزرعة لأولادك جيلاً بعد جيل.',
+    tag1: 'مزرعة', tag2: 'أجيال', tag3: '6 لغات', play: '▶ العب الآن', soon: 'قريباً',
+    soon1Title: 'لعبة المملكة', soon1Text: 'أنت الملك. ابنِ المصانع، اجمع المواد الخام، وكبّر مملكتك من قرية صغيرة إلى إمبراطورية.',
+    soon2Title: 'لعبة مدينة النيون', soon2Text: 'مدينة نيون ما تنام. تبدأ من الشارع بلا شيء، وتشق طريقك للقمة.',
+    fbTitle: 'جربت ألعابنا؟', fbText: 'كل الألعاب تجريبية، وملاحظاتك تفرق. أي شيء عجبك أو ضايقك أو خرب، قل لنا.', fbBtn: '✍️ أرسل ملاحظاتك' },
+  en: { about: 'About us', privacy: 'Privacy policy', heroTitle: '<span>Idle</span> games that keep going while you\'re away', heroText: 'Small worlds that grow even when the tab is closed. Come back to a bigger farm, kingdom or street than you left.',
+    gamesTitle: 'Our games', beta: 'Beta', ulText: 'Inherit your grandfather\'s farm in Echo Valley. Grow crops, raise animals, dig the mines, fight in the dungeon, and pass the farm down from generation to generation.',
+    tag1: 'Farming', tag2: 'Generations', tag3: '6 languages', play: '▶ Play now', soon: 'Coming soon',
+    soon1Title: 'Kingdom game', soon1Text: 'You are the king. Build factories, gather raw materials, and grow your kingdom from a small village into an empire.',
+    soon2Title: 'Neon city game', soon2Text: 'A neon city that never sleeps. Start on the street with nothing and fight your way to the top.',
+    fbTitle: 'Played our games?', fbText: 'Everything here is in beta, and your feedback matters. Anything you liked, anything that annoyed you, anything that broke — tell us.', fbBtn: '✍️ Send feedback' },
+  es: { about: 'Sobre nosotros', privacy: 'Privacidad', heroTitle: 'Juegos <span>idle</span> que siguen mientras no estás', heroText: 'Pequeños mundos que crecen aunque cierres la pestaña. Vuelve y encuentra tu granja, tu reino o tu calle más grandes que antes.',
+    gamesTitle: 'Nuestros juegos', beta: 'Beta', ulText: 'Hereda la granja de tu abuelo en Valle del Eco. Cultiva, cría animales, excava minas, lucha en la mazmorra y deja la granja a tus hijos generación tras generación.',
+    tag1: 'Granja', tag2: 'Generaciones', tag3: '6 idiomas', play: '▶ Jugar ahora', soon: 'Próximamente',
+    soon1Title: 'Juego del reino', soon1Text: 'Eres el rey. Construye fábricas, reúne materias primas y convierte un pequeño pueblo en un imperio.',
+    soon2Title: 'Juego de la ciudad neón', soon2Text: 'Una ciudad de neón que nunca duerme. Empieza en la calle sin nada y abre tu camino hasta la cima.',
+    fbTitle: '¿Probaste nuestros juegos?', fbText: 'Todo está en beta y tu opinión cuenta. Lo que te gustó, lo que te molestó o lo que falló: cuéntanoslo.', fbBtn: '✍️ Enviar comentarios' },
+  pt: { about: 'Sobre nós', privacy: 'Privacidade', heroTitle: 'Jogos <span>idle</span> que continuam enquanto você está fora', heroText: 'Pequenos mundos que crescem mesmo com a aba fechada. Volte e encontre sua fazenda, seu reino ou sua rua maiores do que deixou.',
+    gamesTitle: 'Nossos jogos', beta: 'Beta', ulText: 'Herde a fazenda do seu avô no Vale do Eco. Plante, crie animais, cave minas, lute na masmorra e passe a fazenda para seus filhos, geração após geração.',
+    tag1: 'Fazenda', tag2: 'Gerações', tag3: '6 idiomas', play: '▶ Jogar agora', soon: 'Em breve',
+    soon1Title: 'Jogo do reino', soon1Text: 'Você é o rei. Construa fábricas, junte matérias-primas e transforme uma pequena vila em um império.',
+    soon2Title: 'Jogo da cidade neon', soon2Text: 'Uma cidade neon que nunca dorme. Comece na rua sem nada e abra caminho até o topo.',
+    fbTitle: 'Jogou nossos jogos?', fbText: 'Tudo aqui está em beta e sua opinião faz diferença. O que você curtiu, o que incomodou ou o que quebrou: conta pra gente.', fbBtn: '✍️ Enviar feedback' },
+  ru: { about: 'О студии', privacy: 'Конфиденциальность', heroTitle: '<span>Idle</span>-игры, которые идут, пока вас нет', heroText: 'Маленькие миры, которые растут, даже когда вкладка закрыта. Возвращайтесь — ферма, королевство или улица станут больше.',
+    gamesTitle: 'Наши игры', beta: 'Бета', ulText: 'Унаследуйте ферму деда в Долине Эха. Выращивайте урожай, разводите животных, копайте шахты, сражайтесь в подземелье и передавайте ферму детям из поколения в поколение.',
+    tag1: 'Ферма', tag2: 'Поколения', tag3: '6 языков', play: '▶ Играть', soon: 'Скоро',
+    soon1Title: 'Игра о королевстве', soon1Text: 'Вы — король. Стройте фабрики, добывайте сырьё и превратите маленькую деревню в империю.',
+    soon2Title: 'Игра о неоновом городе', soon2Text: 'Неоновый город, который никогда не спит. Начните с улицы без гроша и пробейтесь на вершину.',
+    fbTitle: 'Поиграли в наши игры?', fbText: 'Всё здесь в бете, и ваше мнение важно. Что понравилось, что раздражало, что сломалось — расскажите нам.', fbBtn: '✍️ Отправить отзыв' },
+  zh: { about: '关于我们', privacy: '隐私政策', heroTitle: '你不在时也在运转的<span>放置</span>游戏', heroText: '即使关掉页面也会继续成长的小世界。回来时，你的农场、王国和街区都比离开时更大。',
+    gamesTitle: '我们的游戏', beta: '测试版', ulText: '继承爷爷在回声谷的农场。种植作物、饲养动物、挖掘矿井、闯荡地牢，把农场一代代传下去。',
+    tag1: '农场', tag2: '世代传承', tag3: '6 种语言', play: '▶ 立即开玩', soon: '即将推出',
+    soon1Title: '王国游戏', soon1Text: '你就是国王。建造工厂，收集原料，把小村庄发展成一个帝国。',
+    soon2Title: '霓虹城市游戏', soon2Text: '一座永不入眠的霓虹之城。从街头一无所有开始，一路打拼到顶端。',
+    fbTitle: '玩过我们的游戏了吗？', fbText: '这里的一切都还是测试版，你的反馈很重要。喜欢什么、哪里不爽、哪里出错了，都告诉我们吧。', fbBtn: '✍️ 发送反馈' },
+};
+const KEY = 'untoldlife_lang'; // shared with the games, so the choice carries over
+function getLang() {
+  try { const v = localStorage.getItem(KEY); if (v && T[v]) return v; } catch (e) {}
+  return 'ar'; // same default as the games
+}
+function apply(lang) {
+  const d = T[lang];
+  document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : lang === 'pt' ? 'pt-BR' : lang;
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-t]').forEach(el => { el.innerHTML = d[el.dataset.t]; });
+  document.getElementById('lang').value = lang;
+}
+const sel = document.getElementById('lang');
+sel.addEventListener('change', () => { try { localStorage.setItem(KEY, sel.value); } catch (e) {} apply(sel.value); });
+if (FEEDBACK_URL && !FEEDBACK_URL.startsWith('__')) {
+  document.getElementById('fbLink').href = FEEDBACK_URL;
+  document.getElementById('fbSection').hidden = false;
+}
+document.getElementById('year').textContent = new Date().getFullYear();
+apply(getLang());
+</script>
+</body>
+</html>

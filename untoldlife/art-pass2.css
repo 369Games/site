@@ -1,0 +1,15 @@
+/* Shared medal frames are code-native so bronze/silver/gold stay consistent. */
+.achievement-medal{--metal-top:#ecc59c;--metal-mid:#a96032;--metal-edge:#704124;display:inline-flex;position:relative;isolation:isolate;align-items:center;justify-content:center;flex:none;width:var(--medal-size,32px);height:var(--medal-size,32px);border:2px solid var(--metal-edge);border-radius:50%;background:linear-gradient(145deg,var(--metal-top),var(--metal-mid) 57%,var(--metal-edge));box-shadow:inset 0 0 0 1px #fff7,inset 0 0 0 4px #35241d38,0 2px 3px #110a0650;vertical-align:middle}
+.achievement-medal.metal-silver{--metal-top:#f5f6ee;--metal-mid:#a1b4c3;--metal-edge:#526a7c}
+.achievement-medal.metal-gold{--metal-top:#fff1a6;--metal-mid:#dcae4a;--metal-edge:#96702b}
+.achievement-medal>img.rich-icon,.ach .achievement-medal>img.rich-icon{display:block;width:72%;height:72%;margin:0;filter:drop-shadow(0 1px 1px #251a0d55)}
+.ach:not(.got) .achievement-medal{filter:grayscale(1) brightness(.24);opacity:.9}
+.tool-native{filter:drop-shadow(0 2px 2px #0002)}
+.rich-icon.tier-1{filter:sepia(1) saturate(2.7) hue-rotate(-17deg) brightness(.9)!important}
+.image-emoji-fallback{display:inline-flex;align-items:center;justify-content:center;font-size:24px;line-height:1;vertical-align:middle;flex:none}
+.page-scene{width:100%;aspect-ratio:1600/220;max-height:180px;overflow:hidden;border:1px solid var(--wood-line);border-radius:10px;margin-bottom:20px;box-shadow:0 3px 0 var(--frame-shadow);background:var(--soft)}
+.page-scene-art{display:block;width:100%;height:100%;object-fit:cover;transition:filter 1s}
+body:has(#top[data-phase=night]) .page-scene-art{filter:brightness(.48) saturate(.72)}
+body:has(#top[data-phase=dusk]) .page-scene-art,body:has(#top[data-phase=dawn]) .page-scene-art{filter:brightness(.77) sepia(.14)}
+@media(max-width:600px){.page-scene{aspect-ratio:4/1;margin-bottom:16px}.page-scene-art{object-fit:cover}}
+@media(prefers-reduced-motion:reduce){.page-scene-art{transition:none}}

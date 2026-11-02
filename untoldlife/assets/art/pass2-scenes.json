@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "description": "Independent opaque scene banners; night appearance handled by CSS. High-resolution masters never loaded by gameplay.",
+  "assets": [
+    {
+      "key": "scene-farm",
+      "file": "art/pass2/scenes/farm.webp",
+      "width": 1600,
+      "height": 220,
+      "bytes": 148778,
+      "quality": 78,
+      "master": ".art-originals/art-pass2/scenes/farm.png",
+      "prompt": "Use case: stylized-concept. Asset type: ONE original painted SCENE BANNER for UntoldLife, a premium cozy fantasy farming RPG. The attached valley image is STYLE REFERENCE ONLY: match its rich handcrafted painterly pixel textures, fine purposeful clusters, warm natural palette, consistent top-left light, whimsical believable wood/stone details. Do not copy the valley layout. Create a finished opaque environmental illustration with NO text or user interface, no watermark, no frame, no logos, no labels or readable writing. Very wide SHORT horizontal panoramic banner, approximately 1600×220 proportion (7.3:1). Frame the scene as a narrow ribbon; essential props and defining motif must remain within the CENTRAL horizontal third of the image height so that cropping to a short 1600×220 strip retains them. Low quiet perspective, broad side-to-side staging, detailed objects across the width, avoid tall subjects extending beyond the ribbon. Fully painted background, no transparency, no blank areas. Daylight atmosphere with warm practical lantern/furnace accents where appropriate. ONE scene only, no contact sheet, grid, split screen or multiple panels. A lush field edge beside a cozy farm, healthy green crop rows with little flowers and tilled earth, a charming rustic scarecrow in straw hat beside a low weathered wooden fence, old watering can and seed crate, distant soft countryside greenery. The scarecrow torso and hat lie in the central ribbon, crop rows and fence spread horizontally.",
+      "generatedBy": "built-in image_gen.imagegen",
+      "sha256": "aa1a9ab03d949547c97f28098f0dd6eec73d8203616386bad6d89dc17e116383"
+    },
+    {
+      "key": "scene-barn",
+      "file": "art/pass2/scenes/barn.webp",
+      "width": 1600,
+      "height": 220,
+      "bytes": 136034,
+      "quality": 84,
+      "master": ".art-originals/art-pass2/scenes/barn.png",
+      "prompt": "Use case: stylized-concept. Asset type: ONE original painted SCENE BANNER for UntoldLife, a premium cozy fantasy farming RPG. The attached valley image is STYLE REFERENCE ONLY: match its rich handcrafted painterly pixel textures, fine purposeful clusters, warm natural palette, consistent top-left light, whimsical believable wood/stone details. Do not copy the valley layout. Create a finished opaque environmental illustration with NO text or user interface, no watermark, no frame, no logos, no labels or readable writing. Very wide SHORT horizontal panoramic banner, approximately 1600×220 proportion (7.3:1). Frame the scene as a narrow ribbon; essential props and defining motif must remain within the CENTRAL horizontal third of the image height so that cropping to a short 1600×220 strip retains them. Low quiet perspective, broad side-to-side staging, detailed objects across the width, avoid tall subjects extending beyond the ribbon. Fully painted background, no transparency, no blank areas. Daylight atmosphere with warm practical lantern/furnace accents where appropriate. ONE scene only, no contact sheet, grid, split screen or multiple panels. The welcoming interior of a timber barn, golden hay bales stacked low, wooden stable stalls, soft sunbeams from a small upper window, old iron hinges, a pitchfork leaning to one side and a feed bucket. Cozy warm amber straw and russet wood, no visible animals or characters required.",
+      "generatedBy": "built-in image_gen.imagegen",
+      "sha256": "52f18c7653b62e1fa416470060f7d8276fcfb132e7f30a5e37e64ac4439c8fbc"
+    },
+    {
+      "key": "scene-mine",
+      "file": "art/pass2/scenes/mine.webp",
+      "width": 1600,
+      "height": 220,
+      "bytes": 132506,
+      "quality": 78,
+      "master": ".art-originals/art-pass2/scenes/mine.png",
+      "prompt": "Use case: stylized-concept. Asset type: ONE original painted SCENE BANNER for UntoldLife, a premium cozy fantasy farming RPG. The attached valley image is STYLE REFERENCE ONLY: match its rich handcrafted painterly pixel textures, fine purposeful clusters, warm natural palette, consistent top-left light, whimsical believable wood/stone details. Do not copy the valley layout. Create a finished opaque environmental illustration with NO text or user interface, no watermark, no frame, no logos, no labels or readable writing. Very wide SHORT horizontal panoramic banner, approximately 1600×220 proportion (7.3:1). Frame the scene as a narrow ribbon; essential props and defining motif must remain within the CENTRAL horizontal third of the image height so that cropping to a short 1600×220 strip retains them. Low quiet perspective, broad side-to-side staging, detailed objects across the width, avoid tall subjects extending beyond the ribbon. Fully painted background, no transparency, no blank areas. Daylight atmosphere with warm practical lantern/furnace accents where appropriate. ONE scene only, no contact sheet, grid, split screen or multiple panels. A rocky cave mouth with old wooden mine supports, two narrow iron mine-cart rails leading into cool shadow, a glowing brass lantern hanging low beside the entrance, scattered grey and copper-flecked stones and a small wooden ore cart at one side. Earthy brown stone, muted grey-blue interior, readable central mine entrance.",
+      "generatedBy": "built-in image_gen.imagegen",
+      "sha256": "2008034c943b93cc7591c5cf16793c479fed3e0d729874c70214ae2280d958e3"
+    },
+    {
+      "key": "scene-lake",
+      "file": "art/pass2/scenes/lake.webp",
+      "width": 1600,
+      "height": 220,
+      "bytes": 143186,
+      "quality": 78,
+      "master": ".art-originals/art-pass2/scenes/lake.png",
+      "prompt": "Use case: stylized-concept. Asset type: ONE original painted SCENE BANNER for UntoldLife, a premium cozy fantasy farming RPG. The attached valley image is STYLE REFERENCE ONLY: match its rich handcrafted painterly pixel textures, fine purposeful clusters, warm natural palette, consistent top-left light, whimsical believable wood/stone details. Do not copy the valley layout. Create a finished opaque environmental illustration with NO text or user interface, no watermark, no frame, no logos, no labels or readable writing. Very wide SHORT horizontal panoramic banner, approximately 1600×220 proportion (7.3:1). Frame the scene as a narrow ribbon; essential props and defining motif must remain within the CENTRAL horizontal third of the image height so that cropping to a short 1600×220 strip retains them. Low quiet perspective, broad side-to-side staging, detailed objects across the width, avoid tall subjects extending beyond the ribbon. Fully painted background, no transparency, no blank areas. Daylight atmosphere with warm practical lantern/furnace accents where appropriate. ONE scene only, no contact sheet, grid, split screen or multiple panels. A peaceful wooden pier running along a clear blue-green lake at the shore, weathered planks, coiled rope and a small fishing basket on the pier, gentle water ripples and reeds, soft reflected sky with a distant tree-lined opposite bank. Cozy waterside mood, no people, no oversized boat.",
+      "generatedBy": "built-in image_gen.imagegen",
+      "sha256": "cbb0d39c9b9b19f4c4b0ab92b4dc9a28aa48455c4476c22856d232b24af62f56"
+    },
+    {
+      "key": "scene-guild",
+      "file": "art/pass2/scenes/guild.webp",
+      "width": 1600,
+      "height": 220,
+      "bytes": 129116,
+      "quality": 84,
+      "master": ".art-originals/art-pass2/scenes/guild.png",
+      "prompt": "Use case: stylized-concept. Asset type: ONE original painted SCENE BANNER for UntoldLife, a premium cozy fantasy farming RPG. The attached valley image is STYLE REFERENCE ONLY: match its rich handcrafted painterly pixel textures, fine purposeful clusters, warm natural palette, consistent top-left light, whimsical believable wood/stone details. Do not copy the valley layout. Create a finished opaque environmental illustration with NO text or user interface, no watermark, no frame, no logos, no labels or readable writing. Very wide SHORT horizontal panoramic banner, approximately 1600×220 proportion (7.3:1). Frame the scene as a narrow ribbon; essential props and defining motif must remain within the CENTRAL horizontal third of the image height so that cropping to a short 1600×220 strip retains them. Low quiet perspective, broad side-to-side staging, detailed objects across the width, avoid tall subjects extending beyond the ribbon. Fully painted background, no transparency, no blank areas. Daylight atmosphere with warm practical lantern/furnace accents where appropriate. ONE scene only, no contact sheet, grid, split screen or multiple panels. A cozy tavern-style adventurers guild hall, stout wooden beams and stone wall, a broad quest board with pinned blank parchment notices and a few tiny painted map shapes, warm lanterns at both sides, a long wooden bench with a rolled travel map and a leather satchel. No readable text or letters on the board.",
+      "generatedBy": "built-in image_gen.imagegen",
+      "sha256": "bfa2337a36b8e448f0c9c49506f8eeeb49e73009cac2e0b84de27b1cf450418c"
+    },
+    {
+      "key": "scene-smith",
+      "file": "art/pass2/scenes/smith.webp",
+      "width": 1600,
+      "height": 220,
+      "bytes": 135754,
+      "quality": 84,
+      "master": ".art-originals/art-pass2/scenes/smith.png",
+      "prompt": "Use case: stylized-concept. Asset type: ONE original painted SCENE BANNER for UntoldLife, a premium cozy fantasy farming RPG. The attached valley image is STYLE REFERENCE ONLY: match its rich handcrafted painterly pixel textures, fine purposeful clusters, warm natural palette, consistent top-left light, whimsical believable wood/stone details. Do not copy the valley layout. Create a finished opaque environmental illustration with NO text or user interface, no watermark, no frame, no logos, no labels or readable writing. Very wide SHORT horizontal panoramic banner, approximately 1600×220 proportion (7.3:1). Frame the scene as a narrow ribbon; essential props and defining motif must remain within the CENTRAL horizontal third of the image height so that cropping to a short 1600×220 strip retains them. Low quiet perspective, broad side-to-side staging, detailed objects across the width, avoid tall subjects extending beyond the ribbon. Fully painted background, no transparency, no blank areas. Daylight atmosphere with warm practical lantern/furnace accents where appropriate. ONE scene only, no contact sheet, grid, split screen or multiple panels. A village blacksmith forge interior, dark stone furnace glowing warmly orange with coals, a sturdy iron anvil in the middle ribbon, smith hammer and iron tongs, iron ingots and a small water trough, brown timber shelves and practical tools. Warm forge light balanced with top-left daylight; no smith character, no monsters or demons.",
+      "generatedBy": "built-in image_gen.imagegen",
+      "sha256": "e5fff87c2a6b22a940d1077bee204866b5ffbe18bd392a1660e25a5fea6f0dc4"
+    },
+    {
+      "key": "scene-market",
+      "file": "art/pass2/scenes/market.webp",
+      "width": 1600,
+      "height": 220,
+      "bytes": 148804,
+      "quality": 78,
+      "master": ".art-originals/art-pass2/scenes/market.png",
+      "prompt": "Use case: stylized-concept. Asset type: ONE original painted SCENE BANNER for UntoldLife, a premium cozy fantasy farming RPG. The attached valley image is STYLE REFERENCE ONLY: match its rich handcrafted painterly pixel textures, fine purposeful clusters, warm natural palette, consistent top-left light, whimsical believable wood/stone details. Do not copy the valley layout. Create a finished opaque environmental illustration with NO text or user interface, no watermark, no frame, no logos, no labels or readable writing. Very wide SHORT horizontal panoramic banner, approximately 1600×220 proportion (7.3:1). Frame the scene as a narrow ribbon; essential props and defining motif must remain within the CENTRAL horizontal third of the image height so that cropping to a short 1600×220 strip retains them. Low quiet perspective, broad side-to-side staging, detailed objects across the width, avoid tall subjects extending beyond the ribbon. Fully painted background, no transparency, no blank areas. Daylight atmosphere with warm practical lantern/furnace accents where appropriate. ONE scene only, no contact sheet, grid, split screen or multiple panels. A lively but unpeopled village market row, low wooden stalls under striped muted red/cream and sage canvas awnings, baskets of colorful produce, sacks of grain, tiny jars and wooden crates, warm cobblestone lane. All main stall counters and produce lie along the central narrow ribbon, no signs or price numbers.",
+      "generatedBy": "built-in image_gen.imagegen",
+      "sha256": "313244a7dbf6224bc3cccc6b24b0c8e6a95f81e3de5b3f6c73ea1c0495d18588"
+    },
+    {
+      "key": "scene-village",
+      "file": "art/pass2/scenes/village.webp",
+      "width": 1600,
+      "height": 220,
+      "bytes": 138020,
+      "quality": 72,
+      "master": ".art-originals/art-pass2/scenes/village.png",
+      "prompt": "Use case: stylized-concept. Asset type: ONE original painted SCENE BANNER for UntoldLife, a premium cozy fantasy farming RPG. The attached valley image is STYLE REFERENCE ONLY: match its rich handcrafted painterly pixel textures, fine purposeful clusters, warm natural palette, consistent top-left light, whimsical believable wood/stone details. Do not copy the valley layout. Create a finished opaque environmental illustration with NO text or user interface, no watermark, no frame, no logos, no labels or readable writing. Very wide SHORT horizontal panoramic banner, approximately 1600×220 proportion (7.3:1). Frame the scene as a narrow ribbon; essential props and defining motif must remain within the CENTRAL horizontal third of the image height so that cropping to a short 1600×220 strip retains them. Low quiet perspective, broad side-to-side staging, detailed objects across the width, avoid tall subjects extending beyond the ribbon. Fully painted background, no transparency, no blank areas. Daylight atmosphere with warm practical lantern/furnace accents where appropriate. ONE scene only, no contact sheet, grid, split screen or multiple panels. A charming fantasy rural town square with a small stone fountain as the central motif, gentle sparkling water, curved worn cobblestones, flowers in clay pots, benches and cozy shop fronts in the background, cottage stone and warm timber details, no people and no readable shop signs.",
+      "generatedBy": "built-in image_gen.imagegen",
+      "sha256": "0ee77e32480b462b223d44f981cfdb6122a0fa6ecfeb29d897caa092bc1444b1"
+    },
+    {
+      "key": "scene-legacy",
+      "file": "art/pass2/scenes/legacy.webp",
+      "width": 1600,
+      "height": 220,
+      "bytes": 134078,
+      "quality": 84,
+      "master": ".art-originals/art-pass2/scenes/legacy.png",
+      "prompt": "Use case: stylized-concept. Asset type: ONE original painted SCENE BANNER for UntoldLife, a premium cozy fantasy farming RPG. The attached valley image is STYLE REFERENCE ONLY: match its rich handcrafted painterly pixel textures, fine purposeful clusters, warm natural palette, consistent top-left light, whimsical believable wood/stone details. Do not copy the valley layout. Create a finished opaque environmental illustration with NO text or user interface, no watermark, no frame, no logos, no labels or readable writing. Very wide SHORT horizontal panoramic banner, approximately 1600×220 proportion (7.3:1). Frame the scene as a narrow ribbon; essential props and defining motif must remain within the CENTRAL horizontal third of the image height so that cropping to a short 1600×220 strip retains them. Low quiet perspective, broad side-to-side staging, detailed objects across the width, avoid tall subjects extending beyond the ribbon. Fully painted background, no transparency, no blank areas. Daylight atmosphere with warm practical lantern/furnace accents where appropriate. ONE scene only, no contact sheet, grid, split screen or multiple panels. An intimate old family farmhouse wall with several small framed ancestral portrait paintings, a sturdy mantel shelf with a brass pocket watch and an old leather diary, a tiny oak family-tree carving and a warm lantern, aged walnut wood and cream plaster. Quiet cherished generational history mood. Paintings are original small indistinct family busts, no specific real people, no names or text.",
+      "generatedBy": "built-in image_gen.imagegen",
+      "sha256": "cfd7ed8c08e460ea485464a1e77d2934e92e86a51e6909dfd53669ebbaf60411"
+    }
+  ]
+}

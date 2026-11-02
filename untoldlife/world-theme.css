@@ -1,0 +1,190 @@
+/* Earth, foliage, timber and parchment continue the illustrated valley below the sky. */
+:root{
+ --bg:#a8af8c;--paper:#e7dfbd;--paper2:#ddd5ad;--soft:#dcd8b8;--ink:#303d2b;--muted:#606b47;
+ --line:#adb28a;--green:#536e3b;--green2:#3c562c;--gold:#b38b46;--wood:#685439;--blue:#4d7e87;
+ --barbg:#c2c6a0;--selbg:#c7d49e;--selring:#7c9255;--good:#405e2e;--warn:#825b25;--orebg:#cdd3b2;
+ --letter:#e9dbb5;--panel-grain:#7f6b3d08;--wood-line:#8b7651;--frame-shadow:#4c513629;
+}
+:root[data-theme=dark]{
+ /* Night mode: a warm farmhouse at night — dark walnut, lantern gold, parchment text. */
+ --bg:#14100c;--paper:#2a2119;--paper2:#33281d;--soft:#211912;--ink:#f2e5c4;--muted:#c6b08a;
+ --line:#57442f;--green:#a6bd70;--green2:#76904c;--gold:#e2bc6c;--wood:#6b5236;--blue:#82abb4;
+ --barbg:#1c150f;--selbg:#4b3923;--selring:#d1a75a;--good:#cfe09c;--warn:#efc480;--orebg:#3a2c1f;
+ --letter:#e8d6aa;--panel-grain:#e9cf9a08;--wood-line:#8e6f45;--frame-shadow:#0a060345;
+}
+:root[data-theme=dark] body{background:radial-gradient(ellipse at 50% 0,#e0a65a12,transparent 65%),repeating-linear-gradient(120deg,transparent 0 7px,#c8a36a05 7px 8px),var(--bg)}
+:root[data-theme=dark] #side,:root[data-theme=dark] .panel{background-image:repeating-linear-gradient(0deg,transparent 0 4px,var(--panel-grain) 4px 5px),linear-gradient(135deg,#f3c97a0d,transparent 65%)}
+:root[data-theme=dark] .plots{background-color:#2c3a24!important;border-color:#7a6542!important;box-shadow:inset 0 0 0 2px #1f2a19,0 2px 0 #0004}
+:root[data-theme=dark] #tabs button.on{background:linear-gradient(180deg,#8a6a3c,#6c5230);color:#fff0c8}
+:root[data-theme=dark] .btn.blue{background:linear-gradient(#5f8a92,#4a7179)}
+body{background:radial-gradient(ellipse at 50% 0,#81965c18,transparent 70%),repeating-linear-gradient(120deg,transparent 0 7px,#85946a04 7px 8px),var(--bg);transition:background-color .6s,color .3s}
+#top{min-height:clamp(300px,24vw,460px);padding-bottom:102px;border-bottom:4px solid var(--wood);box-shadow:0 2px 0 #baa16a55}
+#top .sky{z-index:0;background:#82b4c5;isolation:isolate}
+#top .sky:before{display:none!important}
+.world-sky-decor{position:absolute;inset:0;z-index:2;pointer-events:none;-webkit-mask-image:var(--horizon-mask);mask-image:var(--horizon-mask);-webkit-mask-size:100% 140%;mask-size:100% 140%;-webkit-mask-position:center bottom;mask-position:center bottom;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;mask-mode:alpha}
+#top:after{z-index:1;background:linear-gradient(0deg,#203b2533,transparent 30%);pointer-events:none}
+.world-land{position:absolute;inset:0;background-position:center bottom;background-size:100% 140%;background-repeat:no-repeat;pointer-events:none;z-index:3;filter:brightness(var(--terrain-light,1)) var(--terrain-season,saturate(1));will-change:opacity;transition:opacity .6s linear,filter 1.5s}
+.world-land-day{background-image:url('assets/art/terrain-day.png');opacity:calc(1 - var(--night-mix,0))}
+.world-land-night{background-image:url('assets/art/terrain-night.png');opacity:var(--night-mix,0)}
+#top[data-phase=dawn] .world-land-day,#top[data-phase=dusk] .world-land-day{filter:brightness(var(--terrain-light,1)) var(--terrain-season,saturate(1)) sepia(.2) saturate(1.1)}
+#top .stars{z-index:1;transition:opacity .6s}.stars i{width:2px;height:2px;box-shadow:0 0 4px #f5eac288}
+#top .sun,#top .moon{z-index:2;position:absolute;display:block;transform:translate(50%,-50%);transition:right .2s linear,top .2s linear,opacity .8s;filter:none;border:0;border-radius:50%;rotate:0deg!important}
+#top .sun{width:100px;height:100px;background:none;box-shadow:none;animation:none}
+#top .sun:before{content:'';position:absolute;inset:0;background:url('assets/art/sky/sun.png') center/contain no-repeat;animation:solar-breath 9s ease-in-out infinite;filter:drop-shadow(0 0 9px #ffdf8a33)}
+#top[data-phase=dawn] .sun:before,#top[data-phase=dusk] .sun:before{filter:sepia(.18) saturate(1.3) hue-rotate(-10deg) drop-shadow(0 0 12px #f3bd7333)}
+#top .moon{width:88px;height:88px;background:none;box-shadow:none}
+#top .moon:before{content:'';position:absolute;inset:0;background:url('assets/art/sky/moon.png') center/contain no-repeat;filter:drop-shadow(0 0 8px #d7e6df26)}
+#top .moon:after{content:'';position:absolute;inset:23%;border-radius:50%;box-shadow:inset calc(-.23 * var(--moon-shadow,8px)) 0 5px #16264066;pointer-events:none}
+.world-clouds{position:absolute;inset:0;overflow:hidden;z-index:2;pointer-events:none;opacity:var(--cloud-opacity,1);filter:brightness(var(--cloud-light,1));transition:opacity 1.5s,filter 1.5s}
+.world-cloud{position:absolute;left:var(--cloud-x);top:var(--cloud-y);width:clamp(130px,12vw,280px);height:auto;max-width:none;object-fit:contain;transform:scale(var(--cloud-scale,1));transform-origin:center;image-rendering:auto;filter:drop-shadow(0 3px 3px #385b6e12);animation:cloud-drift var(--cloud-duration,140s) linear var(--cloud-delay,0s) infinite alternate;will-change:transform}
+.world-cloud.cloud-wispy{width:clamp(170px,17vw,380px)}.world-cloud.cloud-storm{width:clamp(190px,17vw,390px)}
+#top[data-phase=dusk] .world-clouds,#top[data-phase=dawn] .world-clouds{filter:brightness(var(--cloud-light,1)) sepia(.12)}
+#top #weatherCanvas{z-index:5}
+#top .brand{z-index:6;display:inline-block;padding:14px 20px;border:1px solid #dfcc9655;border-radius:10px;background:#233c2d99;box-shadow:0 4px 20px #17302322;backdrop-filter:blur(6px)}
+#top .brand h1{font-size:36px;color:#fff0c8}.brand .sub{color:#e5e7ce}
+#top .hud{z-index:6;background:linear-gradient(180deg,#5c4a32ee,#40321fef);border-color:#a899675c;box-shadow:0 3px 0 #1a302a44,inset 0 1px 0 #f6e3ab16;backdrop-filter:blur(10px);border-radius:9px}
+#top[data-phase=night] .hud{background:linear-gradient(180deg,#2f2a33ee,#1f1b22f0)}
+#hPhase{color:#f2d89c;font-weight:600}.chip.gold{color:#f5d68d}.chip .ui-icon{color:#d4ddba}
+#tabs{background:linear-gradient(180deg,#756447,#5c4e37);border:1px solid #9c885e;border-radius:10px;box-shadow:inset 0 1px 0 #e8d6a422,0 3px 0 var(--frame-shadow);padding:6px;margin-top:0}
+#tabs button{color:#e5dfc4;border-radius:6px;font-weight:600}#tabs button:hover{background:#b0a47728;color:#fff0c8}
+#tabs button.on{background:linear-gradient(180deg,#5e7040,#4a6034);color:#f2e9b9;box-shadow:inset 0 1px 0 #d9d9a828}
+#tabs button.on:after{background:#e3c17a;height:2px;right:24%;left:24%}#tabs .badge{background:#d8be7c;color:#364a28}
+.nav-emblem{background:#d9cea419;border-color:#d5c49a39;border-radius:8px;box-shadow:inset 0 1px 0 #f0dcaa17}
+#tabs button.on .nav-emblem{border-color:#c1c28c88;background:#dfe6b626}
+.panel,#side{background-color:var(--paper);background-image:repeating-linear-gradient(0deg,transparent 0 4px,var(--panel-grain) 4px 5px),linear-gradient(135deg,#f3e3a411,transparent 65%);border:1px solid var(--wood-line);border-radius:10px;box-shadow:inset 0 0 0 3px var(--paper2),0 3px 0 var(--frame-shadow)}
+.panel{padding:24px}.ph{border-bottom:1px solid var(--line);padding-bottom:16px}.ph h2{color:var(--ink)}
+.card,.seed,.quest,.it,.ore,.bf,.retirebox,.hp,.ach,.zonebox,.farm-help,.duninfo{background-color:var(--paper2);background-image:linear-gradient(135deg,#f5df9b0b,transparent 80%);border-color:var(--line);border-radius:8px;box-shadow:inset 0 1px 0 #f2e5b516}
+.farm-help,.zonebox,.duninfo{background-color:var(--soft)}
+.btn,.tog{border-radius:6px;border-color:#40523033;box-shadow:inset 0 1px 0 #e9ebaf22,0 2px 0 #263d2733}
+.btn.gold{background:linear-gradient(#cba75f,#b8944f);border-color:#9b7b43;color:#352b18;box-shadow:inset 0 1px 0 #ffedb344,0 2px 0 #67512c33}
+.btn.blue{background:linear-gradient(#69979c,#527d83);border-color:#44696d}.btn.ghost{background:var(--soft);border-color:var(--line);box-shadow:inset 0 1px 0 #f0e3ac15}
+.tog.on{background:var(--selbg);border-color:var(--selring)}
+.season-picker{border-color:var(--line);background:var(--soft);border-radius:8px;box-shadow:inset 0 1px 3px #35472310}.season-picker button{border-radius:5px}.season-picker button.active{background:var(--selbg);color:var(--ink);box-shadow:0 1px 0 var(--selring)}
+.seed{border-bottom-width:3px}.seed.sel{background-color:var(--selbg);border-color:var(--selring);box-shadow:inset 0 1px 0 #edecc144}.seed:disabled{background:var(--soft)}
+.plots{background-color:#4e6538;background-image:radial-gradient(ellipse at 30% 0,#a7b9661c,transparent 70%),repeating-linear-gradient(105deg,transparent 0 19px,#b4c6750a 19px 21px);border:3px solid #8b7b4b;border-radius:9px;box-shadow:inset 0 0 0 2px #344e2c,0 2px 0 #34482333}
+.plot{background-color:#96744a;border-color:#c2a36c66;background-image:repeating-linear-gradient(0deg,transparent 0 14px,#68482133 14px 16px),radial-gradient(ellipse at 50% 0,#d5ab6630,transparent);box-shadow:inset 0 2px 0 #edce8e22,inset 0 -3px 0 #4d392833;border-radius:6px}
+.plot.wet{background-color:#665239;border-color:#93846855;background-image:repeating-linear-gradient(0deg,transparent 0 14px,#382f2433 14px 16px),radial-gradient(ellipse at 50% 0,#a5b68b17,transparent)}
+.plot.empty{background-color:#a17e4e;border-color:#bda06a88}.plot.ready{background-color:#9b7946;border-color:#e3cb85;box-shadow:inset 0 0 20px #ecd07716}
+.plot .pt{color:#fff0cb;text-shadow:0 1px 2px #3d302155}.plot.ready .pt{color:#fff3bd}.plot .bar{background:#423d2a66}.plot .bar i{background:#c1d48a}
+:root[data-theme=dark] .plots{background-color:#304a2b;border-color:#7b7349}
+:root[data-theme=dark] .plot{background-color:#725733;border-color:#a38b5877}:root[data-theme=dark] .plot.wet{background-color:#4d4230;border-color:#70664b88}:root[data-theme=dark] .plot.ready{background-color:#7e6338;border-color:#ceba77}
+.stabs{background:var(--paper)}.stab.on{background:var(--selbg);color:var(--good)}#log li{border-bottom-color:var(--line)}
+.say{background:var(--soft);border-color:var(--line);border-radius:7px}.say:before{background:var(--soft);border-color:var(--line)}.stat{background:var(--soft);border-color:var(--line);border-radius:5px}.bar{box-shadow:inset 0 1px 2px #35462115}
+.mbox{border:2px solid var(--wood-line);border-radius:12px;background:var(--paper);box-shadow:inset 0 0 0 4px var(--paper2),0 24px 80px #0d210e55}.letter{background:var(--letter);border-color:#b8a47777;border-radius:5px}
+@keyframes solar-breath{50%{opacity:.88;transform:scale(1.025)}}
+@keyframes cloud-drift{from{transform:translateX(-55px) scale(var(--cloud-scale,1))}to{transform:translateX(90px) scale(var(--cloud-scale,1))}}
+@media(max-width:960px){.panel{padding:20px}.world-land{background-size:auto 100%}.world-sky-decor{-webkit-mask-size:auto 100%;mask-size:auto 100%}}
+@media(max-width:600px){#top{min-height:310px;padding-top:22px;padding-bottom:126px}#top .brand{padding:11px 15px}#top .brand h1{font-size:31px}.world-land{background-size:auto 100%;background-position:20% bottom}#top .sun{width:76px;height:76px}#top .moon{width:68px;height:68px}#top .hud{bottom:16px}#hPhase{font-size:11px}.panel{padding:18px 14px}.plots{padding:10px;gap:8px}.nav-emblem{border-radius:7px}#tabs{border-radius:8px}.world-cloud{width:145px}.world-cloud.cloud-wispy{width:190px}.world-cloud.cloud-storm{width:200px}.world-cloud:nth-child(n+5){display:none}}
+@media(prefers-reduced-motion:reduce){.world-land,#top .sun,#top .moon,.stars,.world-cloud,.world-clouds{animation:none!important;transition:none!important}.world-cloud{transform:scale(var(--cloud-scale,1))}.sun:before{animation:none!important}}
+@media(max-width:600px){.world-sky-decor{-webkit-mask-position:20% bottom;mask-position:20% bottom}}
+/* Actual standalone cutouts replace guessed sprite-sheet background windows. */
+img.isolated-icon{background-image:none!important;clip-path:none!important;object-fit:contain}
+/* Seasonal symbols have their own illustrated assets, separate from weather icons. */
+.season-art{width:var(--icon-size,28px);height:var(--icon-size,28px);flex-shrink:0;image-rendering:auto}
+#hDate .season-art{width:30px;height:30px;vertical-align:middle;margin-inline-end:3px}
+.season-picker .season-art{width:28px;height:28px}
+/* The four-point star lives inside the legacy crown; other star icons keep their roles. */
+.nav-legacy{border-color:#d6bb7659;background:#c8ac6320}
+.legacy-heading h2{display:flex;align-items:center;gap:10px}
+#view[data-view=legacy] .legacy-heading h2>.legacy-tree-art{width:56px;height:56px;margin:0}
+.starchip{display:inline-flex;align-items:center;gap:6px;color:var(--gold);font-weight:600}
+.starchip .legacy-crown-art{width:28px;height:28px;vertical-align:middle}
+.retirebox .bigstar{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:8px;line-height:1.1}
+.retirebox .bigstar>.legacy-crown-art{width:76px;height:76px}
+.legacy-gain-value{direction:ltr;font-size:42px;font-weight:700;font-variant-numeric:tabular-nums}
+.retirebox{border:1px solid #c9ac6855;box-shadow:inset 0 1px 0 #f6df9c12;background-image:radial-gradient(ellipse at 50% 0,#cba85d15,transparent 70%)}
+.retirestar .legacy-crown-art{width:56px;height:56px;vertical-align:middle}
+@media(max-width:600px){#view[data-view=legacy] .legacy-heading h2>.legacy-tree-art{width:44px;height:44px}.legacy-heading{gap:8px}.retirebox .bigstar>.legacy-crown-art{width:64px;height:64px}.legacy-gain-value{font-size:36px}.starchip .legacy-crown-art{width:24px;height:24px}}
+@media(max-width:600px){#hDate .season-art{width:23px;height:23px}.season-picker .season-art{width:22px;height:22px}.season-picker button{gap:3px;padding-inline:4px}}
+/* Growing crops read clearly smaller and paler; ready crops glow gold. */
+.plot .pe img.stage-leaf{transform:scale(.85)!important;transform-origin:center bottom;filter:saturate(.8) brightness(.95)}
+.plot.ready .pe img{filter:drop-shadow(0 0 6px #ffd76a99)}
+.plot.empty .pe .ui-icon{opacity:.45}
+/* Animal grades and golden products (tint until dedicated golden art exists). */
+img.golden-art{filter:sepia(1) saturate(2.8) hue-rotate(-12deg) brightness(1.08) drop-shadow(0 0 5px #ffd76aaa)!important}
+.card.breeding{border-color:var(--selring);background:var(--selbg)}
+/* Grade tiles: three equal tiles, silver frame for premium, gold frame for golden. */
+.grades{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.grades>span{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px 6px;border:1px solid var(--line);border-radius:8px;background:var(--soft);font-size:12.5px;text-align:center}
+.grades>span img{width:40px;height:40px}
+.grades b{font-weight:700}.grades em{font-style:normal;font-weight:800;direction:ltr}
+.grades .g-norm{opacity:.9}
+.grades .g-prem{border:2px solid #b9c6d6;background:linear-gradient(160deg,#dfe7f126,transparent 70%),var(--soft);box-shadow:inset 0 0 10px #cfdcec22}
+.grades .g-prem b,.grades .g-prem em{color:#c9d6e6}
+:root:not([data-theme=dark]) .grades .g-prem b,:root:not([data-theme=dark]) .grades .g-prem em{color:#4f6278}
+.grades .g-gold{border:2px solid #d4ab52;background:linear-gradient(160deg,#ffd76a2e,transparent 70%),var(--soft);box-shadow:inset 0 0 12px #ffd76a2a,0 0 8px #e0b24f33}
+.grades .g-gold b,.grades .g-gold em{color:var(--warn)}
+.gb{display:inline-flex;width:16px;height:16px;vertical-align:-3px;font-style:normal}
+.gb svg{width:100%;height:100%}
+.gb-p svg{fill:#dfe6ef;stroke:#7b8796;stroke-width:1.2}
+.gb-g svg{fill:#f2c24e;stroke:#8c6420;stroke-width:1.2;filter:drop-shadow(0 0 2px #ffd76a99)}
+.grades .gb{position:absolute;top:-8px;inset-inline-end:-6px;width:20px;height:20px}
+.grade-line.g-g span{color:var(--warn)}
+/* English (LTR): mirror the RTL auto margin so the HUD buttons sit like the Arabic layout */
+[dir=ltr] button.chip{margin-right:0;margin-left:auto}
+/* Chinese: prefer a CJK system font for Han characters */
+:root[data-lang=zh] body{font-family:PlexArabic,'Microsoft YaHei','PingFang SC','Noto Sans SC','Hiragino Sans GB',sans-serif}
+/* Villager cards: name only, role under it, story behind the ? button */
+.npc-card{position:relative}
+.npc-info{position:absolute;top:8px;inset-inline-end:8px;z-index:2;width:26px;height:26px;padding:0;border-radius:50%;border:1px solid var(--line);background:var(--soft);color:var(--muted);font-weight:800;font-size:14px;line-height:24px;text-align:center;cursor:pointer}
+.npc-info:hover,.npc-info:focus-visible{color:var(--ink);border-color:var(--gold)}
+.npc-role{display:block;color:var(--muted);font-size:12px;margin-top:1px}
+.npc-story{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.npc-story h2{margin:0}
+.npc-story-text{line-height:1.8}
+/* New-player guide */
+.tut-box{position:fixed;z-index:60;bottom:18px;inset-inline-end:18px;width:min(360px,calc(100vw - 32px));background:linear-gradient(180deg,var(--paper2),var(--paper));border:2px solid var(--gold);border-radius:12px;padding:12px 14px;box-shadow:0 10px 30px #0008;color:var(--ink);animation:tut-in .35s ease-out}
+.tut-box p{margin:6px 0 10px;line-height:1.7;font-size:14.5px}
+.tut-box .row{margin:0}
+.tut-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tut-count{color:var(--muted);font-weight:700;direction:ltr}
+.tut-ring{position:fixed;z-index:55;pointer-events:none;border:3px solid var(--gold);border-radius:12px;box-shadow:0 0 0 4px #e2bc6c33,0 0 18px #e2bc6caa;animation:tut-pulse 1.2s ease-in-out infinite}
+@keyframes tut-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(1.03)}}
+@keyframes tut-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (max-width:600px){.tut-box{inset-inline:12px;bottom:12px;width:auto}}
+@media (prefers-reduced-motion:reduce){.tut-ring,.tut-box{animation:none}}
+/* Feedback: the top-bar chip sits next to the language button (no auto margin), and the in-game form */
+button.chip.fb-chip,[dir=ltr] button.chip.fb-chip{margin-left:0;margin-right:0}
+.fb-types{margin:4px 0 10px}
+.fb-rates{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 12px;direction:ltr}
+.fb-rate{width:30px;height:30px;padding:0;border-radius:8px;border:1px solid var(--line);background:var(--soft);color:var(--muted);font-weight:800;font-size:13px;cursor:pointer}
+.fb-rate.on{background:linear-gradient(180deg,var(--gold),#c9973f);border-color:var(--gold);color:#2a1d0e}
+.fb-text{width:100%;padding:10px 12px;border-radius:10px;border:2px solid var(--line);background:var(--soft);color:var(--ink);font:inherit;font-size:15px;resize:vertical}
+.fb-err{color:var(--warn);min-height:1em;margin:6px 0}
+/* Sound: mute chip in the top bar and the volume sliders */
+button.chip.au-chip,[dir=ltr] button.chip.au-chip{margin-left:0;margin-right:0;min-width:34px;justify-content:center}
+.au-row{align-items:center;gap:12px}
+.au-row input[type=range]{flex:1;max-width:220px;accent-color:var(--gold)}
+/* Legacy tree: each branch is a column of tiers, the special skill at the bottom */
+.ptree{display:flex;flex-direction:column;align-items:center;margin:22px 0 30px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--soft)}
+.ptree-head{display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:10px}
+.ptree-head h3{margin:0}
+.ptier{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;width:100%}
+.ptier .card{flex:1 1 240px;max-width:340px}
+.plink{width:3px;height:18px;margin:4px 0;border-radius:2px;background:var(--line)}
+.perk.locked .btn,.perk.locked .row .stat{font-size:12px}
+.perk.ks{border:2px solid var(--gold);background:linear-gradient(180deg,#e2bc6c1f,var(--paper2) 60%);box-shadow:0 0 0 3px #e2bc6c18}
+.perk.ks.locked{opacity:.75}
+.ks-mark{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;font-size:34px;line-height:1;background:radial-gradient(circle,#e2bc6c44,transparent 72%)}
+.ks-mark .px{width:40px!important;height:40px!important}
+.ks-tag{color:var(--gold)!important;font-weight:700}
+/* Golden harvest: shine on the plot and a glowing line in the event log */
+.golden-flash{position:fixed;pointer-events:none;border-radius:10px;display:grid;place-items:center;
+  background:radial-gradient(circle,#fff6c8ee 0,#ffd76aaa 35%,#e2a83a44 65%,transparent 75%);
+  box-shadow:0 0 0 3px #ffd76a,0 0 26px 8px #ffcf4d99;animation:golden-flash 1.6s ease-out forwards}
+.golden-flash span{font-size:34px;filter:drop-shadow(0 0 6px #fff3c4);animation:golden-spin 1.6s ease-out forwards}
+@keyframes golden-flash{0%{opacity:0;transform:scale(.7)}15%{opacity:1;transform:scale(1.12)}35%{transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
+@keyframes golden-spin{0%{transform:scale(.3) rotate(-40deg)}30%{transform:scale(1.4) rotate(10deg)}100%{transform:scale(1) rotate(0);opacity:0}}
+.particle-vfx.golden-spark{width:6px;height:6px;border-radius:50%;box-shadow:0 0 8px 2px #ffd76a}
+.float-vfx.golden-float{color:#ffe08a;font-size:24px;font-weight:800;text-shadow:0 0 10px #ffcf4d,0 2px 3px #3a2608}
+#log li.golden{position:relative;overflow:hidden;color:#7a5410;font-weight:700;padding:8px 10px;margin:4px 0;border:1px solid #e2bc6c;border-radius:9px;
+  background:linear-gradient(100deg,#fff3c4 0%,#ffd76a 45%,#fff3c4 100%)}
+#log li.golden small{color:#8a6a2a}
+#log li.golden:after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,#ffffffcc 50%,transparent 70%);transform:translateX(-120%);animation:golden-sheen 2.4s ease-in-out 3}
+@keyframes golden-sheen{0%{transform:translateX(-120%)}60%,100%{transform:translateX(120%)}}
+.start-note{color:var(--muted)}
+.start-note.now{color:var(--good)!important;font-weight:700}
+/* Old web address: "we moved" banner with the save transfer button */
+.move-bar{position:sticky;top:0;z-index:60;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 16px;padding:10px 16px;
+  background:linear-gradient(90deg,#3b2a12,#6b4a1c,#3b2a12);color:#fff3c4;font-weight:600;border-bottom:2px solid var(--gold);text-align:center}
+.move-bar .btn{margin:0}

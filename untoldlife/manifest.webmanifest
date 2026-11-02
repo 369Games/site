@@ -1,0 +1,16 @@
+{
+  "name": "UntoldLife",
+  "short_name": "UntoldLife",
+  "description": "A cozy idle farming game: inherit your grandfather's farm and pass it down, generation after generation.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#14100c",
+  "theme_color": "#2a2119",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

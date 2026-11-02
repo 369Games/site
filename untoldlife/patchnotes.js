@@ -3,6 +3,11 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.3', date: '2026-11-02', big: true, title: L('ثبّت اللعبة على جوالك'), items: [
+    L('📱 تقدر تضيف اللعبة لشاشتك الرئيسية وتفتحها مثل التطبيق، بأيقونتها وبدون شريط المتصفح.'),
+    L('✈️ اللعبة تفتح حتى بدون إنترنت بعد أول زيارة.'),
+    L('💡 أول مرة تفتح المنجم أو الحظيرة أو الزنزانة أو غيرها، يطلع لك شرح قصير عنها.'),
+  ] },
   { v: '1.2.4', date: '2026-11-02', big: false, title: L('حد للضغطات'), items: [
     L('🤖 زر الحفر والصيد صار له حد مثل سرعة يد الإنسان، فالضغط الآلي ما يعطي أكثر من اللاعب العادي.'),
     L('😮‍💨 لو الضغطات منتظمة مرة كأنها آلة، شخصيتك تتعب وتبطّأ شوي.'),

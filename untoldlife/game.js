@@ -1048,13 +1048,14 @@ const A = {
   save: () => { save(); toast(L('💾 تم الحفظ')); },
   export: () => {
     save();
-    const code = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
-    prompt(L('انسخ هذا الكود واحتفظ به:'), code);
+    prompt(L('انسخ هذا الكود واحتفظ به:'), encodeSave(S));
   },
   import: () => {
     const code = prompt(L('الصق كود الحفظ:')); if (!code) return;
-    try { S = migrate(JSON.parse(decodeURIComponent(escape(atob(code.trim()))))); S.last = Date.now(); save(); lastSig = ''; toast(L('✅ تم الاستيراد')); }
-    catch (e) { toast(L('❌ الكود غير صالح')); }
+    const info = readSave(code);
+    if (!info) return toast(L('❌ الكود غير صالح'));
+    S = migrate(info.st); S.last = Date.now(); lastSig = ''; toast(L('✅ تم الاستيراد'));
+    markMod(info.mod || saveOddity(S)); save();
   },
   saveDownload: () => saveDownload(),
   saveUpload: () => saveUpload(),
@@ -1505,7 +1506,8 @@ function updSettings() {
   const rows = [[L('⏳ وقت اللعب'), ftime(st.play)], [L('💰 مجموع الأرباح'), fmt(st.earned)], [L('🧺 محاصيل محصودة'), fmt(st.harvests)],
     [L('🥚 منتجات حيوانية'), fmt(st.products)], [L('🪨 صخور مكسورة'), fmt(st.blocks)], [L('💀 وحوش مهزومة'), fmt(st.kills)],
     [L('📜 مهمات منجزة'), fmt(st.quests)], [L('🎣 أسماك مصطادة'), fmt(st.fish)], [L('🕳️ أعلى طابق (العائلة)'), bestDun()], [L('⛏️ أعمق منجم (العائلة)'), bestMine()],
-    [L('🌳 الجيل الحالي'), S.leg.gen], [L('⭐ مجموع نجوم الإرث'), fmt(S.leg.totalStars)], [L('🏅 الإنجازات'), `${Object.keys(S.leg.ach).length}/${ACH.length}`]];
+    [L('🌳 الجيل الحالي'), S.leg.gen], [L('⭐ مجموع نجوم الإرث'), fmt(S.leg.totalStars)], [L('🏅 الإنجازات'), `${Object.keys(S.leg.ach).length}/${ACH.length}`],
+    [L('🧪 حالة الحفظ'), S.leg.mod ? L('معدّل من برّا اللعبة') : L('أصلي ✅')]];
   visualText(b, rows.map(([k, v]) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`).join(''));
 }
 
@@ -1806,14 +1808,70 @@ function deepMerge(def, obj) {
   }
   return def;
 }
-/* Save to a file: download a .json backup, upload one back. Old copy-paste codes are accepted too. */
+/* Save protection. The game runs in the browser, so none of this is unbreakable. The aim: stop casual edits
+   (open the save, change a number) and mark a save that was clearly edited. A marked save is never blocked or deleted:
+   it keeps working with a "modified" stamp, so a bug can't cost an honest player their farm.
+   Format: 'UL2.' + scrambled base64url JSON + '.' + signature. */
+const SAVE_MARK = 'untoldlife_sv';            // set once this device has written a protected save
+const LEGACY_UNTIL = Date.UTC(2026, 11, 1);   // old readable files and codes still load cleanly until Dec 1 2026
+const SAVE_SALT = 'UntoldLife|369|' + 'وادي الصدى';
+let loadMod = '';
+function sHash(str) {
+  let h1 = 0xdeadbeef ^ str.length, h2 = 0x41c6ce57 ^ str.length;
+  for (let i = 0; i < str.length; i++) { const c = str.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0');
+}
+function sScramble(bytes) { let x = 0x9e3779b9; for (let i = 0; i < bytes.length; i++) { x ^= x << 13; x ^= x >>> 17; x ^= x << 5; bytes[i] ^= x & 255; } return bytes; }
+function sB64(b) { let t = ''; for (let i = 0; i < b.length; i += 0x8000) t += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(t).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+function sUnb64(t) { const s2 = atob(t.replace(/-/g, '+').replace(/_/g, '/')); const b = new Uint8Array(s2.length); for (let i = 0; i < s2.length; i++) b[i] = s2.charCodeAt(i); return b; }
+function encodeSave(obj) {
+  const json = JSON.stringify(obj);
+  return 'UL2.' + sB64(sScramble(new TextEncoder().encode(json))) + '.' + sHash(SAVE_SALT + json);
+}
+// Reads any save we ever made: protected strings, old readable JSON, old copy-paste codes, and save files.
+// Returns { st, fmt, mod } where mod is '' or why the save looks edited.
+function readSave(text) {
+  text = String(text || '').trim(); if (!text) return null;
+  let o = null, fmt = 'json', mod = '';
+  try {
+    if (text.startsWith('UL2.')) {
+      const [, body, sig] = text.split('.');
+      const json = new TextDecoder().decode(sScramble(sUnb64(body)));
+      o = JSON.parse(json); fmt = 'v2';
+      if (sHash(SAVE_SALT + json) !== sig) mod = 'sig';
+    } else {
+      try { o = JSON.parse(text); } catch (e) { o = JSON.parse(decodeURIComponent(escape(atob(text)))); fmt = 'code'; }
+      if (o && o.game === 'UntoldLife' && typeof o.save === 'string') return readSave(o.save);
+      if (o && o.game === 'UntoldLife' && o.state) o = o.state;
+      if (Date.now() > LEGACY_UNTIL) mod = 'legacy';
+    }
+  } catch (e) { return null; }
+  return o && typeof o === 'object' && o.leg && o.farm && o.started ? { st: o, fmt, mod } : null;
+}
+// Numbers the game itself can never produce.
+function saveOddity(st) {
+  const g = st.gen || {}, lg = st.leg || {}, earned = (st.stats && st.stats.earned) || 0;
+  if ((st.gold || 0) > (g.earned || 0) * 1.01 + 600000) return 'gold';
+  if ((lg.stars || 0) > (lg.totalStars || 0) + 1) return 'stars';
+  if ((g.earned || 0) > earned + 1) return 'earned';
+  return '';
+}
+function markMod(reason) {
+  if (!reason || !S || !S.leg || S.leg.mod) return;
+  S.leg.mod = { r: reason, t: Date.now() };
+  log(L('🧪 هذا الحفظ انعدّل من برّا اللعبة. تقدر تكمل عادي، بس مزرعتك صار عليها ختم «معدّلة» للأبد 😉'), 'warn');
+}
+
+/* Save to a file: download a backup, upload one back. Old copy-paste codes are accepted too. */
 const BACKUP_KEY = 'untoldlife_backup_at';
 let pendingSave = null;
 function backupAt() { try { return +localStorage.getItem(BACKUP_KEY) || 0; } catch (e) { return 0; } }
 function saveDownload() {
   if (!S || !S.started) return;
   save();
-  const data = JSON.stringify({ game: 'UntoldLife', format: 1, saved: new Date().toISOString(), state: S });
+  const data = JSON.stringify({ game: 'UntoldLife', format: 2, saved: new Date().toISOString(), save: encodeSave(S) });
   const d = new Date(), day = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const who = String(S.leg.family || S.name || 'save').replace(/[\\/:*?"<>|\s]+/g, '-').slice(0, 24);
   const a = document.createElement('a');
@@ -1824,13 +1882,7 @@ function saveDownload() {
   try { localStorage.setItem(BACKUP_KEY, String(Date.now())); } catch (e) { /* */ }
   toast(L('⬇️ نزل ملف الحفظ، احتفظ فيه في مكان آمن'));
 }
-function parseSave(text) {
-  text = String(text || '').trim();
-  let o = null;
-  try { o = JSON.parse(text); } catch (e) { try { o = JSON.parse(decodeURIComponent(escape(atob(text)))); } catch (e2) { return null; } }
-  if (o && o.game === 'UntoldLife' && o.state) o = o.state;
-  return o && typeof o === 'object' && o.leg && o.farm && o.started ? o : null;
-}
+function parseSave(text) { const i = readSave(text); return i ? i.st : null; }
 function saveUpload() {
   const inp = document.createElement('input');
   inp.type = 'file'; inp.accept = '.json,.txt,application/json,text/plain';
@@ -1839,9 +1891,9 @@ function saveUpload() {
     if (f.size > 5e6) return toast(L('❌ هذا ما هو ملف حفظ'));
     const r = new FileReader();
     r.onload = () => {
-      const st = parseSave(r.result);
-      if (!st) return toast(L('❌ هذا ما هو ملف حفظ'));
-      pendingSave = st;
+      const info = readSave(r.result);
+      if (!info) return toast(L('❌ هذا ما هو ملف حفظ'));
+      const st = info.st; pendingSave = info;
       openModal(L`<h2>⬆️ ارفع ملف حفظ</h2><div class="kv"><span>👤 الاسم</span><span>${esc(st.name || '')}</span></div><div class="kv"><span>🌳 الجيل</span><span>${(st.leg && st.leg.gen) || 1}</span></div><div class="kv"><span>💰 الذهب</span><span>${fmt(st.gold || 0)}</span></div>
       <p class="hint">⚠️ هذا الحفظ بياخذ مكان تقدمك الحالي. لو تبي ترجع له، نزّل ملف حفظك الحالي أول.</p>
       <div class="row"><button class="btn gold" data-a="saveLoadGo">✅ استبدل وكمّل من هذا الحفظ</button><button class="btn ghost" data-a="saveDownload">⬇️ نزّل حفظي الحالي أول</button><button class="btn ghost" data-a="closeModal">إلغاء</button></div>`);
@@ -1852,12 +1904,14 @@ function saveUpload() {
 }
 function saveLoadGo() {
   if (!pendingSave) return;
-  try { S = migrate(pendingSave); } catch (e) { pendingSave = null; return toast(L('❌ هذا ما هو ملف حفظ')); }
-  pendingSave = null; S.last = Date.now(); save(); logs = []; logDirty = true; lastSig = '';
+  const info = pendingSave;
+  try { S = migrate(info.st); } catch (e) { pendingSave = null; return toast(L('❌ هذا ما هو ملف حفظ')); }
+  pendingSave = null; S.last = Date.now(); logs = []; logDirty = true; lastSig = '';
   closeModal(); log(L`⬆️ رجعت لحفظ ${esc(S.name)} — الجيل ${S.leg.gen}`, 'season'); toast(L('✅ تم تحميل الحفظ'));
+  markMod(info.mod || saveOddity(S)); save();
 }
 let saveBlocked = false; // set while another save is being written in (move.js)
-function save() { if (saveBlocked || !S || !S.started) return; try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* التخزين غير متاح */ } }
+function save() { if (saveBlocked || !S || !S.started) return; try { localStorage.setItem(SAVE_KEY, encodeSave(S)); localStorage.setItem(SAVE_MARK, '1'); } catch (e) { /* التخزين غير متاح */ } }
 function migrate(o) {
   const st = deepMerge(newState(), o);
   if (!o.gen) { st.gen.earned = (o.stats && o.stats.earned) || 0; st.gen.days = Math.max(0, dayAbsOf(st) - 1); }
@@ -1870,8 +1924,16 @@ function migrate(o) {
   return st;
 }
 function load() {
-  try { const raw = localStorage.getItem(SAVE_KEY); return raw ? migrate(JSON.parse(raw)) : null; }
-  catch (e) { return null; }
+  try {
+    const raw = localStorage.getItem(SAVE_KEY); if (!raw) return null;
+    const info = readSave(raw); if (!info) return null;
+    const st = migrate(info.st);
+    // This device's own readable save from before the update is fine, unless it already wrote a protected one.
+    let mod = info.mod === 'legacy' ? '' : info.mod;
+    if (info.fmt !== 'v2' && localStorage.getItem(SAVE_MARK)) mod = 'plain';
+    loadMod = mod || saveOddity(st);
+    return st;
+  } catch (e) { return null; }
 }
 function runOffline(secs) {
   secs = Math.min(secs, offlineCap());
@@ -1892,6 +1954,7 @@ function frame() {
 }
 
 S = load() || newState();
+markMod(loadMod);
 if (!S.started) showIntro();
 else {
   log(L`🏡 مرحباً بعودتك إلى وادي الصدى يا ${S.name}`);

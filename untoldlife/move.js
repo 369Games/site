@@ -56,7 +56,9 @@ function moveReceive() {
     const packed = location.hash.slice(6);
     history.replaceState(null, '', location.pathname + location.search);
     moveUnpack(packed).then(d => {
-      const st = d && typeof d[SAVE_KEY] === 'string' ? parseSave(d[SAVE_KEY]) : null;
+      const info = d && typeof d[SAVE_KEY] === 'string' ? readSave(d[SAVE_KEY]) : null;
+      const st = info && info.st;
+      if (st && st.leg && !st.leg.mod && (info.mod === 'sig' || info.mod === 'legacy')) st.leg.mod = { r: info.mod, t: Date.now() };
       if (!st) return toast(L('❌ هذا ما هو ملف حفظ'));
       const mine = (() => { try { return parseSave(localStorage.getItem(SAVE_KEY)); } catch (x) { return null; } })();
       const gen = x => (x.leg && x.leg.gen) || 1, nm = x => String(x.name || '').replace(/[<>&"'`]/g, '');
@@ -65,7 +67,7 @@ function moveReceive() {
       if (!confirm(ask)) return;
       saveBlocked = true;
       try {
-        localStorage.setItem(SAVE_KEY, JSON.stringify(moveClean(st)));
+        localStorage.setItem(SAVE_KEY, encodeSave(moveClean(st)));
         for (const k of MOVE_KEYS) if (k !== SAVE_KEY && typeof d[k] === 'string' && !localStorage.getItem(k)) localStorage.setItem(k, d[k]);
       } catch (x) { saveBlocked = false; return; }
       location.reload();

@@ -43,6 +43,7 @@ function statsCheck() {
   for (const m of [10, 30, 60, 180, 600]) if (ST.active >= m * 60) track('play' + m);
   for (let g = 2; g <= Math.min(S.leg.gen, 30); g++) track('gen' + g, Math.round(ST.active / 60));
   if (S.spouse) track('marry');
+  if (S.leg.mod) track('modified', S.leg.mod.r);
   const best = Math.max(S.dun.max, S.leg.best.dun || 0);
   if (best >= 30) track('floor30');
   if (best >= 100) track('floor100');

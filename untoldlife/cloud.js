@@ -41,6 +41,8 @@ async function cloudInit() {
     for (const m of ['app', 'auth', 'firestore']) await cloudScript(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-${m}-compat.js`);
     firebase.initializeApp(c);
     CLOUD.auth = firebase.auth(); CLOUD.db = firebase.firestore();
+    // Sign-in emails and Google's screens follow the game's language.
+    CLOUD.auth.languageCode = ({ zh: 'zh-CN', pt: 'pt-BR' })[LANG] || LANG;
     await cloudEmailFinish();
     CLOUD.auth.onAuthStateChanged(u => {
       CLOUD.user = u; CLOUD.ready = true; cloudRefresh();

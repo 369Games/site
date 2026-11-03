@@ -763,8 +763,13 @@ function checkAch() {
 }
 
 /* ---------------- التقاعد ---------------- */
-function canRetire() { return S.gen.earned >= 1e6 || S.dun.max >= 30; }
-function starsBase() { return 3 * Math.sqrt(S.gen.earned / 1e6) + Math.max(0, S.dun.max - 10) / 3 + Math.max(0, S.mine.max - 20) / 10; }
+// The retirement goal grows after generation 3, so strong legacy perks can't turn a generation into a few minutes.
+function goldGoal() { const g = Math.max(0, S.leg.gen - 3); if (!g) return 1e6; const v = 1e6 * Math.pow(1.85, g), d = Math.pow(10, Math.floor(Math.log10(v)) - 1); return Math.round(v / d) * d; }
+// The dungeon goal also sits at least 15 floors above where this generation started (the «Battle memory» perk starts you deep).
+function dunGoal() { return Math.max(30 + 3 * Math.max(0, S.leg.gen - 3), (S.gen.dun0 || 1) + 15); }
+function canRetire() { return S.gen.earned >= goldGoal() || S.dun.max >= dunGoal(); }
+// Dungeon stars only count floors climbed this generation, not the free start floor.
+function starsBase() { return 3 * Math.sqrt(S.gen.earned / 1e6) + Math.max(0, S.dun.max - Math.max(10, S.gen.dun0 || 1)) / 3 + Math.max(0, S.mine.max - 20) / 10; }
 function starsGain() { return Math.floor(starsBase() * starMult()); }
 function perkCost(p, l) { return Math.ceil(p.cost * Math.pow(p.mult, l)); }
 const KS_NEED = 10;
@@ -794,6 +799,7 @@ function applyStartNow(id, l) {
     let f = Math.max(1, Math.floor(S.leg.best.dun * 0.1 * l)); if (S.leg.gen < 4) f = Math.min(f, 100);
     if (f > S.dun.max) S.dun.max = f;
     if (f > S.dun.floor) S.dun.floor = f;
+    S.gen.dun0 = Math.max(S.gen.dun0 || 1, f);
   }
   else if (id === 'q_tools' && S.gen.prevTools) for (const t in S.tools) S.tools[t] = Math.min(6, Math.max(S.tools[t], (S.gen.prevTools[t] || 0) - 1));
 }
@@ -818,7 +824,7 @@ function applyGenStart(oldTools) {
   }
   let f = Math.max(1, Math.floor(LG.best.dun * 0.1 * P('w_floor')));
   if (LG.gen < 4) f = Math.min(f, 100);
-  S.dun.floor = S.dun.max = f;
+  S.dun.floor = S.dun.max = f; S.gen.dun0 = f;
   for (const n of NPCS) S.npc[n.id] = { pts: heartStart(), gd: 0 };
   if (inCh('winter')) { S.season = 3; S.weather = 'snow'; }
 }
@@ -1643,7 +1649,7 @@ function viewLegacy() {
   <div class="two"><div>
     <div class="kv"><span>💰 ذهب هذا الجيل</span><span id="lg_e"></span></div><div class="bar gp"><i id="lg_eb"></i></div>
     <div class="kv"><span>🕳️ أعلى طابق في هذا الجيل</span><span id="lg_d"></span></div><div class="bar xp"><i id="lg_db"></i></div>
-    <p class="hint">شرط التقاعد: كسب مليون ذهب في هذا الجيل <b>أو</b> الوصول للطابق 30. النجوم تزيد كل ما كسبت ذهب أكثر ونزلت أعمق في الزنزانة والمنجم.</p>
+    <p class="hint">شرط التقاعد في هذا الجيل: كسب ${fmt(goldGoal())} ذهب <b>أو</b> الوصول للطابق ${dunGoal()}. الشرط يكبر مع كل جيل بعد الثالث. النجوم تزيد كل ما كسبت ذهب أكثر ونزلت أعمق في الزنزانة والمنجم.</p>
   </div><div class="retirebox"><div class="bigstar">${icon("legacy-crown",72)}<span class="legacy-gain-value">+<span id="lg_g"></span></span></div><small class="hint">نجوم لو تقاعدت الآن</small>
     <button class="btn gold" data-a="retire" id="lg_btn">🌅 التقاعد وتسليم المزرعة</button><small class="hint" id="lg_why"></small></div></div>
   ${ch ? L`<div class="chbox"><b>${icon(ch)} تحدي هذا الجيل: ${ch.n}</b> — ${ch.rule}<div class="kv"><span>🎯 ${goalText(ch)}</span><span id="lg_chp"></span></div><div class="bar gp"><i id="lg_chb"></i></div></div>` : ''}
@@ -1686,8 +1692,9 @@ function perkCard(p) {
 function updLegacy() {
   if (!$('lg_e')) return;
   const g = S.gen;
-  $('lg_e').textContent = `${fmt(g.earned)} / 1M`; $('lg_eb').style.width = Math.min(100, g.earned / 1e6 * 100) + '%';
-  $('lg_d').textContent = `${S.dun.max} / 30`; $('lg_db').style.width = Math.min(100, S.dun.max / 30 * 100) + '%';
+  const gg = goldGoal(), dg = dunGoal();
+  $('lg_e').textContent = `${fmt(g.earned)} / ${fmt(gg)}`; $('lg_eb').style.width = Math.min(100, g.earned / gg * 100) + '%';
+  $('lg_d').textContent = `${S.dun.max} / ${dg}`; $('lg_db').style.width = Math.min(100, S.dun.max / dg * 100) + '%';
   $('lg_g').textContent = fmt(starsGain());
   const can = canRetire(); $('lg_btn').disabled = !can; $('lg_why').textContent = can ? '' : L('ما حققت شرط التقاعد بعد');
   const cb = $('lg_chb');
@@ -1710,7 +1717,7 @@ const VIEWS = {
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
   village: [viewVillage, () => {}, () => [dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => [have(n.love) > 0, have(n.like) > 0])]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, S.skills.fish.l, S.tools.rod, S.leg.gen]],
-  legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length]; }],
+  legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length, dunGoal()]; }],
   settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0]],
 };
 

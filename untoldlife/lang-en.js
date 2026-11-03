@@ -856,7 +856,7 @@
 "☁️ نصيحة: اربط حسابك من «المزيد» عشان ما يضيع تقدمك وتكمل من أي جهاز": "☁️ Tip: link an account in «More» so your progress is never lost and you can continue on any device",
 "☁️ اربط حسابك عشان ما يضيع تقدمك": "☁️ Link an account so your progress isn't lost",
 "☁️ كمّلنا من حفظك في السحابة (الجيل {0}) لأنه أبعد من حفظ هذا الجهاز": "☁️ Continued from your cloud save (generation {0}) because it's further along than this device's save",
-"التهجين صار قمار 🎰": "Breeding is now a gamble 🎰",
+"التهجين صار أفضل وتحسّن 🧬": "Breeding got better 🧬",
 "🎰 حط حيوانين من نفس الدرجة وجرّب حظك: النتيجة تطلع فوراً! لو نجحت يصيرون الاثنين ممتازين أو ذهبيين، ولو فشلت تخسرهم.": "🎰 Put in two animals of the same grade and try your luck: the result comes instantly! Win and both become premium or golden; lose and they're gone.",
 "🎲 فرصة الممتاز 20% والذهبي 5%، وبعد كل محاولة البيت يرتاح 5 دقايق.": "🎲 Premium has a 20% chance and golden 5%, and after each try the house rests 5 minutes.",
 "🏠 تقدر تبني لين 5 بيوت تهجين عشان تجرب أكثر.": "🏠 You can build up to 5 breeding houses to try more often.",

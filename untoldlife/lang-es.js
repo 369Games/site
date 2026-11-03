@@ -856,7 +856,7 @@
 "☁️ نصيحة: اربط حسابك من «المزيد» عشان ما يضيع تقدمك وتكمل من أي جهاز": "☁️ Consejo: vincula una cuenta en «Más» para no perder nunca tu progreso y seguir en cualquier dispositivo",
 "☁️ اربط حسابك عشان ما يضيع تقدمك": "☁️ Vincula una cuenta para no perder tu progreso",
 "☁️ كمّلنا من حفظك في السحابة (الجيل {0}) لأنه أبعد من حفظ هذا الجهاز": "☁️ Seguimos con tu partida de la nube (generación {0}) porque va más avanzada que la de este dispositivo",
-"التهجين صار قمار 🎰": "La cría ahora es una apuesta 🎰",
+"التهجين صار أفضل وتحسّن 🧬": "La cría ahora es mejor 🧬",
 "🎰 حط حيوانين من نفس الدرجة وجرّب حظك: النتيجة تطلع فوراً! لو نجحت يصيرون الاثنين ممتازين أو ذهبيين، ولو فشلت تخسرهم.": "🎰 Pon dos animales del mismo grado y prueba suerte: ¡el resultado sale al instante! Si ganas, los dos pasan a premium o dorado; si pierdes, se van.",
 "🎲 فرصة الممتاز 20% والذهبي 5%، وبعد كل محاولة البيت يرتاح 5 دقايق.": "🎲 Premium tiene 20% de probabilidad y dorado 5%, y tras cada intento la casa descansa 5 minutos.",
 "🏠 تقدر تبني لين 5 بيوت تهجين عشان تجرب أكثر.": "🏠 Puedes construir hasta 5 casas de cría para intentar más.",

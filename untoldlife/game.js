@@ -153,7 +153,7 @@ const BUILDINGS = [
   { id: 'sprinkler', n: L('رشاشات ماء'), e: '💦', desc: L('تسقي كل الأحواض تلقائياً'), cost: 15000 },
   { id: 'greenhouse', n: L('بيت محمي'), e: '🏡', desc: L('كل المحاصيل تنمو بسرعة كاملة في أي موسم'), cost: 80000 },
   // No building art yet: shows the golden chicken.
-  { id: 'breedlab', n: L('أدوات التهجين'), e: '🧬', art: 'chicken-g', desc: L('لبيوت التهجين. المستوى 2: راحة 4 دقايق ونجاح 25% للممتاز و8% للذهبي. المستوى 3: راحة دقيقتين و33% و12%.'), cost: 25000, mult: 12, max: 2 },
+  { id: 'breedlab', n: L('أدوات التهجين'), e: '🧬', art: 'chicken-g', desc: L('تسرّع راحة بيوت التهجين وترفع نسبة النجاح'), cost: 25000, mult: 12, max: 2 },
 ];
 
 const NPCS = [

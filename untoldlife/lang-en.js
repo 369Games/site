@@ -141,7 +141,7 @@
 "بيت محمي": "Greenhouse",
 "كل المحاصيل تنمو بسرعة كاملة في أي موسم": "Every crop grows at full speed in any season",
 "أدوات التهجين": "Breeding tools",
-"لبيوت التهجين. المستوى 2: راحة 4 دقايق ونجاح 25% للممتاز و8% للذهبي. المستوى 3: راحة دقيقتين و33% و12%.": "For the breeding houses. Level 2: 4-minute rest and 25% success for premium, 8% for golden. Level 3: 2-minute rest, 33% and 12%.",
+"تسرّع راحة بيوت التهجين وترفع نسبة النجاح": "Makes the breeding houses rest faster and raises the success chance",
 "أبو سالم": "Harold",
 "عمدة وادي الصدى": "Mayor of Echo Valley",
 "يدير القرية منذ ثلاثين سنة، وكان أقرب أصدقاء جدك. يعرف كل بيت وكل حكاية في الوادي، ويفرح كلما رأى السوق عامراً. أهدِه العسل وسيحدثك عن الأيام القديمة.": "He has run the village for thirty years and was your grandfather's closest friend. He knows every house and every tale in the valley, and nothing makes him happier than a busy market. Bring him honey and he'll tell you about the old days.",

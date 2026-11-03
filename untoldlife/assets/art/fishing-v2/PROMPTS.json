@@ -1,0 +1,113 @@
+{
+  "generator": "Built-in image generation",
+  "size": 512,
+  "output": "assets/art/fishing-v2",
+  "jobs": [
+    {
+      "id": "trout",
+      "file": "trout.png",
+      "description": "A rainbow trout: olive-green back with black speckles, a bright pink-red stripe along its side, silver belly.",
+      "prompt": "Use case: stylized-concept. Asset type: single inventory item icon for a cozy 16-bit farming RPG, polished Stardew Valley-like pixel art. A rainbow trout: olive-green back with black speckles, a bright pink-red stripe along its side, silver belly. Single creature centered, full body fully visible including all fins, tail, whiskers or tentacles, comfortable clear transparent margin. Crisp deliberate square pixel clusters, stepped contours, clean dark outlines, rich cohesive colors, soft top-left lighting using pixel shading, readable distinct species silhouette at small inventory sizes. Square 512x512 intended output, genuinely transparent background. No scenery, no aquarium, no ground, no framing, no text, no labels, no UI, no watermarks, no other creatures. Side or slight three-quarter view for fish; jellyfish upright and oyster open toward viewer. Only retain water effects explicitly described for legendary fish.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-61ef23ee-00db-41ad-8345-b85b7b61383e.png",
+      "assetId": "fishing-v2-trout"
+    },
+    {
+      "id": "crayfish",
+      "file": "crayfish.png",
+      "description": "A freshwater crayfish: dark red-brown shell, two big claws raised, long antennae, segmented tail.",
+      "prompt": "Use case: stylized-concept. Asset type: single inventory item icon for a cozy 16-bit farming RPG, polished Stardew Valley-like pixel art. A freshwater crayfish: dark red-brown shell, two big claws raised, long antennae, segmented tail. Single creature centered, full body fully visible including all fins, tail, whiskers or tentacles, comfortable clear transparent margin. Crisp deliberate square pixel clusters, stepped contours, clean dark outlines, rich cohesive colors, soft top-left lighting using pixel shading, readable distinct species silhouette at small inventory sizes. Square 512x512 intended output, genuinely transparent background. No scenery, no aquarium, no ground, no framing, no text, no labels, no UI, no watermarks, no other creatures. Side or slight three-quarter view for fish; jellyfish upright and oyster open toward viewer. Only retain water effects explicitly described for legendary fish.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-9c57a4f0-693d-427b-8ce7-f99ca815b19f.png",
+      "assetId": "fishing-v2-crayfish"
+    },
+    {
+      "id": "eel",
+      "file": "eel.png",
+      "description": "A river eel: long smooth slender body curved in an S shape, dark olive-brown back, yellowish belly, small fins, NOT a snake.",
+      "prompt": "Use case: stylized-concept. Asset type: single inventory item icon for a cozy 16-bit farming RPG, polished Stardew Valley-like pixel art. A river eel: long smooth slender body curved in an S shape, dark olive-brown back, yellowish belly, small fins, NOT a snake. Single creature centered, full body fully visible including all fins, tail, whiskers or tentacles, comfortable clear transparent margin. Crisp deliberate square pixel clusters, stepped contours, clean dark outlines, rich cohesive colors, soft top-left lighting using pixel shading, readable distinct species silhouette at small inventory sizes. Square 512x512 intended output, genuinely transparent background. No scenery, no aquarium, no ground, no framing, no text, no labels, no UI, no watermarks, no other creatures. Side or slight three-quarter view for fish; jellyfish upright and oyster open toward viewer. Only retain water effects explicitly described for legendary fish.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-57c7e446-7285-49b8-a4af-987ff18fa968.png",
+      "correctionPrompt": "Edit only the eel anatomy of this pixel art game icon. Remove ALL whiskers, barbels, dangling lines around the mouth and chin. A river eel has a smooth rounded fish head, a small simple mouth, tiny eyes, small pectoral fins, and a continuous low dorsal fin along its long smooth slender S-curved body. Preserve the original olive-brown back, yellowish belly, rich 16-bit pixel shading, side view, clean dark outline, overall pose and genuine transparency. This must be recognizably an eel, not a catfish or snake. No text, no additional creatures, no scenery. Full body contained and centered on square transparent canvas.",
+      "productionMaster": ".art-originals/fishing-v2/eel-corrected.png",
+      "assetId": "fishing-v2-eel"
+    },
+    {
+      "id": "catfish",
+      "file": "catfish.png",
+      "description": "A big catfish: wide flat head, long whiskers (barbels), grey-brown smooth skin, small eyes.",
+      "prompt": "Use case: stylized-concept. Asset type: single inventory item icon for a cozy 16-bit farming RPG, polished Stardew Valley-like pixel art. A big catfish: wide flat head, long whiskers (barbels), grey-brown smooth skin, small eyes. Single creature centered, full body fully visible including all fins, tail, whiskers or tentacles, comfortable clear transparent margin. Crisp deliberate square pixel clusters, stepped contours, clean dark outlines, rich cohesive colors, soft top-left lighting using pixel shading, readable distinct species silhouette at small inventory sizes. Square 512x512 intended output, genuinely transparent background. No scenery, no aquarium, no ground, no framing, no text, no labels, no UI, no watermarks, no other creatures. Side or slight three-quarter view for fish; jellyfish upright and oyster open toward viewer. Only retain water effects explicitly described for legendary fish.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-5e078574-98ca-4228-8fb4-f5d630fb2a64.png",
+      "assetId": "fishing-v2-catfish"
+    },
+    {
+      "id": "sturgeon",
+      "file": "sturgeon.png",
+      "description": "A sturgeon: long ancient-looking fish, grey-blue body with rows of bony plates on its back, pointed snout, shark-like tail.",
+      "prompt": "Use case: stylized-concept. Asset type: single inventory item icon for a cozy 16-bit farming RPG, polished Stardew Valley-like pixel art. A sturgeon: long ancient-looking fish, grey-blue body with rows of bony plates on its back, pointed snout, shark-like tail. Single creature centered, full body fully visible including all fins, tail, whiskers or tentacles, comfortable clear transparent margin. Crisp deliberate square pixel clusters, stepped contours, clean dark outlines, rich cohesive colors, soft top-left lighting using pixel shading, readable distinct species silhouette at small inventory sizes. Square 512x512 intended output, genuinely transparent background. No scenery, no aquarium, no ground, no framing, no text, no labels, no UI, no watermarks, no other creatures. Side or slight three-quarter view for fish; jellyfish upright and oyster open toward viewer. Only retain water effects explicitly described for legendary fish.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-ad6bb170-0864-4e39-b774-34099b093c21.png",
+      "assetId": "fishing-v2-sturgeon"
+    },
+    {
+      "id": "tuna",
+      "file": "tuna.png",
+      "description": "A bluefin tuna: thick torpedo body, dark navy-blue back, shiny silver sides, small yellow finlets near the tail.",
+      "prompt": "Use case: stylized-concept. Asset type: single inventory item icon for a cozy 16-bit farming RPG, polished Stardew Valley-like pixel art. A bluefin tuna: thick torpedo body, dark navy-blue back, shiny silver sides, small yellow finlets near the tail. Single creature centered, full body fully visible including all fins, tail, whiskers or tentacles, comfortable clear transparent margin. Crisp deliberate square pixel clusters, stepped contours, clean dark outlines, rich cohesive colors, soft top-left lighting using pixel shading, readable distinct species silhouette at small inventory sizes. Square 512x512 intended output, genuinely transparent background. No scenery, no aquarium, no ground, no framing, no text, no labels, no UI, no watermarks, no other creatures. Side or slight three-quarter view for fish; jellyfish upright and oyster open toward viewer. Only retain water effects explicitly described for legendary fish.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-1f9941ed-928e-4496-a6c4-7ed096ba3f0e.png",
+      "assetId": "fishing-v2-tuna"
+    },
+    {
+      "id": "oyster",
+      "file": "oyster.png",
+      "description": "An open pearl oyster: rough grey-brown shell opened, shiny pink-white inside, a big glowing white pearl in the middle.",
+      "prompt": "Use case: stylized-concept. Asset type: single inventory item icon for a cozy 16-bit farming RPG, polished Stardew Valley-like pixel art. An open pearl oyster: rough grey-brown shell opened, shiny pink-white inside, a big glowing white pearl in the middle. Single creature centered, full body fully visible including all fins, tail, whiskers or tentacles, comfortable clear transparent margin. Crisp deliberate square pixel clusters, stepped contours, clean dark outlines, rich cohesive colors, soft top-left lighting using pixel shading, readable distinct species silhouette at small inventory sizes. Square 512x512 intended output, genuinely transparent background. No scenery, no aquarium, no ground, no framing, no text, no labels, no UI, no watermarks, no other creatures. Side or slight three-quarter view for fish; jellyfish upright and oyster open toward viewer. Only retain water effects explicitly described for legendary fish.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-3bd6fd1a-23b8-459e-bea6-47c244b6a272.png",
+      "assetId": "fishing-v2-oyster"
+    },
+    {
+      "id": "jelly",
+      "file": "jelly.png",
+      "description": "A jellyfish: translucent glowing pink-purple dome, long flowing tentacles, soft inner glow.",
+      "prompt": "Use case: stylized-concept. Asset type: single inventory item icon for a cozy 16-bit farming RPG, polished Stardew Valley-like pixel art. A jellyfish: translucent glowing pink-purple dome, long flowing tentacles, soft inner glow. Single creature centered, full body fully visible including all fins, tail, whiskers or tentacles, comfortable clear transparent margin. Crisp deliberate square pixel clusters, stepped contours, clean dark outlines, rich cohesive colors, soft top-left lighting using pixel shading, readable distinct species silhouette at small inventory sizes. Square 512x512 intended output, genuinely transparent background. No scenery, no aquarium, no ground, no framing, no text, no labels, no UI, no watermarks, no other creatures. Side or slight three-quarter view for fish; jellyfish upright and oyster open toward viewer. Only retain water effects explicitly described for legendary fish.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-5e82c284-31be-4935-a535-98b0ae210c26.png",
+      "assetId": "fishing-v2-jelly"
+    },
+    {
+      "id": "swordfish",
+      "file": "swordfish.png",
+      "description": "A swordfish: long sharp sword-like bill, sleek dark blue-purple back, silver belly, tall crescent dorsal fin.",
+      "prompt": "Use case: stylized-concept. Asset type: single inventory item icon for a cozy 16-bit farming RPG, polished Stardew Valley-like pixel art. A swordfish: long sharp sword-like bill, sleek dark blue-purple back, silver belly, tall crescent dorsal fin. Single creature centered, full body fully visible including all fins, tail, whiskers or tentacles, comfortable clear transparent margin. Crisp deliberate square pixel clusters, stepped contours, clean dark outlines, rich cohesive colors, soft top-left lighting using pixel shading, readable distinct species silhouette at small inventory sizes. Square 512x512 intended output, genuinely transparent background. No scenery, no aquarium, no ground, no framing, no text, no labels, no UI, no watermarks, no other creatures. Side or slight three-quarter view for fish; jellyfish upright and oyster open toward viewer. Only retain water effects explicitly described for legendary fish.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-549508fa-8faf-4594-94e1-4a9044b24215.png",
+      "assetId": "fishing-v2-swordfish"
+    },
+    {
+      "id": "whaleshark",
+      "file": "whaleshark.png",
+      "description": "A whale shark: huge wide body, dark blue-grey skin covered with white spots and stripes, wide flat mouth, gentle look.",
+      "prompt": "Use case: stylized-concept. Asset type: single inventory item icon for a cozy 16-bit farming RPG, polished Stardew Valley-like pixel art. A whale shark: huge wide body, dark blue-grey skin covered with white spots and stripes, wide flat mouth, gentle look. Single creature centered, full body fully visible including all fins, tail, whiskers or tentacles, comfortable clear transparent margin. Crisp deliberate square pixel clusters, stepped contours, clean dark outlines, rich cohesive colors, soft top-left lighting using pixel shading, readable distinct species silhouette at small inventory sizes. Square 512x512 intended output, genuinely transparent background. No scenery, no aquarium, no ground, no framing, no text, no labels, no UI, no watermarks, no other creatures. Side or slight three-quarter view for fish; jellyfish upright and oyster open toward viewer. Only retain water effects explicitly described for legendary fish.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-aed366bc-0601-4e34-903f-f03a72f61037.png",
+      "assetId": "fishing-v2-whaleshark"
+    },
+    {
+      "id": "k_lake",
+      "file": "k_lake.png",
+      "description": "Legendary golden carp, king of the lake: shining gold scales, flowing fins like silk, a tiny golden crown on its head, sparkling glow around it.",
+      "prompt": "Use case: stylized-concept. Asset type: single inventory item icon for a cozy 16-bit farming RPG, polished Stardew Valley-like pixel art. Legendary golden carp, king of the lake: shining gold scales, flowing fins like silk, a tiny golden crown on its head, sparkling glow around it. Single creature centered, full body fully visible including all fins, tail, whiskers or tentacles, comfortable clear transparent margin. Crisp deliberate square pixel clusters, stepped contours, clean dark outlines, rich cohesive colors, soft top-left lighting using pixel shading, readable distinct species silhouette at small inventory sizes. Square 512x512 intended output, genuinely transparent background. No scenery, no aquarium, no ground, no framing, no text, no labels, no UI, no watermarks, no other creatures. Side or slight three-quarter view for fish; jellyfish upright and oyster open toward viewer. Only retain water effects explicitly described for legendary fish.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-13e593b8-d4da-4a1b-90d7-9a468818c4ba.png",
+      "assetId": "fishing-v2-k_lake"
+    },
+    {
+      "id": "k_river",
+      "file": "k_river.png",
+      "description": "Legendary river dragon fish, king of the river: long serpent-like fish with emerald and teal scales, a dragon head with small horns and whiskers, flowing fins, water swirling around it.",
+      "prompt": "Use case: stylized-concept. Asset type: single inventory item icon for a cozy 16-bit farming RPG, polished Stardew Valley-like pixel art. Legendary river dragon fish, king of the river: long serpent-like fish with emerald and teal scales, a dragon head with small horns and whiskers, flowing fins, water swirling around it. Single creature centered, full body fully visible including all fins, tail, whiskers or tentacles, comfortable clear transparent margin. Crisp deliberate square pixel clusters, stepped contours, clean dark outlines, rich cohesive colors, soft top-left lighting using pixel shading, readable distinct species silhouette at small inventory sizes. Square 512x512 intended output, genuinely transparent background. No scenery, no aquarium, no ground, no framing, no text, no labels, no UI, no watermarks, no other creatures. Side or slight three-quarter view for fish; jellyfish upright and oyster open toward viewer. Only retain water effects explicitly described for legendary fish.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-d909f0d8-1c98-4868-8c16-0455b14a0596.png",
+      "assetId": "fishing-v2-k_river"
+    },
+    {
+      "id": "k_sea",
+      "file": "k_sea.png",
+      "description": "Legendary king of the deep sea: giant dark-blue ancient fish with glowing cyan markings, a golden trident crown on its head, deep-sea glow and bubbles around it.",
+      "prompt": "Use case: stylized-concept. Asset type: single inventory item icon for a cozy 16-bit farming RPG, polished Stardew Valley-like pixel art. Legendary king of the deep sea: giant dark-blue ancient fish with glowing cyan markings, a golden trident crown on its head, deep-sea glow and bubbles around it. Single creature centered, full body fully visible including all fins, tail, whiskers or tentacles, comfortable clear transparent margin. Crisp deliberate square pixel clusters, stepped contours, clean dark outlines, rich cohesive colors, soft top-left lighting using pixel shading, readable distinct species silhouette at small inventory sizes. Square 512x512 intended output, genuinely transparent background. No scenery, no aquarium, no ground, no framing, no text, no labels, no UI, no watermarks, no other creatures. Side or slight three-quarter view for fish; jellyfish upright and oyster open toward viewer. Only retain water effects explicitly described for legendary fish.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-01a66582-2f42-4ea4-90cf-50d4f7a7af66.png",
+      "assetId": "fishing-v2-k_sea"
+    }
+  ]
+}

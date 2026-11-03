@@ -338,7 +338,24 @@ const inCh = id => S.gen.ch === id;
 function bless() { return 1 + 0.05 * P('q_bless'); }
 function achMult() { return 1 + 0.01 * Object.keys(S.leg.ach).length; }
 function goldMult() { return (1 + 0.1 * P('t_price')) * (1 + 0.05 * H('coin')) * (1 + 0.1 * CC('noworkers')) * achMult() * bless() * (inCh('poverty') ? 0.5 : 1); }
-function prodMult() { return (1 + 0.1 * CC('slow')) * (S.spouse ? 1.1 : 1) * (inCh('slow') ? 0.5 : 1) * bless(); }
+/* Production speeds use two buckets. Inside a bucket the bonuses add up; the two buckets multiply.
+   - this generation: tools, skill levels, villagers (starts over every generation)
+   - the family: legacy perks, challenge rewards, the valley's blessing, marriage
+   Penalties (an active challenge) multiply on top. Each list is [label, bonus] with bonus 0.3 = +30%. */
+function familyProd() { return [[L('💍 الزواج'), S.spouse ? 0.1 : 0], [L('🌈 بركة الوادي'), 0.05 * P('q_bless')], [L('🐌 مكافأة تحدي الزمن البطيء'), 0.1 * CC('slow')]]; }
+function speedSrc(kind) {
+  const pen = [[L('⚠️ تحدي الزمن البطيء (نشط)'), inCh('slow') ? 0.5 : 1]];
+  if (kind === 'grow') return { gen: [[L`🌾 المعزقة ${TIER[S.tools.hoe]}`, 0.2 * S.tools.hoe], [L`📈 مستوى الزراعة ${S.skills.farm.l}`, 0.02 * (S.skills.farm.l - 1)], [L`👩‍🌾 نورة (${hearts('noura')} قلوب)`, 0.03 * hearts('noura')]],
+    fam: [[L('🌳 تربة خصبة'), 0.25 * P('f_grow')], [L('❄️ مكافأة تحدي الشتاء'), 0.15 * CC('winter')], ...familyProd()], pen };
+  if (kind === 'ranch') return { gen: [[L`📈 مستوى الرعي ${S.skills.ranch.l}`, 0.02 * (S.skills.ranch.l - 1)]],
+    fam: [[L('🌳 حيوانات سعيدة'), 0.2 * P('r_speed')], ...familyProd()], pen };
+  if (kind === 'mine') return { gen: [[L`⛏️ الفأس ${TIER[S.tools.pick]}`, 0.6 * S.tools.pick], [L`📈 مستوى التعدين ${S.skills.mine.l}`, 0.05 * (S.skills.mine.l - 1)]],
+    fam: [[L('🌳 سواعد قوية'), 0.3 * P('m_power')], [L('🕳️ مكافأة تحدي تحت الأرض'), 0.2 * CC('underground')], ...familyProd()], pen };
+  return { gen: [[L`🎣 السنارة ${TIER[S.tools.rod]}`, 0.5 * S.tools.rod], [L`📈 مستوى الصيد ${S.skills.fish.l}`, 0.03 * (S.skills.fish.l - 1)]],
+    fam: [[L('🌳 سواعد قوية'), 0.3 * P('m_power')], ...familyProd()], pen };
+}
+function bucket(list) { return list.reduce((a, [, b]) => a + b, 1); }
+function speedMult(kind) { const s = speedSrc(kind); return bucket(s.gen) * bucket(s.fam) * s.pen.reduce((a, [, f]) => a * f, 1); }
 function xpMult() { return (1 + 0.1 * H('diary')) * achMult() * bless(); }
 function warMult() { return (1 + 0.15 * P('w_power')) * (1 + 0.1 * CC('warrior')) * bless(); }
 function starMult() { return (1 + 0.1 * P('t_stars')) * (1 + 0.05 * H('amulet')) * (1 + 0.1 * CC('poverty')) * bless(); }
@@ -433,8 +450,7 @@ function addXp(k, x) {
 function cropUnlocked(c) { return S.skills.farm.l >= c.lvl && (c.season !== 4 || S.leg.gen >= 3); }
 function waterMult() { return 2 + 0.25 * S.tools.can; }
 function growMult(c) {
-  let m = (1 + 0.2 * S.tools.hoe) * (1 + 0.02 * (S.skills.farm.l - 1)) * (1 + 0.03 * hearts('noura'))
-    * (1 + 0.25 * P('f_grow')) * (1 + 0.15 * CC('winter')) * prodMult();
+  let m = speedMult('grow');
   if (c.season !== S.season && c.season !== 4 && !on('greenhouse')) m *= 0.5;
   return m;
 }
@@ -488,7 +504,7 @@ function tickFarm(dt) {
 /* ---------------- الحظيرة ---------------- */
 function barnCap() { return 5 + 5 * (S.bld.barn || 0); }
 function animalCost(a) { return Math.round(a.cost * Math.pow(1.25, S.barn.n[a.id] || 0) * (1 - 0.1 * P('r_cost'))); }
-function animalSpeed(a) { return (0.5 + (S.barn.h[a.id] ?? 100) / 100) * (1 + 0.02 * (S.skills.ranch.l - 1)) * (1 + 0.2 * P('r_speed')) * prodMult(); }
+function animalSpeed(a) { return (0.5 + (S.barn.h[a.id] ?? 100) / 100) * speedMult('ranch'); }
 function grades(id) { const q = S.barn.q[id] || { p: 0, g: 0 }, n = S.barn.n[id] || 0; return { n0: Math.max(0, n - (q.p || 0) - (q.g || 0)), p: q.p || 0, g: q.g || 0 }; }
 /* Breeding: put two animals of the same grade in a house and the result comes at once.
    Success: both become the next grade. Failure: both animals are gone (unless the «Expert breeder» perk).
@@ -571,7 +587,7 @@ function tickRanch(dt) {
 }
 
 /* ---------------- المنجم ---------------- */
-function mineMult() { return (1 + 0.6 * S.tools.pick) * (1 + 0.05 * (S.skills.mine.l - 1)) * (1 + 0.3 * P('m_power')) * (1 + 0.2 * CC('underground')) * prodMult(); }
+function mineMult() { return speedMult('mine'); }
 function hardness() { const d = S.mine.depth; return 4 + d * 0.8 + d * d * 0.01; }
 function minerCost() { return Math.round(250 * Math.pow(1.45, S.mine.miners)); }
 function minerRate() { return S.mine.miners * 0.4 * mineMult(); }
@@ -771,7 +787,7 @@ function tick(dt) {
 }
 
 /* ---------------- البحيرة ---------------- */
-function fishPower() { return (1 + 0.5 * S.tools.rod) * (1 + 0.03 * (S.skills.fish.l - 1)) * (1 + 0.3 * P('m_power')) * prodMult(); }
+function fishPower() { return speedMult('fish'); }
 function biteNeed() { return 6 + S.skills.fish.l * 0.5; }
 function fisherCost() { return Math.round(400 * Math.pow(1.45, S.lake.fishers)); }
 function fisherRate() { return S.lake.fishers * 0.35 * fishPower(); }
@@ -1665,8 +1681,18 @@ function updSettings() {
 
 /* ----- البفات الحالية ----- */
 let sideTab = 'log', lastBuffs = '';
-function prodSources() {
-  return [[L('💍 الزواج'), S.spouse ? 1.1 : 1], [L('🌈 بركة الوادي'), bless()], [L('🐌 مكافأة تحدي الزمن البطيء'), 1 + 0.1 * CC('slow')], [L('⚠️ تحدي الزمن البطيء (نشط)'), inCh('slow') ? 0.5 : 1]];
+// A speed card on the buffs panel: the two buckets, each with its own total, then the total of both.
+function speedGroup(title, kind, extra = []) {
+  const s = speedSrc(kind), part = (name, list) => {
+    const act = list.filter(([, b]) => Math.abs(b) > 0.0001);
+    return `<div class="bfl bsub"><span>${name}</span><span>×${bucket(list).toFixed(2)}</span></div>` +
+      (act.length ? act.map(([n, b]) => `<div class="bfl"><span>${n}</span><span>${pct(1 + b)}</span></div>`).join('') : L('<div class="bfl"><span>لا توجد مكافآت بعد</span></div>'));
+  };
+  const pen = s.pen.filter(([, f]) => f !== 1);
+  return `<div class="bf"><div class="bfh"><b>${title}</b><span class="bft">×${speedMult(kind).toFixed(2)}</span></div>
+    ${part(L('🧑‍🌾 هذا الجيل'), s.gen)}${part(L('🌳 العائلة'), s.fam)}
+    ${pen.map(([n, f]) => `<div class="bfl"><span>${n}</span><span class="neg">×${f}</span></div>`).join('')}
+    ${extra.map(([n, v]) => `<div class="bfl ex"><span>${n}</span><span>${v}</span></div>`).join('')}</div>`;
 }
 function pct(f) { const v = Math.round((f - 1) * 100); return (v >= 0 ? '+' : '') + v + '%'; }
 function buffGroup(title, src, extra = []) {
@@ -1677,18 +1703,16 @@ function buffGroup(title, src, extra = []) {
     ${extra.map(([n, v]) => `<div class="bfl ex"><span>${n}</span><span>${v}</span></div>`).join('')}</div>`;
 }
 function buffsHtml() {
-  const g = buffGroup, prod = prodSources();
+  const g = buffGroup;
   let h = '';
-  h += g(L('🌱 سرعة نمو المحاصيل'), [[L`🌾 المعزقة ${TIER[S.tools.hoe]}`, 1 + 0.2 * S.tools.hoe], [L`📈 مستوى الزراعة ${S.skills.farm.l}`, 1 + 0.02 * (S.skills.farm.l - 1)],
-    [L`👩‍🌾 نورة (${hearts('noura')} قلوب)`, 1 + 0.03 * hearts('noura')], [L('🌳 تربة خصبة'), 1 + 0.25 * P('f_grow')], [L('❄️ مكافأة تحدي الشتاء'), 1 + 0.15 * CC('winter')], ...prod],
+  h += speedGroup(L('🌱 سرعة نمو المحاصيل'), 'grow',
     [[L('💧 الحوض المسقي'), '×' + waterMult().toFixed(2)], [L('🍂 خارج الموسم'), on('greenhouse') ? L('بدون عقوبة 🏡') : '×0.50'],
       [L('🧺 فرصة حصاد مضاعف'), Math.round(S.skills.farm.l + 3 * H('seedbag')) + '%'], ...(P('f_golden') ? [[L('✨ فرصة محصول ذهبي'), P('f_golden') + '%']] : [])]);
-  h += g(L('🐄 سرعة الإنتاج الحيواني'), [[L`📈 مستوى الرعي ${S.skills.ranch.l}`, 1 + 0.02 * (S.skills.ranch.l - 1)], [L('🌳 حيوانات سعيدة'), 1 + 0.2 * P('r_speed')], ...prod],
+  h += speedGroup(L('🐄 سرعة الإنتاج الحيواني'), 'ranch',
     [[L('❤️ السعادة'), L('من ×0.5 إلى ×1.5') + (on('rancher') ? L(' (الراعي يبقيها كاملة)') : '')], ...(P('r_cost') ? [[L('🏷️ سعر الحيوانات'), '-' + 10 * P('r_cost') + '%']] : [])]);
-  h += g(L('⛏️ قوة الحفر'), [[L`⛏️ الفأس ${TIER[S.tools.pick]}`, 1 + 0.6 * S.tools.pick], [L`📈 مستوى التعدين ${S.skills.mine.l}`, 1 + 0.05 * (S.skills.mine.l - 1)],
-    [L('🌳 سواعد قوية'), 1 + 0.3 * P('m_power')], [L('🕳️ مكافأة تحدي تحت الأرض'), 1 + 0.2 * CC('underground')], ...prod],
+  h += speedGroup(L('⛏️ قوة الحفر'), 'mine',
     [[L('💎 فرصة الجواهر'), '×' + ((1 + 0.5 * P('m_gem')) * (1 + 0.2 * CC('underground'))).toFixed(2)], [L('🪨 أقصى عمق للفأس'), PICK_CAP[S.tools.pick] > 1e8 ? '∞' : PICK_CAP[S.tools.pick]]]);
-  if (S.leg.gen >= 2) h += g(L('🎣 قوة الصيد'), [[L`🎣 السنارة ${TIER[S.tools.rod]}`, 1 + 0.5 * S.tools.rod], [L`📈 مستوى الصيد ${S.skills.fish.l}`, 1 + 0.03 * (S.skills.fish.l - 1)], [L('🌳 سواعد قوية'), 1 + 0.3 * P('m_power')], ...prod]);
+  if (S.leg.gen >= 2) h += speedGroup(L('🎣 قوة الصيد'), 'fish');
   h += g(L('💰 الذهب من كل المصادر'), [[L`👴 العمدة (${hearts('mayor')} قلوب) — البيع فقط`, 1 + 0.02 * hearts('mayor')], [L('🌳 مساومة'), 1 + 0.1 * P('t_price')], [L('🪙 العملة القديمة'), 1 + 0.05 * H('coin')],
     [L('🙅 مكافأة تحدي بدون عمال'), 1 + 0.1 * CC('noworkers')], [L`🏅 الإنجازات (${Object.keys(S.leg.ach).length})`, achMult()], [L('🌈 بركة الوادي'), bless()], [L('⚠️ تحدي القحط (نشط)'), inCh('poverty') ? 0.5 : 1]]);
   h += g(L('⚔️ الهجوم والصحة'), [[L('🌳 دم المحارب'), 1 + 0.15 * P('w_power')], [L('⚔️ مكافأة تحدي المحارب'), 1 + 0.1 * CC('warrior')], [L('🌈 بركة الوادي'), bless()]],

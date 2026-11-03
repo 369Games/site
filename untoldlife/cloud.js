@@ -3,13 +3,18 @@
    Players always start as guests with the save on their device. Linking Google or an email sign-in link
    copies the save to the cloud, keeps it in sync, and brings it back on any device.
    Runs only on the published site, when SITE_CONFIG.firebase is set (tools/site/config.json). Locally nothing loads.
-   Cloud document: players/{uid}/saves/untoldlife = { game, save (protected UL2 string), name, gen, play, t }. */
-const CLOUD = { on: false, ready: false, user: null, last: 0, lastPlay: -1, busy: false, err: '', sentTo: '', pending: null };
+   Cloud document: players/{uid}/saves/untoldlife = { game, save (protected UL2 string), name, gen, play, t, ts }.
+   Upload limits (Firebase's free plan allows 20,000 writes a day for everyone together):
+   - automatic upload every 3 minutes, and when the page is hidden or closed;
+   - never two uploads from this device less than 25 seconds apart; the «Upload now» button once a minute;
+   - the database rules (tools/firestore.rules) refuse any write less than 20 seconds after the last one,
+     using the server's clock (ts), so a script that skips the game can't flood it either. */
+const CLOUD = { on: false, ready: false, user: null, last: 0, lastPlay: -1, busy: false, err: '', sentTo: '', pending: null, sentAt: 0, manualAt: 0, retryT: 0 };
 const FB_VER = '10.14.1';
 const EMAIL_KEY = 'untoldlife_email', NUDGE_KEY = 'untoldlife_cloud_nudge';
 const PREV_KEY = 'untoldlife_save_prev';   // the save that lost to the other one, kept just in case
 const LOADED_KEY = 'untoldlife_cloud_loaded';
-const SYNC_MS = 30000;
+const SYNC_MS = 180000, GAP_MS = 25000, MANUAL_MS = 60000;
 
 function cloudCfg() { const c = siteConfig().firebase; return c && c.apiKey ? c : null; }
 function cloudScript(src) {
@@ -95,12 +100,24 @@ async function cloudUpload(force) {
   if (!CLOUD.user || !S || !S.started || CLOUD.busy || CLOUD.pending || saveBlocked) return;
   const play = Math.round(S.stats.play);
   if (!force && play === CLOUD.lastPlay) return;
+  const wait = CLOUD.sentAt + GAP_MS - Date.now();
+  if (wait > 0) { cloudRetry(wait); return; } // too soon after the last upload: try again when allowed
   CLOUD.busy = true;
   try {
-    await (await cloudDoc()).set({ game: 'untoldlife', save: encodeSave(S), ...cloudSummary(S), t: Date.now() });
-    CLOUD.last = Date.now(); CLOUD.lastPlay = play; CLOUD.err = '';
-  } catch (e) { CLOUD.err = 'sync'; }
+    const doc = await cloudDoc();
+    await doc.set({ game: 'untoldlife', save: encodeSave(S), ...cloudSummary(S), t: Date.now(), ts: firebase.firestore.FieldValue.serverTimestamp() });
+    CLOUD.last = CLOUD.sentAt = Date.now(); CLOUD.lastPlay = play; CLOUD.err = '';
+  } catch (e) {
+    // Refused by the 20-second rule (another device uploaded just now): try once more a little later.
+    if (e && e.code === 'permission-denied' && !CLOUD.retried) { CLOUD.retried = true; CLOUD.sentAt = Date.now(); cloudRetry(GAP_MS); }
+    else CLOUD.err = 'sync';
+  }
+  if (!CLOUD.err && CLOUD.sentAt === CLOUD.last) CLOUD.retried = false;
   CLOUD.busy = false; cloudRefresh();
+}
+function cloudRetry(ms) {
+  if (CLOUD.retryT) return;
+  CLOUD.retryT = setTimeout(() => { CLOUD.retryT = 0; cloudUpload(true); }, ms + 500);
 }
 async function cloudOnSignIn() {
   let snap;
@@ -173,13 +190,18 @@ function cloudPanel() {
   }
   const who = esc(CLOUD.user.email || CLOUD.user.displayName || '');
   const when = CLOUD.err === 'sync' ? L('⚠️ آخر محاولة رفع ما نجحت، بنحاول مرة ثانية') : CLOUD.last ? L`آخر رفع: قبل ${ftime(Math.max(1, (Date.now() - CLOUD.last) / 1000))}` : L('ما رفعنا شي للحين');
-  return h + L`<p class="hint">✅ متصل: <b>${who}</b><br>${when}. الحفظ يترفع تلقائياً كل 30 ثانية.</p>
+  return h + L`<p class="hint">✅ متصل: <b>${who}</b><br>${when}. الحفظ يترفع تلقائياً كل 3 دقايق، وكل ما تطلع من اللعبة.</p>
   <div class="row"><button class="btn gold sm" data-a="cloudUpload">☁️ ارفع الحين</button><button class="btn ghost sm" data-a="cloudOut">تسجيل خروج</button><button class="btn red sm" data-a="cloudDelete">حذف الحساب</button></div>`;
 }
 
 A.cloudGoogle = () => cloudGoogle();
 A.cloudEmail = () => cloudEmailSend();
-A.cloudUpload = async () => { await cloudUpload(true); if (!CLOUD.err) toast(L('☁️ انرفع حفظك')); };
+A.cloudUpload = async () => {
+  const wait = CLOUD.manualAt + MANUAL_MS - Date.now();
+  if (wait > 0) return toast(L`⏳ رفعت قبل شوي. تقدر ترفع مرة ثانية بعد ${Math.ceil(wait / 1000)}ث`);
+  CLOUD.manualAt = Date.now();
+  await cloudUpload(true); if (!CLOUD.err && CLOUD.sentAt > CLOUD.manualAt - 1000) toast(L('☁️ انرفع حفظك'));
+};
 A.cloudOut = () => cloudSignOut();
 A.cloudDelete = () => cloudDelete();
 A.cloudChip = () => {
@@ -190,6 +212,7 @@ A.cloudChip = () => {
 // Sync while playing, and when the page is hidden or closed.
 setInterval(() => cloudUpload(), SYNC_MS);
 document.addEventListener('visibilitychange', () => { if (document.hidden) cloudUpload(); });
+window.addEventListener('pagehide', () => cloudUpload());
 // One gentle suggestion to link an account, after the first retirement or an hour of play.
 setInterval(() => {
   if (!CLOUD.ready || CLOUD.user || CLOUD.err || !S || !S.started) return;

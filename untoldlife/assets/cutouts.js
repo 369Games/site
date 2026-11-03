@@ -115,4 +115,5 @@ const ART_CUTOUTS={
 /* Independent breeding art; keep these entries when extracting original cutouts. */
 ["egg_g","milk_g","wool_g","chicken-p","chicken-g","cow-p","cow-g","sheep-p","sheep-g"].forEach((id,index)=>{ART_CUTOUTS['breeding:'+index]='art/breeding/'+id+'.png';});
 ART_CUTOUTS['breeding:9']='art/breeding/breedlab.webp';
+for(let i=0;i<7;i++)ART_CUTOUTS['crook:'+i]='art/shepherd-crooks/crook-'+i+'.webp';
 ["trout","crayfish","eel","catfish","sturgeon","tuna","oyster","jelly","swordfish","whaleshark","k_lake","k_river","k_sea"].forEach((id,index)=>{ART_CUTOUTS['fish2:'+index]='art/fishing-v2/'+id+'.webp';});

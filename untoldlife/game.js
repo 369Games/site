@@ -168,8 +168,7 @@ const TOOLS = [
   { id: 'sword', n: L('السيف'), e: '🗡️', eff: l => L`+${SWORD[l]} هجوم` },
   { id: 'armor', n: L('الدرع'), e: '🛡️', eff: l => L`+${ARMOR_DEF[l]} دفاع • +${ARMOR_HP[l]} صحة` },
   { id: 'rod', n: L('السنارة'), e: '🎣', eff: l => L`قوة الصيد ×${(1 + 0.5 * l).toFixed(1)} • أسماك نادرة أكثر` },
-  // No art of its own yet: shows the rancher.
-  { id: 'crook', n: L('عصا الراعي'), e: '🐑', art: 'building-rancher', eff: l => L`+${l * 50}% سرعة الإنتاج الحيواني` },
+  { id: 'crook', n: L('عصا الراعي'), e: '🐑', eff: l => L`+${l * 50}% سرعة الإنتاج الحيواني` },
 ];
 
 const BUILDINGS = [

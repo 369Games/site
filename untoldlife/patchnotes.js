@@ -3,6 +3,10 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.6.1', date: '2026-11-03', big: false, title: L('عصا الراعي'), items: [
+    L('🐑 أداة جديدة عند الحداد: «عصا الراعي». كل مستوى يعطي +50% سرعة الإنتاج الحيواني، لين +300% في الأدامانتيت.'),
+    L('📧 تقدر تراسلنا الحين على contact@369games.net.'),
+  ] },
   { v: '1.6', date: '2026-11-03', big: true, title: L('القوة صارت تجي من العائلة'), items: [
     L('🌳 السرعات (النمو والحيوانات والحفر والصيد) صارت من سلّتين: «هذا الجيل» (الأدوات والمستويات وأهل القرية) و«العائلة» (مهارات الإرث والتحديات والبركة والزواج).'),
     L('➕ المكافآت داخل كل سلة تنجمع، والسلتين تنضرب في بعض. السرعة في بداية الجيل صارت أهدأ، وكل تقاعد يقوّيك أكثر من قبل.'),

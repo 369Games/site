@@ -168,6 +168,8 @@ const TOOLS = [
   { id: 'sword', n: L('السيف'), e: '🗡️', eff: l => L`+${SWORD[l]} هجوم` },
   { id: 'armor', n: L('الدرع'), e: '🛡️', eff: l => L`+${ARMOR_DEF[l]} دفاع • +${ARMOR_HP[l]} صحة` },
   { id: 'rod', n: L('السنارة'), e: '🎣', eff: l => L`قوة الصيد ×${(1 + 0.5 * l).toFixed(1)} • أسماك نادرة أكثر` },
+  // No art of its own yet: shows the rancher.
+  { id: 'crook', n: L('عصا الراعي'), e: '🐑', art: 'building-rancher', eff: l => L`+${l * 50}% سرعة الإنتاج الحيواني` },
 ];
 
 const BUILDINGS = [
@@ -307,7 +309,7 @@ function newState() {
     farm: { plots, seed: 'turnip' },
     barn: { n: {}, t: {}, h: {}, q: {}, br: null, houses: 1, cd: [], lab: 0 },
     mine: { depth: 1, max: 1, prog: 0, blocks: 0, miners: 0 },
-    tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0 },
+    tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0, crook: 0 },
     lake: { prog: 0, fishers: 0, last: null, spot: 'lake', bait: 0, autoBait: false },
     hero: { lvl: 1, xp: 0, hp: 60 },
     dun: { active: false, floor: 1, max: 1, kills: 0, enemy: null, auto: true, autoEat: true, resting: false, ht: 0, et: 0, retry: 0 },
@@ -347,7 +349,7 @@ function speedSrc(kind) {
   const pen = [[L('⚠️ تحدي الزمن البطيء (نشط)'), inCh('slow') ? 0.5 : 1]];
   if (kind === 'grow') return { gen: [[L`🌾 المعزقة ${TIER[S.tools.hoe]}`, 0.2 * S.tools.hoe], [L`📈 مستوى الزراعة ${S.skills.farm.l}`, 0.02 * (S.skills.farm.l - 1)], [L`👩‍🌾 نورة (${hearts('noura')} قلوب)`, 0.03 * hearts('noura')]],
     fam: [[L('🌳 تربة خصبة'), 0.25 * P('f_grow')], [L('❄️ مكافأة تحدي الشتاء'), 0.15 * CC('winter')], ...familyProd()], pen };
-  if (kind === 'ranch') return { gen: [[L`📈 مستوى الرعي ${S.skills.ranch.l}`, 0.02 * (S.skills.ranch.l - 1)]],
+  if (kind === 'ranch') return { gen: [[L`🐑 عصا الراعي ${TIER[S.tools.crook || 0]}`, 0.5 * (S.tools.crook || 0)], [L`📈 مستوى الرعي ${S.skills.ranch.l}`, 0.02 * (S.skills.ranch.l - 1)]],
     fam: [[L('🌳 حيوانات سعيدة'), 0.2 * P('r_speed')], ...familyProd()], pen };
   if (kind === 'mine') return { gen: [[L`⛏️ الفأس ${TIER[S.tools.pick]}`, 0.6 * S.tools.pick], [L`📈 مستوى التعدين ${S.skills.mine.l}`, 0.05 * (S.skills.mine.l - 1)]],
     fam: [[L('🌳 سواعد قوية'), 0.3 * P('m_power')], [L('🕳️ مكافأة تحدي تحت الأرض'), 0.2 * CC('underground')], ...familyProd()], pen };
@@ -918,7 +920,7 @@ function applyGenStart(oldTools) {
   const LG = S.leg, nw = inCh('noworkers');
   S.gold = 50 + startGold(P('t_gold'));
   for (let i = 0; i < 2 * P('f_plots'); i++) S.farm.plots.push({ c: null, p: 0, w: false });
-  for (const t of ['hoe', 'can', 'pick', 'sword', 'armor', 'rod']) S.tools[t] = Math.min(6, Math.max(H(t), P('q_tools') && oldTools ? (oldTools[t] || 0) - 1 : 0));
+  for (const t of ['hoe', 'can', 'pick', 'sword', 'armor', 'rod', 'crook']) S.tools[t] = Math.min(6, Math.max(H(t), P('q_tools') && oldTools ? (oldTools[t] || 0) - 1 : 0));
   if (!noFarm()) {
     if (P('r_start')) { S.barn.n.chicken = 2 * P('r_start'); S.barn.h.chicken = 100; }
     if (H('cow')) { S.barn.n.cow = H('cow'); S.barn.h.cow = 100; }
@@ -1092,7 +1094,7 @@ const A = {
     S.gold -= c; S.guild.board = []; fillBoard();
   },
   upgrade: v => {
-    const l = S.tools[v] + 1; if (l > 6) return;
+    const l = (S.tools[v] || 0) + 1; if (l > 6 || !TOOLS.some(x => x.id === v)) return;
     const c = toolCost(l);
     if (S.gold < c.gold || have(c.ore) < c.qty) return;
     S.gold -= c.gold; take(c.ore, c.qty); S.tools[v] = l;
@@ -1561,12 +1563,12 @@ function viewSmith() {
   <p class="hint">كل تطوير يحتاج ذهباً ومعدناً من المنجم. المعادن مقفلة 🔒 في السوق افتراضياً حتى لا تبيعها بالخطأ.</p><div class="smith-scene" aria-hidden="true">${icon("npc-smith-1",64)}${icon("anvil",64)}${icon("iron",64)}</div><div class="grid">`;
   for (const t of TOOLS) {
     if (t.id === 'rod' && S.leg.gen < 2) continue;
-    const l = S.tools[t.id];
-    h += L`<div class="card"><div class="top"><span class="big">${icon(t.id + '-' + l,48)}</span><div class="meta"><b>${t.n} ${TIER[l]}</b><small>المستوى ${l} من 6</small></div></div>
+    const l = S.tools[t.id] || 0, ti = k => icon(t.art || t.id + '-' + k, 48);
+    h += L`<div class="card"><div class="top"><span class="big">${ti(l)}</span><div class="meta"><b>${t.n} ${TIER[l]}</b><small>المستوى ${l} من 6</small></div></div>
       <div class="kv nowrow"><span>✅ الحالي</span><span>${t.eff(l)}</span></div>`;
     if (l < 6) {
       const c = toolCost(l + 1), o = ITEMS[c.ore], ok = S.gold >= c.gold && have(c.ore) >= c.qty;
-      h += `<div class="tool-compare">${icon(t.id + '-' + l,48)}<span aria-hidden="true">←</span>${icon(t.id + '-' + (l+1),48)}</div>`;
+      h += `<div class="tool-compare">${ti(l)}<span aria-hidden="true">←</span>${ti(l + 1)}</div>`;
       h += L`<div class="kv"><span>⬆️ التالي: ${TIER[l + 1]}</span><span>${t.eff(l + 1)}</span></div>
         <div class="kv"><span>التكلفة</span><span>${fmt(c.gold)}💰 + ${c.qty} ${icon(o)} (لديك ${fmt(have(c.ore))})</span></div>
         <div class="row"><button class="btn gold" data-a="upgrade" data-v="${t.id}" ${ok ? '' : 'disabled'}>🔨 طوّر</button></div>`;

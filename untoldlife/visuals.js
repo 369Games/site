@@ -156,6 +156,15 @@ function goldenVisual(i, g) {
   floatVisual(el, '✨ +' + fmt(g) + ' ' + icon('coin', 24), 'golden-float');
 }
 
+// A fishing king: a big gold card, like a successful breeding.
+function fishVisual(f, kg) {
+  let box = document.getElementById('breedFx'); if (box) box.remove();
+  box = document.createElement('div'); box.id = 'breedFx'; box.className = 'breed-fx win';
+  box.innerHTML = `<div class="bfx-card"><div class="bfx-pair">${icon(f, 96)}</div><b>👑 ${f.n}!</b><small>${kg} ${L('كغ')}</small></div>`;
+  box.addEventListener('click', () => box.remove());
+  document.body.appendChild(box); setTimeout(() => box.isConnected && box.remove(), 3500);
+}
+
 // Breeding: the two animals shake for a moment, then the result opens like a card pack.
 function breedVisual(a, to, win) {
   let box = document.getElementById('breedFx');

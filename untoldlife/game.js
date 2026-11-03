@@ -104,17 +104,47 @@ const MONSTER_MATS = [
 ];
 MONSTER_MATS.forEach(m => addItem(m.id, { n: m.n, e: m.e, price: m.price, cat: 'monster' }));
 
-const FISH = [
-  { id: 'sardine', n: L('سردين'), e: '🐟', price: 18, lvl: 1 },
-  { id: 'shrimp', n: L('روبيان'), e: '🦐', price: 30, lvl: 1 },
-  { id: 'crab', n: L('سلطعون'), e: '🦀', price: 60, lvl: 3 },
-  { id: 'tropical', n: L('سمك ملوّن'), e: '🐠', price: 110, lvl: 5 },
-  { id: 'puffer', n: L('سمك منتفخ'), e: '🐡', price: 200, lvl: 7 },
-  { id: 'squid', n: L('حبّار'), e: '🦑', price: 380, lvl: 10 },
-  { id: 'octopus', n: L('أخطبوط'), e: '🐙', price: 700, lvl: 13 },
-  { id: 'shark', n: L('قرش'), e: '🦈', price: 1500, lvl: 16 },
+// Fishing spots open with the fishing level. Each has its own fish and one rare «king».
+const SPOTS = [
+  { id: 'lake', n: L('البحيرة'), e: '🏞️', lvl: 1 },
+  { id: 'river', n: L('النهر'), e: '🌊', lvl: 8 },
+  { id: 'sea', n: L('البحر'), e: '🌅', lvl: 15 },
 ];
-FISH.forEach(f => addItem(f.id, { n: f.n, e: f.e, price: f.price, cat: 'fish' }));
+// w = average weight in kg.
+const FISH = [
+  { id: 'sardine', n: L('سردين'), e: '🐟', price: 18, lvl: 1, spot: 'lake', w: 0.1 },
+  { id: 'shrimp', n: L('روبيان'), e: '🦐', price: 30, lvl: 1, spot: 'lake', w: 0.05 },
+  { id: 'crab', n: L('سلطعون'), e: '🦀', price: 60, lvl: 3, spot: 'lake', w: 0.5 },
+  { id: 'tropical', n: L('سمك ملوّن'), e: '🐠', price: 110, lvl: 5, spot: 'lake', w: 0.3 },
+  { id: 'puffer', n: L('سمك منتفخ'), e: '🐡', price: 200, lvl: 7, spot: 'lake', w: 1 },
+  { id: 'squid', n: L('حبّار'), e: '🦑', price: 380, lvl: 10, spot: 'lake', w: 2 },
+  { id: 'octopus', n: L('أخطبوط'), e: '🐙', price: 700, lvl: 13, spot: 'lake', w: 5 },
+  { id: 'shark', n: L('قرش'), e: '🦈', price: 1500, lvl: 16, spot: 'lake', w: 80 },
+  { id: 'trout', n: L('سلمون مرقّط'), e: '🐟', price: 260, lvl: 8, spot: 'river', w: 1.5 },
+  { id: 'crayfish', n: L('جراد النهر'), e: '🦞', price: 420, lvl: 10, spot: 'river', w: 0.3 },
+  { id: 'eel', n: L('ثعبان الماء'), e: '🐍', price: 650, lvl: 12, spot: 'river', w: 2 },
+  { id: 'catfish', n: L('سمك السلّور'), e: '🐡', price: 1000, lvl: 14, spot: 'river', w: 8 },
+  { id: 'sturgeon', n: L('سمك الحفش'), e: '🐟', price: 1900, lvl: 17, spot: 'river', w: 25 },
+  { id: 'tuna', n: L('تونة'), e: '🐟', price: 1300, lvl: 15, spot: 'sea', w: 20 },
+  { id: 'oyster', n: L('محار اللؤلؤ'), e: '🦪', price: 2000, lvl: 17, spot: 'sea', w: 0.5 },
+  { id: 'jelly', n: L('قنديل البحر'), e: '🪼', price: 2600, lvl: 18, spot: 'sea', w: 1 },
+  { id: 'swordfish', n: L('أبو سيف'), e: '🗡️', price: 4200, lvl: 20, spot: 'sea', w: 60 },
+  { id: 'whaleshark', n: L('القرش الحوتي'), e: '🐋', price: 8000, lvl: 23, spot: 'sea', w: 300 },
+];
+const KINGS = [
+  { id: 'k_lake', n: L('الشبوط الذهبي'), e: '👑', price: 20000, lvl: 5, spot: 'lake', w: 12, king: 1 },
+  { id: 'k_river', n: L('تنين النهر'), e: '🐉', price: 80000, lvl: 12, spot: 'river', w: 40, king: 1 },
+  { id: 'k_sea', n: L('ملك الأعماق'), e: '🔱', price: 300000, lvl: 20, spot: 'sea', w: 500, king: 1 },
+];
+[...FISH, ...KINGS].forEach(f => addItem(f.id, { n: f.n, e: f.e, price: f.price, cat: 'fish' }));
+// x = weight multiplier, m = how many fish one catch of that rarity is worth.
+const RARITY = [
+  { n: L('عادية'), x: 1, m: 1 },
+  { n: L('نادرة'), x: 1.8, m: 3 },
+  { n: L('أسطورية'), x: 3.5, m: 10 },
+];
+// Bait: one crop from each season. 5 crops = 25 baited catches with double the rare chances.
+const BAIT = ['potato', 'corn', 'apple', 'sweetpotato'], BAIT_COST = 5, BAIT_USES = 25;
 
 const MONSTERS = [
   [L('سلايم'), '🟢'], [L('جرذ عملاق'), '🐀'], [L('خفاش الكهف'), '🦇'], [L('عنكبوت سام'), '🕷️'], [L('هيكل عظمي'), '💀'],
@@ -278,7 +308,7 @@ function newState() {
     barn: { n: {}, t: {}, h: {}, q: {}, br: null, houses: 1, cd: [], lab: 0 },
     mine: { depth: 1, max: 1, prog: 0, blocks: 0, miners: 0 },
     tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0 },
-    lake: { prog: 0, fishers: 0, last: null },
+    lake: { prog: 0, fishers: 0, last: null, spot: 'lake', bait: 0, autoBait: false },
     hero: { lvl: 1, xp: 0, hp: 60 },
     dun: { active: false, floor: 1, max: 1, kills: 0, enemy: null, auto: true, autoEat: true, resting: false, ht: 0, et: 0, retry: 0 },
     guild: { gp: 0, board: [], active: [], boardT: 0, qid: 0 },
@@ -286,7 +316,7 @@ function newState() {
     npc: Object.fromEntries(NPCS.map(n => [n.id, { pts: 250, gd: 0 }])),
     stats: { earned: 0, harvests: 0, products: 0, blocks: 0, kills: 0, quests: 0, play: 0, fish: 0 },
     gen: { earned: 0, days: 0, ch: null, chDone: false },
-    leg: { gen: 1, family: '', stars: 0, totalStars: 0, perks: {}, heir: {}, ch: {}, ach: {}, best: { dun: 0, mine: 0 }, history: [], married: 0 },
+    leg: { gen: 1, family: '', stars: 0, totalStars: 0, perks: {}, heir: {}, ch: {}, ach: {}, best: { dun: 0, mine: 0 }, history: [], married: 0, album: {}, fishRec: {} },
     last: Date.now(),
   };
 }
@@ -376,7 +406,7 @@ function take(id, n = 1) {
 }
 function addGold(n) { S.gold += n; if (n > 0) { S.stats.earned += n; S.gen.earned += n; } }
 function hearts(id) { return Math.floor(((S.npc[id] || {}).pts || 0) / 100) + (S.spouse === id ? 10 : 0); }
-function sellPrice(id) { return Math.round(ITEMS[id].price * (1 + 0.02 * hearts('mayor')) * goldMult() * (id === dealCrop() ? 3 : 1)); }
+function sellPrice(id) { return Math.round(ITEMS[id].price * (1 + 0.02 * hearts('mayor')) * goldMult() * (id === dealCrop() ? 3 : 1) * (ITEMS[id].cat === 'fish' ? fishMult() : 1)); }
 // Seasonal trader (special skill): one crop of the current season sells for x3.
 function dealCrop() {
   if (!P('t_deal')) return null;
@@ -750,17 +780,51 @@ function fish(amount) {
   let g = 0;
   while (S.lake.prog >= biteNeed() && g++ < 500) { S.lake.prog -= biteNeed(); catchFish(); }
 }
+function curSpot() { return SPOTS.find(s => s.id === S.lake.spot && S.skills.fish.l >= s.lvl) || SPOTS[0]; }
+function baitX() { return S.lake.bait > 0 ? 2 : 1; }
+function rareChance() { return Math.min(0.4, (0.08 + 0.01 * S.tools.rod) * baitX()); }
+function legChance() { return Math.min(0.1, (0.01 + 0.002 * S.tools.rod) * baitX()); }
+// Fish album (kept by the family across generations): every fish with all 3 rarities gives +4% fish price, every king +10%.
+function albumBits(id) { return (S.leg.album || {})[id] || 0; }
+function albumRows() { return FISH.filter(f => (albumBits(f.id) & 7) === 7).length; }
+function albumKings() { return KINGS.filter(k => albumBits(k.id)).length; }
+function fishMult() { return 1 + 0.04 * albumRows() + 0.1 * albumKings(); }
+function albumDone() { let n = 0; for (const f of FISH) for (let r = 0; r < 3; r++) if (albumBits(f.id) & (1 << r)) n++; return n + albumKings(); }
+function albumTotal() { return FISH.length * 3 + KINGS.length; }
+function makeBait(id) {
+  if (!BAIT.includes(id) || !take(id, BAIT_COST)) return false;
+  S.lake.bait = (S.lake.bait || 0) + BAIT_USES; return true;
+}
 function catchFish() {
+  if (!(S.lake.bait > 0) && S.lake.autoBait) makeBait(BAIT.slice().sort((a, b) => have(b) - have(a))[0]);
+  const bx = baitX(), rc = rareChance(), lc = legChance();
+  if (S.lake.bait > 0) S.lake.bait--;
   if (Math.random() < 0.01) {
     const g = Math.round(300 * S.skills.fish.l * goldMult()); addGold(g);
-    S.lake.last = 'treasure'; log(L`🧰 اصطدت صندوق كنز! +${fmt(g)}💰`, 'gold'); return;
+    S.lake.last = 'treasure'; S.stats.fish++; if (!offline) log(L`🧰 اصطدت صندوق كنز! +${fmt(g)}💰`, 'gold'); return;
   }
-  const av = FISH.filter(f => f.lvl <= S.skills.fish.l);
+  const sp = curSpot(), K = KINGS.find(k => k.spot === sp.id);
+  if (K && S.skills.fish.l >= K.lvl && Math.random() < 0.002 * bx) return landFish(K, 0);
+  const av = FISH.filter(f => f.spot === sp.id && f.lvl <= S.skills.fish.l);
   const ws = av.map((f, i) => Math.pow(0.62, i) * Math.pow(1 + 0.15 * S.tools.rod, i));
   let r = Math.random() * ws.reduce((a, b) => a + b, 0), f = av[0];
   for (let i = 0; i < av.length; i++) { r -= ws[i]; if (r <= 0) { f = av[i]; break; } }
-  give(f.id); S.stats.fish++; S.lake.last = f.id;
-  addXp('fish', f.price / 6);
+  const roll = Math.random();
+  landFish(f, roll < lc ? 2 : roll < lc + rc ? 1 : 0);
+}
+function landFish(f, r) {
+  const R = RARITY[r], kg = Math.max(0.01, Math.round(f.w * (0.6 + Math.random() * 0.8) * R.x * 100) / 100);
+  const n = f.king || !r ? 1 : Math.max(2, Math.round(R.m * kg / (f.w * R.x)));
+  give(f.id, n); S.stats.fish++;
+  const al = S.leg.album || (S.leg.album = {}), rec = S.leg.fishRec || (S.leg.fishRec = {});
+  al[f.id] = (al[f.id] || 0) | (1 << r);
+  const old = rec[f.id] || 0;
+  if (kg > old) { rec[f.id] = kg; if (old && !offline) S.lake.recFx = 1; }
+  S.lake.last = f.id; S.lake.lastR = r; S.lake.lastKg = kg; S.lake.lastN = n;
+  addXp('fish', f.price * n / 6);
+  if (offline) return;
+  if (f.king) { log(L`👑 اصطدت ${f.e} ${f.n}! وزنه ${kg} كغ`, 'golden'); if (typeof fishVisual === 'function') fishVisual(f, kg); }
+  else if (r === 2) log(L`🌟 صيدة أسطورية! ${f.e} ${f.n} ${kg} كغ (×${n})`, 'golden');
 }
 
 /* ---------------- التحديات والإنجازات ---------------- */
@@ -974,6 +1038,9 @@ const A = {
   pet: v => { S.barn.h[v] = Math.min(100, (S.barn.h[v] ?? 100) + 25); toast(L('❤️ الحيوانات سعيدة')); },
   dig: () => { dig(mineMult()); },
   cast: () => { fish(fishPower()); },
+  spot: v => { const s = SPOTS.find(x => x.id === v); if (s && S.skills.fish.l >= s.lvl) { S.lake.spot = v; S.lake.prog = 0; } },
+  bait: v => { if (makeBait(v)) log(L`🪱 جهّزت طُعم من ${ITEMS[v].e} ${ITEMS[v].n}: +${BAIT_USES} صيدة`); },
+  autoBait: () => { S.lake.autoBait = !S.lake.autoBait; },
   hireFisher: () => { if (inCh('noworkers')) return toast(L('🚫 ممنوع في تحدي بدون عمال')); const c = fisherCost(); if (S.gold < c) return; S.gold -= c; S.lake.fishers++; log(L`🎣 وظّفت صياداً (${S.lake.fishers})`); },
   hireMiner: () => { if (inCh('noworkers')) return toast(L('🚫 ممنوع في تحدي بدون عمال')); const c = minerCost(); if (S.gold < c) return; S.gold -= c; S.mine.miners++; log(L`👷 وظّفت عامل منجم (${S.mine.miners})`); },
   mineUp: () => { if (S.mine.depth > 1) { S.mine.depth--; S.mine.prog = 0; } },
@@ -1647,17 +1714,33 @@ function renderSide() {
 function viewLake() {
   if (S.leg.gen < 2) return L`<div class="panel"><div class="ph"><h2>🎣 البحيرة</h2></div>
     <p class="hint">🔒 خلف التلال بحيرة صافية ما اقترب منها أحد من زمن جدك... تنفتح في <b>الجيل الثاني</b>. تقاعد من صفحة 🌳 الإرث لتفتحها.</p></div>`;
-  let h = L`<div class="panel"><div class="ph"><h2>🎣 بحيرة الوادي</h2>${skillBar('fish')}</div>
-  <p class="hint">ارمِ السنارة لتصطاد، أو وظّف صيادين يصطادون عنك. مستوى الصيد يفتح أسماكاً أندر، والسنارة (عند الحداد) تزيد القوة وفرصة النادر. السمك يُباع ويؤكل في المعارك، وأحياناً يطلع صندوق كنز 🧰!</p>
+  const sp = curSpot();
+  let h = L`<div class="panel"><div class="ph"><h2>🎣 ${sp.e} ${sp.n}</h2>${skillBar('fish')}</div>
+  <p class="hint">ارمِ السنارة لتصطاد، أو وظّف صيادين يصطادون عنك. كل صيدة لها ندرة ووزن: النادرة والأسطورية تعطيك أكثر من سمكة، وكل ما كانت أثقل كانت أغلى. مستوى الصيد يفتح أسماكاً وأماكن جديدة، والسنارة (عند الحداد) تزيد القوة وفرصة النادر. وأحياناً يطلع صندوق كنز 🧰!</p>
+  <div class="spots">${SPOTS.map(s => S.skills.fish.l >= s.lvl ? `<button class="btn ${s.id === sp.id ? 'gold' : 'ghost'} sm" data-a="spot" data-v="${s.id}">${s.e} ${s.n}</button>` : L`<button class="btn ghost sm" disabled>🔒 ${s.n} (صيد ${s.lvl})</button>`).join('')}</div>
   <div class="minebox"><button class="digbtn lakebtn" data-a="cast"><span class="bobber-scene">${icon("bobber",48)}</span>اصطد!</button>
   <div class="mineinfo">
-    <div class="kv"><span>الطُّعم</span><span id="lk_t"></span></div><div class="bar"><i id="lk_p"></i></div>
+    <div class="kv"><span>العضّة</span><span id="lk_t"></span></div><div class="bar"><i id="lk_p"></i></div>
     <div class="kv"><span>آخر صيدة</span><span id="lk_last"></span></div>
     <div class="kv"><span>قوة الرمية</span><span id="lk_pow"></span></div>
     <div class="kv"><span>${icon('worker-fisher',24)} الصيادون: ${S.lake.fishers}</span><span id="lk_rate"></span></div>
     <div class="row">${costBtn('hireFisher', undefined, fisherCost(), L`${icon('worker-fisher',24)} وظّف صياد (${fmt(fisherCost())}💰)`)}${owned('fishers') ? togBtn('fishers') : ''}</div>
-  </div></div><h3>الأسماك</h3><div class="ores">`;
-  for (const f of FISH) h += L`<div class="ore ${f.lvl <= S.skills.fish.l ? 'on' : ''}">${icon(f)} <b>${f.n}</b><br><small>صيد ${f.lvl} • ${fmt(sellPrice(f.id))}💰</small></div>`;
+    <div class="kv"><span>فرصة النادرة / الأسطورية</span><span id="lk_ch"></span></div>
+  </div></div>
+  <div class="baitbox"><div class="kv"><span>🪱 الطُّعم: <b id="lk_bait"></b> صيدة</span><span class="hint">يضاعف فرصة النادرة والأسطورية</span></div>
+    <div class="row">${BAIT.map(id => `<button class="btn ghost sm" data-a="bait" data-v="${id}" ${have(id) >= BAIT_COST ? '' : 'disabled'}>${icon(ITEMS[id], 24)} ${BAIT_COST} ${ITEMS[id].n}</button>`).join('')}
+    <button class="btn ${S.lake.autoBait ? 'gold' : 'ghost'} sm" data-a="autoBait">${S.lake.autoBait ? '✅' : '⬜'} ${L('طُعم تلقائي')}</button></div>
+    <p class="hint">${L('الطُّعم التلقائي يستخدم المحصول اللي عندك منه أكثر. اقفل 🔒 المحصول في السوق عشان ما ينباع، وخصص له حقول عشان ما يخلص.')}</p></div>
+  </div>`;
+  const list = [...FISH.filter(f => f.spot === sp.id), ...KINGS.filter(k => k.spot === sp.id)];
+  h += L`<div class="panel"><div class="ph"><h2>📖 ألبوم الأسماك</h2><span class="stat">${albumDone()}/${albumTotal()} • +${Math.round((fishMult() - 1) * 100)}% سعر السمك</span></div>
+  <p class="hint">ألبوم العائلة ما يضيع مع الأجيال. اصطد كل سمكة بندراتها الثلاث (عادية ونادرة وأسطورية) وتاخذ +4% سعر السمك للأبد، وكل ملك تصطاده يعطيك +10%.</p><div class="ores album">`;
+  for (const f of list) {
+    const bits = albumBits(f.id), seen = bits > 0, open = f.lvl <= S.skills.fish.l;
+    const dots = f.king ? `<span class="rdot r2 ${bits ? 'on' : ''}"></span>` : [0, 1, 2].map(r => `<span class="rdot r${r} ${bits & (1 << r) ? 'on' : ''}" title="${RARITY[r].n}"></span>`).join('');
+    h += `<div class="ore ${seen ? 'on' : ''} ${f.king ? 'king' : ''}">${seen ? icon(f) : '<span class="unknown">❓</span>'} <b>${seen || open ? f.n : '???'}</b><div class="rdots">${dots}</div>
+      <small>${open ? L`صيد ${f.lvl} • ${fmt(sellPrice(f.id))}💰` : L`🔒 صيد ${f.lvl}`}</small><small id="rec_${f.id}"></small></div>`;
+  }
   return h + '</div></div>';
 }
 function updLake() {
@@ -1666,9 +1749,20 @@ function updLake() {
   $('lk_t').textContent = `${fmt(S.lake.prog)} / ${fmt(biteNeed())}`;
   const l = S.lake.last;
   const lastCatch = $('lk_last');
-  if (lastCatch._fishCount !== undefined && S.stats.fish > lastCatch._fishCount) { floatVisual(document.querySelector('.lakebtn'), '+1 ' + icon(l === 'treasure' ? 'chest' : l,24)); burstVisual(document.querySelector('.lakebtn')); }
+  if (lastCatch._fishCount !== undefined && S.stats.fish > lastCatch._fishCount) {
+    const r = l === 'treasure' ? 0 : S.lake.lastR || 0;
+    floatVisual(document.querySelector('.lakebtn'), (r ? RARITY[r].n + ' ' : '') + '+' + (l === 'treasure' ? 1 : S.lake.lastN || 1) + ' ' + icon(l === 'treasure' ? 'chest' : l,24), r ? 'golden-float' : '');
+    burstVisual(document.querySelector('.lakebtn'));
+  }
   lastCatch._fishCount = S.stats.fish;
-  visualText(lastCatch, !l ? '—' : l === 'treasure' ? L('🧰 صندوق كنز') : `${icon(ITEMS[l])} ${ITEMS[l].n}`);
+  const R = RARITY[S.lake.lastR || 0];
+  visualText(lastCatch, !l ? '—' : l === 'treasure' ? L('🧰 صندوق كنز') : `${icon(ITEMS[l])} ${ITEMS[l].n} • ${R.n} • ${S.lake.lastKg} ${L('كغ')}${S.lake.lastN > 1 ? ` (×${S.lake.lastN})` : ''}`);
+  if (S.lake.recFx) { S.lake.recFx = 0; floatVisual(document.querySelector('.lakebtn'), L('🏆 رقم قياسي!'), 'golden-float'); }
+  $('lk_bait').textContent = fmt(S.lake.bait || 0);
+  const ch = `<span class="rdot r1 on"></span> ${Math.round(rareChance() * 100)}% <span class="rdot r2 on"></span> ${(legChance() * 100).toFixed(1)}%`;
+  if ($('lk_ch')._h !== ch) { $('lk_ch')._h = ch; $('lk_ch').innerHTML = ch; }
+  const rec = S.leg.fishRec || {};
+  for (const id in rec) { const el = $('rec_' + id); if (el) { const t = L`🏆 أثقل: ${rec[id]} كغ`; if (el.textContent !== t) el.textContent = t; } }
   $('lk_pow').textContent = fishPower().toFixed(1);
   $('lk_rate').textContent = L`${fisherRate().toFixed(1)} / ث`;
 }
@@ -1748,7 +1842,7 @@ const VIEWS = {
   smith: [viewSmith, () => {}, () => [S.tools, S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
   village: [viewVillage, () => {}, () => [dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => [have(n.love) > 0, have(n.like) > 0])]],
-  lake: [viewLake, updLake, () => [S.off, S.lake.fishers, S.skills.fish.l, S.tools.rod, S.leg.gen]],
+  lake: [viewLake, updLake, () => [S.off, S.lake.fishers, S.skills.fish.l, S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],
   legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length, dunGoal()]; }],
   settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0]],
 };

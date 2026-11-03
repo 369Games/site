@@ -251,3 +251,20 @@ button.chip.notes-chip.new:after{content:'';position:absolute;top:-3px;inset-inl
 @keyframes bfx-shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-3deg) translateX(-3px)}75%{transform:rotate(3deg) translateX(3px)}}
 @keyframes bfx-pop{0%{transform:scale(.6)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.bfx-card{animation:none!important}}
+
+/* Fishing: spots, bait box and album dots */
+.spots{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.baitbox{border:1px solid var(--line,#0002);border-radius:12px;padding:12px 14px;margin-top:10px;background:var(--soft,#0001)}
+.baitbox .row{flex-wrap:wrap}
+.album .ore{text-align:center}
+.album .ore .unknown{display:block;font-size:40px;line-height:64px;opacity:.5}
+.album .ore.king{border-color:#e2bc6c;box-shadow:0 0 0 2px #e2bc6c33}
+.rdots{display:flex;gap:5px;justify-content:center;margin:6px 0}
+.rdot{width:12px;height:12px;border-radius:50%;border:2px solid #888;opacity:.45}
+.rdot.on{opacity:1}
+.rdot.r0.on{background:#d9d9d9;border-color:#d9d9d9}
+.rdot.r1{border-color:#4a90e2}.rdot.r1.on{background:#4a90e2}
+.rdot.r2{border-color:#a45de2}.rdot.r2.on{background:#a45de2;box-shadow:0 0 6px #a45de2}
+.kv .rdot{display:inline-block;vertical-align:middle;width:10px;height:10px}
+.album .ore small{display:block;margin-top:2px}
+.breed-fx.win small{color:#7a5410;font-weight:700}

@@ -271,3 +271,11 @@ button.chip.notes-chip.new:after{content:'';position:absolute;top:-3px;inset-inl
 
 /* Buffs panel: the two bucket headers inside a speed card */
 .bfl.bsub{margin-top:6px;padding-top:6px;border-top:1px dashed var(--line,#0003);font-weight:700;color:var(--gold,#e2bc6c)}
+
+/* Greenhouse plots, hold-to-work buttons, tools without art */
+.plot.gh{box-shadow:inset 0 0 0 2px #9fe3b4aa,0 0 10px #7fd39a55}
+.plot.gh:before{content:'🏡';position:absolute;bottom:3px;left:4px;font-size:11px;opacity:.85;z-index:2}
+.digbtn{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.digbtn .hold-hint{display:block;font-size:11px;opacity:.7;font-weight:600;margin-top:2px}
+.tool-emoji{display:inline-grid;place-items:center;width:48px;height:48px;font-size:34px;line-height:1}
+.warnline{color:#e08a7a!important}

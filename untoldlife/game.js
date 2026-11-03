@@ -161,6 +161,8 @@ const SWORD = [0, 5, 14, 30, 60, 120, 240];
 const ARMOR_DEF = [0, 3, 9, 20, 40, 80, 160];
 const ARMOR_HP = [0, 30, 80, 160, 320, 640, 1200];
 
+// Hold to dig or fish: hits per second for each level of the worker's gloves.
+const HOLD_RATE = [2, 3, 4, 5, 6, 8, 10];
 const TOOLS = [
   { id: 'hoe', n: L('المعزقة'), e: '🌾', eff: l => L`+${l * 20}% سرعة نمو المحاصيل` },
   { id: 'can', n: L('المرشة'), e: '🚿', eff: l => L`السقي يسرّع النمو ×${(2 + 0.25 * l).toFixed(2)}${l >= 1 ? L(' • زر "سقي الكل"') : ''}` },
@@ -168,6 +170,8 @@ const TOOLS = [
   { id: 'sword', n: L('السيف'), e: '🗡️', eff: l => L`+${SWORD[l]} هجوم` },
   { id: 'armor', n: L('الدرع'), e: '🛡️', eff: l => L`+${ARMOR_DEF[l]} دفاع • +${ARMOR_HP[l]} صحة` },
   { id: 'rod', n: L('السنارة'), e: '🎣', eff: l => L`قوة الصيد ×${(1 + 0.5 * l).toFixed(1)} • أسماك نادرة أكثر` },
+  // No art of its own yet: shows the emoji.
+  { id: 'glove', n: L('قفازات العامل'), e: '🧤', eff: l => L`الضغط المطوّل: ${HOLD_RATE[l]} ضربات بالثانية في المنجم والبحيرة` },
   { id: 'crook', n: L('عصا الراعي'), e: '🐑', eff: l => L`+${l * 50}% سرعة الإنتاج الحيواني` },
 ];
 
@@ -182,7 +186,7 @@ const BUILDINGS = [
   { id: 'rancher', n: L('راعي'), e: '🤠', desc: L('يعتني بالحيوانات ويبقي سعادتها كاملة'), cost: 6000 },
   { id: 'kitchen', n: L('المطبخ'), e: '🍳', desc: L('الطعام يشفي ضعف الكمية في المعارك'), cost: 8000 },
   { id: 'sprinkler', n: L('رشاشات ماء'), e: '💦', desc: L('تسقي كل الأحواض تلقائياً'), cost: 15000 },
-  { id: 'greenhouse', n: L('بيت محمي'), e: '🏡', desc: L('كل المحاصيل تنمو بسرعة كاملة في أي موسم'), cost: 80000 },
+  { id: 'greenhouse', n: L('بيت محمي'), e: '🏡', desc: L('يحمي 4 أحواض من عقوبة خارج الموسم، وكل تطوير يزيد 4 (لين 12). أول الأحواض في الحقل هي اللي تحت البيت.'), costs: [100000, 300000, 1000000], max: 3 },
   { id: 'breedlab', n: L('أدوات التهجين'), e: '🧬', desc: L('تسرّع راحة بيوت التهجين وترفع نسبة النجاح'), cost: 25000, mult: 12, max: 2 },
 ];
 
@@ -284,6 +288,39 @@ ach('love', '💞', L('صديق القرية'), L('وصّل علاقتك مع ش
 ach('marry', '💍', L('فرحة الوادي'), L('تزوّج من أحد أهل القرية'), () => !!S.leg.married);
 const NPC_BY = Object.fromEntries(NPCS.map(n => [n.id, n]));
 const GENDER = { m: { n: L('رجل'), e: '👨', child: L('ابن') }, f: { n: L('امرأة'), e: '👩', child: L('ابنة') } };
+/* Gifts change every season: each villager loves one thing and likes another, picked at random from their kind
+   of items (Noura: this season's crops, Qasem: ores, Raad: monster loot...), preferring items the player already knows.
+   Their old favourite (np.love) still counts as loved all year. Love fades by half a heart a day once half a season
+   of play passes without a gift; time away from the game doesn't count, and a spouse never fades. */
+const GIFT_GRACE = 4;
+function seasonCrops() { return CROPS.filter(c => c.season === S.season).map(c => c.id); }
+function giftPool(np) {
+  const ores = [...ORES.map(o => o.id), 'gem'], loot = MONSTER_MATS.map(m => m.id), farm = ['egg', 'milk', 'wool', 'honey'];
+  return { noura: seasonCrops(), leila: [...seasonCrops(), 'egg', 'milk'], mayor: [...farm, ...seasonCrops()], smith: ores, raad: loot }[np.id] || seasonCrops();
+}
+function giftRng(seed) { let h = 2166136261; for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0) / 4294967296); }
+function giftsOf(np) {
+  const st = S.npc[np.id] || (S.npc[np.id] = { pts: 0, gd: 0 }), key = S.year * 4 + S.season;
+  if (st.gk !== key || !ITEMS[st.gl] || !ITEMS[st.gm]) {
+    const all = giftPool(np).filter(id => ITEMS[id]), seen = all.filter(id => S.seen[id]);
+    const pool = seen.length >= 2 ? seen : all.slice(0, 2), r = giftRng(np.id + ':' + key);
+    const a = pool[Math.floor(r() * pool.length)]; let b = pool[Math.floor(r() * pool.length)];
+    for (let i = 0; b === a && i < 8; i++) b = pool[Math.floor(r() * pool.length)];
+    st.gk = key; st.gl = a; st.gm = b === a ? (pool.find(x => x !== a) || np.like) : b;
+  }
+  return { love: st.gl, like: st.gm };
+}
+function giftDaysLeft(np) { const st = S.npc[np.id]; return st && st.cd !== undefined ? GIFT_GRACE - (dayAbs() - st.cd) : GIFT_GRACE; }
+function tickLove() {
+  for (const np of NPCS) {
+    const st = S.npc[np.id]; if (!st) continue;
+    if (st.cd === undefined) st.cd = dayAbs();
+    if (offline) { st.cd++; continue; } // days away from the game don't count
+    if (S.spouse === np.id || dayAbs() - st.cd < GIFT_GRACE || st.pts <= 0) continue;
+    const before = hearts(np.id); st.pts = Math.max(0, st.pts - 50);
+    if (hearts(np.id) < before) log(L`💔 ${np.n} زعل لأنك ما أهديته من فترة: صار ${hearts(np.id)} قلوب`, 'warn');
+  }
+}
 function canWed(np) { return np.id !== 'mayor' && !!S.gender && np.g !== S.gender; }
 function gv(m, f) { return S.gender === 'f' ? f : m; }
 function genderPick(action, cur) {
@@ -308,7 +345,7 @@ function newState() {
     farm: { plots, seed: 'turnip' },
     barn: { n: {}, t: {}, h: {}, q: {}, br: null, houses: 1, cd: [], lab: 0 },
     mine: { depth: 1, max: 1, prog: 0, blocks: 0, miners: 0 },
-    tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0, crook: 0 },
+    tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0, crook: 0, glove: 0 },
     lake: { prog: 0, fishers: 0, last: null, spot: 'lake', bait: 0, autoBait: false },
     hero: { lvl: 1, xp: 0, hp: 60 },
     dun: { active: false, floor: 1, max: 1, kills: 0, enemy: null, auto: true, autoEat: true, resting: false, ht: 0, et: 0, retry: 0 },
@@ -450,12 +487,14 @@ function addXp(k, x) {
 /* ---------------- المزرعة ---------------- */
 function cropUnlocked(c) { return S.skills.farm.l >= c.lvl && (c.season !== 4 || S.leg.gen >= 3); }
 function waterMult() { return 2 + 0.25 * S.tools.can; }
-function growMult(c) {
+// The greenhouse covers the first 4 plots per level; the rest follow the season.
+function ghCount() { return on('greenhouse') ? 4 * Math.min(3, S.bld.greenhouse || 0) : 0; }
+function growMult(c, gh) {
   let m = speedMult('grow');
-  if (c.season !== S.season && c.season !== 4 && !on('greenhouse')) m *= 0.5;
+  if (c.season !== S.season && c.season !== 4 && !gh) m *= 0.5;
   return m;
 }
-function plotSpeed(p) { return growMult(CROP[p.c]) * (p.w ? waterMult() : 1); }
+function plotSpeed(p) { return growMult(CROP[p.c], S.farm.plots.indexOf(p) < ghCount()) * (p.w ? waterMult() : 1); }
 function autoWet() { return S.weather === 'rain' || on('sprinkler'); }
 function isReady(p) { return p.c && p.p >= CROP[p.c].grow; }
 function plotCrop(p) {
@@ -771,6 +810,7 @@ function newDay() {
   const r = Math.random();
   S.weather = S.season === 3 ? (r < 0.3 ? 'snow' : r < 0.6 ? 'cloudy' : 'sunny') : (r < 0.22 ? 'rain' : r < 0.45 ? 'cloudy' : 'sunny');
   if (on('bin')) shipAll(true);
+  tickLove();
   log(L`🌅 صباح اليوم ${S.day}: ${WEATHER[S.weather].e} ${WEATHER[S.weather].n}${S.weather === 'rain' ? L(' — المطر يسقي حقلك') : ''}`);
 }
 
@@ -840,7 +880,7 @@ function landFish(f, r) {
   S.lake.last = f.id; S.lake.lastR = r; S.lake.lastKg = kg; S.lake.lastN = n;
   addXp('fish', f.price * n / 6);
   if (offline) return;
-  if (f.king) { log(L`👑 اصطدت ${f.e} ${f.n}! وزنه ${kg} كغ`, 'golden'); if (typeof fishVisual === 'function') fishVisual(f, kg); }
+  if (f.king) log(L`👑 اصطدت ${f.e} ${f.n}! وزنه ${kg} كغ`, 'golden');
   else if (r === 2) log(L`🌟 صيدة أسطورية! ${f.e} ${f.n} ${kg} كغ (×${n})`, 'golden');
 }
 
@@ -878,8 +918,16 @@ function goldGoal() { const g = Math.max(0, S.leg.gen - 3); if (!g) return 1e6; 
 function dunGoal() { return Math.max(30 + 3 * Math.max(0, S.leg.gen - 3), (S.gen.dun0 || 1) + 15); }
 function canRetire() { return S.gen.earned >= goldGoal() || S.dun.max >= dunGoal(); }
 // Dungeon stars only count floors climbed this generation, not the free start floor.
-function starsBase() { return 3 * Math.sqrt(S.gen.earned / 1e6) + Math.max(0, S.dun.max - Math.max(10, S.gen.dun0 || 1)) / 3 + Math.max(0, S.mine.max - 20) / 10; }
-function starsGain() { return Math.floor(starsBase() * starMult()); }
+// Stars per retirement have a cap that grows every 5 generations, and the mine gives at most 200 of them.
+const MINE_STAR_CAP = 200;
+function starCap() { const g = S.leg.gen; return g <= 5 ? 300 : g <= 10 ? 500 : g <= 15 ? 800 : g <= 20 ? 1200 : 1800; }
+function starParts() {
+  const m = starMult();
+  return { gold: 3 * Math.sqrt(S.gen.earned / 1e6) * m, dun: Math.max(0, S.dun.max - Math.max(10, S.gen.dun0 || 1)) / 3 * m,
+    mine: Math.min(MINE_STAR_CAP, Math.max(0, S.mine.max - 20) / 10 * m) };
+}
+function starsBase() { const p = starParts(); return (p.gold + p.dun + p.mine) / starMult(); }
+function starsGain() { const p = starParts(); return Math.min(starCap(), Math.floor(p.gold + p.dun + p.mine)); }
 function perkCost(p, l) { return Math.ceil(p.cost * Math.pow(p.mult, l)); }
 const KS_NEED = 10;
 function branchLv(b) { return PERKS.filter(p => p.b === b && !p.ks).reduce((n, p) => n + P(p.id), 0); }
@@ -919,7 +967,7 @@ function applyGenStart(oldTools) {
   const LG = S.leg, nw = inCh('noworkers');
   S.gold = 50 + startGold(P('t_gold'));
   for (let i = 0; i < 2 * P('f_plots'); i++) S.farm.plots.push({ c: null, p: 0, w: false });
-  for (const t of ['hoe', 'can', 'pick', 'sword', 'armor', 'rod', 'crook']) S.tools[t] = Math.min(6, Math.max(H(t), P('q_tools') && oldTools ? (oldTools[t] || 0) - 1 : 0));
+  for (const t of ['hoe', 'can', 'pick', 'sword', 'armor', 'rod', 'crook', 'glove']) S.tools[t] = Math.min(6, Math.max(H(t), P('q_tools') && oldTools ? (oldTools[t] || 0) - 1 : 0));
   if (!noFarm()) {
     if (P('r_start')) { S.barn.n.chicken = 2 * P('r_start'); S.barn.h.chicken = 100; }
     if (H('cow')) { S.barn.n.cow = H('cow'); S.barn.h.cow = 100; }
@@ -1107,9 +1155,10 @@ const A = {
   gift: v => {
     const [nid, item] = v.split(':'); const np = NPC_BY[nid];
     const st = S.npc[nid] || (S.npc[nid] = { pts: 0, gd: 0 });
-    if (st.gd === dayAbs() || st.pts >= 1000 || ![np.love, np.like].includes(item) || !take(item)) return;
-    const before = hearts(nid), loved = item === np.love;
-    st.pts = Math.min(1000, st.pts + (loved ? 100 : 50)); st.gd = dayAbs();
+    const gf = giftsOf(np);
+    if (st.gd === dayAbs() || st.pts >= 1000 || ![gf.love, gf.like, np.love].includes(item) || !take(item)) return;
+    const before = hearts(nid), loved = item === gf.love || item === np.love;
+    st.pts = Math.min(1000, st.pts + (loved ? 100 : 50)); st.gd = st.cd = dayAbs();
     log(L`🎁 أهديت ${np.n} ${ITEMS[item].e} — ${loved ? L('«واااو! هذا أكثر شيء أحبه!» +1 قلب') : L('«شكراً، لطيف منك» +½ قلب')}`);
     if (hearts(nid) > before) log(L`❤️ علاقتك مع ${np.n} صارت ${hearts(nid)} قلوب!`, 'good');
   },
@@ -1202,7 +1251,7 @@ function toolCost(l) {
   const disc = 1 - 0.03 * hearts('smith');
   return { gold: Math.round(500 * Math.pow(6, l - 1) * disc), ore: ORES[l - 1].id, qty: Math.round((10 + 10 * l) * disc) };
 }
-function bCost(b) { return Math.round(b.cost * Math.pow(b.mult || 1, S.bld[b.id] || 0)); }
+function bCost(b) { const l = S.bld[b.id] || 0; return b.costs ? b.costs[Math.min(l, b.costs.length - 1)] : Math.round(b.cost * Math.pow(b.mult || 1, l)); }
 function refreshCost() { return 25 * Math.pow(rankIdx() + 1, 2); }
 
 /* Human click limit for the buttons that pay per click (dig, cast).
@@ -1233,11 +1282,31 @@ function workClickOk(e) {
   if (t.length > CLICK_CAP) { t.pop(); return false; }
   return true;
 }
+// Hold to dig or fish: keep pressing the button and it hits by itself, at the gloves' speed.
+// A quick tap is still a normal click. Hits from holding never go above 10 a second, like a fast hand.
+const hold = { a: '', t: 0, start: 0, n: 0, end: 0 };
+function holdRate() { return HOLD_RATE[Math.min(6, S.tools.glove || 0)]; }
+function holdStop() { if (hold.t) { clearInterval(hold.t); if (hold.n) hold.end = performance.now(); } hold.t = 0; hold.a = ''; }
+document.addEventListener('pointerdown', e => {
+  const b = e.target.closest('[data-a=dig],[data-a=cast]');
+  if (!b || !e.isTrusted || e.button > 0) return;
+  holdStop(); hold.a = b.dataset.a; hold.start = performance.now(); hold.n = 0;
+  hold.t = setInterval(() => {
+    const el = document.querySelector(`[data-a=${hold.a}]`);
+    if (!el || document.hidden || !S) return holdStop();
+    const held = performance.now() - hold.start - 350; if (held < 0) return;
+    const want = Math.min(hold.n + 3, Math.floor(held / 1000 * holdRate()) + 1);
+    while (hold.n < want) { hold.n++; A[hold.a](); if (hold.n % 3 === 1) { burstVisual(el); floatVisual(el, hold.a === 'cast' ? icon('water', 24) : icon('copper', 24)); } }
+  }, 50);
+});
+['pointerup', 'pointercancel', 'blur'].forEach(ev => window.addEventListener(ev, holdStop));
+document.addEventListener('visibilitychange', holdStop);
+document.addEventListener('contextmenu', e => { if (e.target.closest('[data-a=dig],[data-a=cast]')) e.preventDefault(); });
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-a]');
   if (!b || b.disabled) return;
   const fn = A[b.dataset.a]; if (!fn) return;
-  if (WORK_ACTIONS[b.dataset.a] && !workClickOk(e)) return;
+  if (WORK_ACTIONS[b.dataset.a] && (performance.now() - hold.end < 400 || !workClickOk(e))) return; // the click that ends a long hold is not one more hit
   const earnedBefore = S.gold, harvestsBefore = S.stats.harvests;
   const selectedPlot = b.dataset.a === 'plot' ? S.farm.plots[+b.dataset.v] : null;
   const harvested = b.dataset.a === 'harvestAll' ? S.farm.plots.filter(isReady).slice(0,6).map(p=>p.c) : selectedPlot && isReady(selectedPlot) ? [selectedPlot.c] : [];
@@ -1267,9 +1336,9 @@ function costBtn(a, v, cost, label, cls = 'gold', extraDisabled = false) {
 
 /* ----- المزرعة ----- */
 function viewFarm() {
-  const s = SEASONS[S.season], gh = on('greenhouse');
+  const s = SEASONS[S.season], gh = ghCount();
   let h = L`<div class="panel"><div class="ph"><h2>🌱 المزرعة</h2>${skillBar('farm')}</div>
-  <details class="farm-help"><summary>${glyph("help")} إرشادات الزراعة وموسم ${s.n}</summary><p class="hint">${icon(s)} نحن في موسم <b>${s.n}</b>: محاصيل الموسم تنمو بسرعة كاملة وغيرها بنصف السرعة${gh ? L(' — البيت المحمي يلغي ذلك ✅') : ''}.
+  <details class="farm-help"><summary>${glyph("help")} إرشادات الزراعة وموسم ${s.n}</summary><p class="hint">${icon(s)} نحن في موسم <b>${s.n}</b>: محاصيل الموسم تنمو بسرعة كاملة وغيرها بنصف السرعة${gh ? L` — البيت المحمي يحمي أول ${gh} أحواض 🏡` : ''}.
   اضغط الحوض الفارغ للزراعة، والنامي لسقيه 💧 (يضاعف السرعة)، والجاهز للحصاد.</p></details>
   ${noFarm() ? L('<p class="hint">🚫 الزراعة ممنوعة في تحدي هذا الجيل.</p>') : ''}
   `;
@@ -1283,9 +1352,9 @@ function viewFarm() {
   if (autos.length || S.weather === 'rain') h += `<div class="row">${autos.map(togBtn).join('')}${S.weather === 'rain' ? L('<span class="stat">🌧️ المطر يسقي الحقل اليوم</span>') : ''}</div>`;
   h += seasonChooser();
   for (let si = 0; si < 5; si++) {
-    const full = si === S.season || gh || si === 4;
+    const full = si === S.season || si === 4;
     const SL = si < 4 ? SEASONS[si] : { e: '🌟', n: L('نادرة') };
-    const sub = si === 4 ? (S.leg.gen >= 3 ? L('كل المواسم ✔') : L('🔒 الجيل 3')) : si === S.season ? L('الموسم الحالي ✔') : gh ? L('البيت المحمي ✔') : L('نصف السرعة');
+    const sub = si === 4 ? (S.leg.gen >= 3 ? L('كل المواسم ✔') : L('🔒 الجيل 3')) : si === S.season ? L('الموسم الحالي ✔') : gh ? L`نصف السرعة • 🏡 كاملة في ${gh} أحواض` : L('نصف السرعة');
     h += `<div data-season="${si}" class="srow ${(shelfSeason === null ? S.season : shelfSeason) === si ? 'shown' : ''} ${si === S.season ? 'now' : ''} ${si === 4 ? 'rare' : ''}"><div class="slabel"><span>${icon(SL)} ${SL.n}</span><small>${sub}</small></div><div class="seeds">`;
     for (const c of CROPS.filter(x => x.season === si)) {
       const un = cropUnlocked(c);
@@ -1326,6 +1395,7 @@ function updFarm() {
       if (p.w) cls += ' wet';
     } else cls += ' empty';
     if (zoneMode) cls += ' zoning';
+    if (i < ghCount()) cls += ' gh';
     const za = p.a && CROP[p.a] ? CROP[p.a] : null;
     if (za) tip += L` • مخصص لـ ${za.n}`;
     const pa = el.querySelector('.pa'), tag = za ? icon(za,16) : '';
@@ -1414,7 +1484,7 @@ function viewMine() {
   const cap = PICK_CAP[S.tools.pick];
   let h = L`<div class="panel"><div class="ph"><h2>⛏️ المنجم القديم</h2>${skillBar('mine')}</div>
   <p class="hint">اضغط زر الحفر لتكسير الصخور، أو وظّف عمالاً يحفرون عنك. كل 5 صخور في أعمق طابق تنزلك طابقاً. المعادن الأعمق أغلى وتحتاجها لتطوير أدواتك. الفأس ${TIER[S.tools.pick]} يسمح بالنزول حتى الطابق ${cap > 1e8 ? '∞' : cap}.</p>
-  <div class="minebox"><button class="digbtn" data-a="dig"><span class="dig-scene">${icon("rock",64)}${icon("pick-" + S.tools.pick,48)}</span>احفر!</button>
+  <div class="minebox"><button class="digbtn" data-a="dig"><span class="dig-scene">${icon("rock",64)}${icon("pick-" + S.tools.pick,48)}</span>احفر!<small class="hold-hint">اضغط مطوّل ✊</small></button>
   <div class="mineinfo">
     <div class="depth">الطابق <span id="m_depth"></span> <small style="font-size:14px;color:var(--muted)">/ الأعمق <span id="m_max"></span></small></div>
     <div class="kv"><span>صلابة الصخرة</span><span id="m_hard"></span></div><div class="bar"><i id="m_prog"></i></div>
@@ -1562,7 +1632,7 @@ function viewSmith() {
   <p class="hint">كل تطوير يحتاج ذهباً ومعدناً من المنجم. المعادن مقفلة 🔒 في السوق افتراضياً حتى لا تبيعها بالخطأ.</p><div class="smith-scene" aria-hidden="true">${icon("npc-smith-1",64)}${icon("anvil",64)}${icon("iron",64)}</div><div class="grid">`;
   for (const t of TOOLS) {
     if (t.id === 'rod' && S.leg.gen < 2) continue;
-    const l = S.tools[t.id] || 0, ti = k => icon(t.art || t.id + '-' + k, 48);
+    const l = S.tools[t.id] || 0, ti = k => { const key = t.art || t.id + '-' + k; return ART[key] || PX[key] ? icon(key, 48) : `<span class="tool-emoji">${t.e}</span>`; };
     h += L`<div class="card"><div class="top"><span class="big">${ti(l)}</span><div class="meta"><b>${t.n} ${TIER[l]}</b><small>المستوى ${l} من 6</small></div></div>
       <div class="kv nowrow"><span>✅ الحالي</span><span>${t.eff(l)}</span></div>`;
     if (l < 6) {
@@ -1579,7 +1649,8 @@ function viewSmith() {
 
 /* ----- السوق ----- */
 function viewMarket() {
-  const ids = Object.keys(S.inv).filter(id => have(id) > 0);
+  // Every sellable item the player has had shows here, even at zero, so it can be locked before it comes in.
+  const ids = Object.keys(ITEMS).filter(id => have(id) > 0 || (S.seen[id] && ITEMS[id].price && CAT_NAMES[ITEMS[id].cat]));
   let total = 0; ids.forEach(id => { if (!S.locked[id]) total += sellPrice(id) * have(id); });
   let h = L`<div class="panel"><div class="ph"><h2>🛒 السوق والمخزن</h2>
     <button class="btn gold" data-a="shipAll">💰 بيع كل غير المقفل (<span id="mk_total">${fmt(total)}</span>💰)</button></div>
@@ -1592,7 +1663,7 @@ function viewMarket() {
       const it = ITEMS[id];
       h += L`<div class="it"><button class="lock" data-a="lock" data-v="${id}" title="قفل/فتح">${S.locked[id] ? '🔒' : '🔓'}</button><span class="e">${icon(it)}</span>
         <div class="nm"><b>${it.n}</b> × <span id="inv_${id}">${fmt(have(id))}</span><small>${fmt(sellPrice(id))}💰 للواحدة</small></div>
-        <button class="btn ghost sm" data-a="sell1" data-v="${id}">بيع 1</button><button class="btn sm gold" data-a="sellAll" data-v="${id}">الكل</button></div>`;
+        <button class="btn ghost sm" data-a="sell1" data-v="${id}" ${have(id) ? '' : 'disabled'}>بيع 1</button><button class="btn sm gold" data-a="sellAll" data-v="${id}" ${have(id) ? '' : 'disabled'}>الكل</button></div>`;
     }
     h += '</div>';
   }
@@ -1610,7 +1681,7 @@ function updMarket() {
 /* ----- القرية ----- */
 function viewVillage() {
   let h = L`<div class="panel"><div class="ph"><h2>🏘️ أهل وادي الصدى</h2></div>
-  <p class="hint">أهدِ كل شخص ما يحبه مرة واحدة يومياً. كل قلبين تقريباً يمنحك مكافأة دائمة (حتى 10 قلوب).</p>
+  <p class="hint">أهدِ كل شخص ما يحبه مرة واحدة يومياً. كل قلبين تقريباً يمنحك مكافأة دائمة (حتى 10 قلوب). اللي يحبونه يتغير كل موسم، ولو ما أهديت أحد لمدة نص موسم يزعل ويقل حبه (الوقت اللي تكون فيه برا اللعبة ما ينحسب).</p>
   ${!S.gender ? L`<div class="zonebox"><b>🧑 حدد شخصيتك</b> <small class="hint">عشان يظهر لك خيار الزواج من أهل القرية المناسبين</small>${genderPick('setGender', null)}</div>` : ''}<div class="grid">`;
   for (const np of NPCS) {
     const st = S.npc[np.id] || { pts: 0, gd: 0 }, hr = Math.floor(st.pts / 100), half = st.pts % 100 >= 50, today = st.gd === dayAbs();
@@ -1619,14 +1690,18 @@ function viewVillage() {
     h += L`<div class="card npc-card"><button class="npc-info" data-a="npcInfo" data-v="${np.id}" title="القصة" aria-label="القصة">?</button><div class="top"><span class="big">${icon('npc-' + np.id + '-' + Math.min(2,Math.floor(hr/4)),96)}</span><div class="meta"><b>${np.n}</b><small class="npc-role">${np.role}</small>
       <div class="hearts">${hs}</div><small>المكافأة: ${np.perk(hearts(np.id))}${S.spouse === np.id ? L(' (مضاعفة 💍)') : ''}</small></div></div>
       <div class="say">«${np.lines[Math.min(2, Math.floor(hr / 4))]}»</div><div class="gifts">`;
-    for (const [it, lab, cls] of [[np.love, L('❤️ يعشقه: +1 قلب'), 'gold'], [np.like, L('💗 يحبه: +½ قلب'), 'ghost']]) {
+    const gf = giftsOf(np), left = giftDaysLeft(np);
+    const gl = [[gf.love, L('❤️ يعشقه هالموسم: +1 قلب'), 'gold'], [gf.like, L('💗 يحبه هالموسم: +½ قلب'), 'ghost']];
+    if (np.love !== gf.love && np.love !== gf.like) gl.push([np.love, L('⭐ مفضّله طول السنة: +1 قلب'), 'ghost']);
+    for (const [it, lab, cls] of gl) {
       const I = ITEMS[it];
       h += `<button class="btn ${cls} sm" data-a="gift" data-v="${np.id}:${it}" ${today || have(it) < 1 || st.pts >= 1000 ? 'disabled' : ''}>🎁 ${icon(I)} ${I.n} (${fmt(have(it))}) — ${lab}</button>`;
     }
     let mar = '';
     if (S.spouse === np.id) mar = L('<p class="okline">💍 شريك حياتك — مكافأته مضاعفة ويساعدك (+10% لكل الإنتاج)</p>');
     else if (canWed(np) && st.pts >= 1000 && !S.spouse) mar = S.leg.gen >= 5 ? `<div class="row">${costBtn('marry', np.id, 50000, L('💍 اطلب الزواج (50,000💰)'), 'red')}</div>` : L('<small class="hint">💍 الزواج ينفتح في الجيل الخامس</small>');
-    h += `</div>${today ? L('<small class="hint">✔ أهديته اليوم، ارجع بكرة</small>') : ''}${mar}</div>`;
+    const sad = S.spouse === np.id || st.pts <= 0 ? '' : left <= 0 ? L('<small class="hint warnline">💔 زعلان: يقل حبه كل يوم لين تهديه</small>') : left <= 2 ? L`<small class="hint">⏳ يزعل بعد ${left} يوم لو ما أهديته</small>` : '';
+    h += `</div>${today ? L('<small class="hint">✔ أهديته اليوم، ارجع بكرة</small>') : ''}${sad}${mar}</div>`;
   }
   h += L`</div></div><div class="panel"><div class="ph"><h2>🏗️ المباني والعمال</h2><div class="row" style="margin:0"><button class="btn ghost sm" data-a="allAuto" data-v="off">⏸️ إيقاف كل التلقائي</button><button class="btn ghost sm" data-a="allAuto" data-v="on">🟢 تشغيل الكل</button></div></div><p class="hint">هنا تصبح اللعبة "idle" فعلاً: وظّف من يعمل عنك. تقدر توقف أي عامل مؤقتاً لو تبغى تجرب شي بنفسك.</p><div class="grid">`;
   for (const b of BUILDINGS) {
@@ -1707,7 +1782,7 @@ function buffsHtml() {
   const g = buffGroup;
   let h = '';
   h += speedGroup(L('🌱 سرعة نمو المحاصيل'), 'grow',
-    [[L('💧 الحوض المسقي'), '×' + waterMult().toFixed(2)], [L('🍂 خارج الموسم'), on('greenhouse') ? L('بدون عقوبة 🏡') : '×0.50'],
+    [[L('💧 الحوض المسقي'), '×' + waterMult().toFixed(2)], [L('🍂 خارج الموسم'), ghCount() ? L`×0.50 (🏡 بدون عقوبة في ${ghCount()} أحواض)` : '×0.50'],
       [L('🧺 فرصة حصاد مضاعف'), Math.round(S.skills.farm.l + 3 * H('seedbag')) + '%'], ...(P('f_golden') ? [[L('✨ فرصة محصول ذهبي'), P('f_golden') + '%']] : [])]);
   h += speedGroup(L('🐄 سرعة الإنتاج الحيواني'), 'ranch',
     [[L('❤️ السعادة'), L('من ×0.5 إلى ×1.5') + (on('rancher') ? L(' (الراعي يبقيها كاملة)') : '')], ...(P('r_cost') ? [[L('🏷️ سعر الحيوانات'), '-' + 10 * P('r_cost') + '%']] : [])]);
@@ -1743,7 +1818,7 @@ function viewLake() {
   let h = L`<div class="panel"><div class="ph"><h2>🎣 ${sp.e} ${sp.n}</h2>${skillBar('fish')}</div>
   <p class="hint">ارمِ السنارة لتصطاد، أو وظّف صيادين يصطادون عنك. كل صيدة لها ندرة ووزن: النادرة والأسطورية تعطيك أكثر من سمكة، وكل ما كانت أثقل كانت أغلى. مستوى الصيد يفتح أسماكاً وأماكن جديدة، والسنارة (عند الحداد) تزيد القوة وفرصة النادر. وأحياناً يطلع صندوق كنز 🧰!</p>
   <div class="spots">${SPOTS.map(s => S.skills.fish.l >= s.lvl ? `<button class="btn ${s.id === sp.id ? 'gold' : 'ghost'} sm" data-a="spot" data-v="${s.id}">${s.e} ${s.n}</button>` : L`<button class="btn ghost sm" disabled>🔒 ${s.n} (صيد ${s.lvl})</button>`).join('')}</div>
-  <div class="minebox"><button class="digbtn lakebtn" data-a="cast"><span class="bobber-scene">${icon("bobber",48)}</span>اصطد!</button>
+  <div class="minebox"><button class="digbtn lakebtn" data-a="cast"><span class="bobber-scene">${icon("bobber",48)}</span>اصطد!<small class="hold-hint">اضغط مطوّل ✊</small></button>
   <div class="mineinfo">
     <div class="kv"><span>العضّة</span><span id="lk_t"></span></div><div class="bar"><i id="lk_p"></i></div>
     <div class="kv"><span>آخر صيدة</span><span id="lk_last"></span></div>
@@ -1801,7 +1876,7 @@ function viewLegacy() {
     <div class="kv"><span>💰 ذهب هذا الجيل</span><span id="lg_e"></span></div><div class="bar gp"><i id="lg_eb"></i></div>
     <div class="kv"><span>🕳️ أعلى طابق في هذا الجيل</span><span id="lg_d"></span></div><div class="bar xp"><i id="lg_db"></i></div>
     <p class="hint">شرط التقاعد في هذا الجيل: كسب ${fmt(goldGoal())} ذهب <b>أو</b> الوصول للطابق ${dunGoal()}. الشرط يكبر مع كل جيل بعد الثالث. النجوم تزيد كل ما كسبت ذهب أكثر ونزلت أعمق في الزنزانة والمنجم.</p>
-  </div><div class="retirebox"><div class="bigstar">${icon("legacy-crown",72)}<span class="legacy-gain-value">+<span id="lg_g"></span></span></div><small class="hint">نجوم لو تقاعدت الآن</small>
+  </div><div class="retirebox"><div class="bigstar">${icon("legacy-crown",72)}<span class="legacy-gain-value">+<span id="lg_g"></span></span></div><small class="hint">نجوم لو تقاعدت الآن</small><small class="hint" id="lg_cap"></small>
     <button class="btn gold" data-a="retire" id="lg_btn">🌅 التقاعد وتسليم المزرعة</button><small class="hint" id="lg_why"></small></div></div>
   ${ch ? L`<div class="chbox"><b>${icon(ch)} تحدي هذا الجيل: ${ch.n}</b> — ${ch.rule}<div class="kv"><span>🎯 ${goalText(ch)}</span><span id="lg_chp"></span></div><div class="bar gp"><i id="lg_chb"></i></div></div>` : ''}
   </div>`;
@@ -1847,6 +1922,8 @@ function updLegacy() {
   $('lg_e').textContent = `${fmt(g.earned)} / ${fmt(gg)}`; $('lg_eb').style.width = Math.min(100, g.earned / gg * 100) + '%';
   $('lg_d').textContent = `${S.dun.max} / ${dg}`; $('lg_db').style.width = Math.min(100, S.dun.max / dg * 100) + '%';
   $('lg_g').textContent = fmt(starsGain());
+  const capT = L`⭐ الحد لهذا الجيل: ${starCap()} نجمة (المنجم لين ${MINE_STAR_CAP})`;
+  if ($('lg_cap').textContent !== capT) $('lg_cap').textContent = capT;
   const can = canRetire(); $('lg_btn').disabled = !can; $('lg_why').textContent = can ? '' : L('ما حققت شرط التقاعد بعد');
   const cb = $('lg_chb');
   if (cb) {
@@ -1866,7 +1943,7 @@ const VIEWS = {
   }],
   smith: [viewSmith, () => {}, () => [S.tools, S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
-  village: [viewVillage, () => {}, () => [dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => [have(n.love) > 0, have(n.like) > 0])]],
+  village: [viewVillage, () => {}, () => [dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(n.love) > 0]; })]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, S.skills.fish.l, S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],
   legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length, dunGoal()]; }],
   settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0]],

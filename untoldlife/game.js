@@ -1567,7 +1567,7 @@ function viewSmith() {
       <div class="kv nowrow"><span>✅ الحالي</span><span>${t.eff(l)}</span></div>`;
     if (l < 6) {
       const c = toolCost(l + 1), o = ITEMS[c.ore], ok = S.gold >= c.gold && have(c.ore) >= c.qty;
-      h += `<div class="tool-compare">${ti(l)}<span aria-hidden="true">←</span>${ti(l + 1)}</div>`;
+      h += `<div class="tool-compare">${ti(l)}<span aria-hidden="true">${LANG === 'ar' ? '←' : '→'}</span>${ti(l + 1)}</div>`;
       h += L`<div class="kv"><span>⬆️ التالي: ${TIER[l + 1]}</span><span>${t.eff(l + 1)}</span></div>
         <div class="kv"><span>التكلفة</span><span>${fmt(c.gold)}💰 + ${c.qty} ${icon(o)} (لديك ${fmt(have(c.ore))})</span></div>
         <div class="row"><button class="btn gold" data-a="upgrade" data-v="${t.id}" ${ok ? '' : 'disabled'}>🔨 طوّر</button></div>`;

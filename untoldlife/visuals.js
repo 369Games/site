@@ -155,3 +155,25 @@ function goldenVisual(i, g) {
   }
   floatVisual(el, '✨ +' + fmt(g) + ' ' + icon('coin', 24), 'golden-float');
 }
+
+// Breeding gamble: the two animals shake for a moment, then the result opens like a card pack.
+function breedVisual(a, to, win) {
+  let box = document.getElementById('breedFx');
+  if (box) box.remove();
+  box = document.createElement('div');
+  box.id = 'breedFx';
+  box.className = 'breed-fx' + (to === 'g' ? ' to-g' : '');
+  const from = to === 'g' ? a.id + '-p' : a.id, res = a.id + '-' + to, G = GRADE[to];
+  box.innerHTML = `<div class="bfx-card"><div class="bfx-pair">${icon(from, 64)}${icon(from, 64)}</div><b class="bfx-q">🎲</b></div>`;
+  box.addEventListener('click', () => box.remove());
+  document.body.appendChild(box);
+  const wait = quietMotion.matches ? 150 : 1100;
+  setTimeout(() => {
+    if (!box.isConnected) return;
+    box.classList.add(win ? 'win' : 'lose');
+    box.querySelector('.bfx-card').innerHTML = win
+      ? `<div class="bfx-pair">${icon(res, 72)}${icon(res, 72)}</div><b>${L('✨ نجح!')}</b><small>${a.n} ${G.n} ×2 ${gradeBadge(to)}</small>`
+      : `<div class="bfx-pair">${icon(from, 64)}${icon(from, 64)}</div><b>${L('💀 فشل')}</b><small>${L`خسرت ${a.n} ×2`}</small>`;
+  }, wait);
+  setTimeout(() => box.isConnected && box.remove(), wait + (win ? 2600 : 1700));
+}

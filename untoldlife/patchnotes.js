@@ -3,6 +3,12 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.4', date: '2026-11-03', big: true, title: L('التهجين صار قمار 🎰'), items: [
+    L('🎰 حط حيوانين من نفس الدرجة وجرّب حظك: النتيجة تطلع فوراً! لو نجحت يصيرون الاثنين ممتازين أو ذهبيين، ولو فشلت تخسرهم.'),
+    L('🎲 فرصة الممتاز 20% والذهبي 5%، وبعد كل محاولة البيت يرتاح 5 دقايق.'),
+    L('🏠 تقدر تبني لين 5 بيوت تهجين عشان تجرب أكثر.'),
+    L('🧬 التهجين صار يفتح من رعي 5 للممتاز ورعي 10 للذهبي.'),
+  ] },
   { v: '1.3.1', date: '2026-11-03', big: false, title: L('توازن الأجيال'), items: [
     L('🌳 شرط التقاعد صار يكبر مع كل جيل بعد الثالث، عشان كل جيل يحس إنه رحلة جديدة مو دقايق.'),
     L('⭐ كل ما كبر الشرط كسبت ذهب أكثر، فنجوم الإرث تزيد معه.'),

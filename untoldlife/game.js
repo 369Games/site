@@ -78,8 +78,8 @@ const GRADE_SVG = {
 };
 function gradeBadge(to) { return `<i class="gb gb-${to}" aria-hidden="true">${GRADE_SVG[to]}</i>`; }
 const GRADE = {
-  p: { n: L('ممتاز'), e: '⭐', lvl: 8, costX: 25, time: 1800, base: 0.25 },
-  g: { n: L('ذهبي'), e: '👑', lvl: 15, costX: 250, time: 7200, base: 0.08 },
+  p: { n: L('ممتاز'), e: '⭐', lvl: 5, chance: 0.20 },
+  g: { n: L('ذهبي'), e: '👑', lvl: 10, chance: 0.05 },
 };
 
 const ORES = [
@@ -200,7 +200,7 @@ const PERKS = [
   { id: 'q_bless', req: ['q_workers', 2], b: 'family', n: L('بركة الوادي'), e: '🌈', max: Infinity, cost: 10, mult: 1.35, eff: l => L`+${5 * l}% لكل شيء (بلا حد)` },
   // Special skills: one per branch, unlocked after spending KS_NEED levels in that branch.
   { id: 'f_seeds', ks: 1, b: 'farm', n: L('بذور خالدة'), e: '♾️', max: 1, cost: 25, mult: 1, eff: () => L('الزراعة ما تكلف بذور أبداً') },
-  { id: 'r_twin', ks: 1, b: 'ranch', n: L('بيت تهجين ثاني'), e: '🧬', max: 1, cost: 25, mult: 1, eff: () => L('تهجّن حيوانين بنفس الوقت') },
+  { id: 'r_twin', ks: 1, b: 'ranch', n: L('مربّي خبير'), e: '🧬', max: 1, cost: 25, mult: 1, eff: () => L('بيوت التهجين ترتاح نص المدة، وتبدأ كل جيل ببيتين') },
   { id: 'm_tnt', ks: 1, b: 'mine', n: L('ديناميت'), e: '🧨', max: 1, cost: 25, mult: 1, eff: () => L('كل طابق تكمله في المنجم ينزلك طابقين') },
   { id: 'w_ally', ks: 1, b: 'war', n: L('رفيق المعارك'), e: '🛡️', max: 1, cost: 25, mult: 1, eff: () => L('رفيق يقاتل معك بنصف قوتك، وينقذك من السقوط مرة كل 5 دقائق') },
   { id: 't_deal', ks: 1, b: 'trade', n: L('تاجر الموسم'), e: '🧺', max: 1, cost: 25, mult: 1, eff: () => L('كل موسم يجيك تاجر يشتري محصول من محاصيل الموسم بـ ×3 السعر') },
@@ -274,7 +274,7 @@ function newState() {
     locked: { copper: 1, iron: 1, silver: 1, gold_ore: 1, mithril: 1, adamant: 1, gem: 1 },
     skills: { farm: { l: 1, x: 0 }, ranch: { l: 1, x: 0 }, mine: { l: 1, x: 0 }, fish: { l: 1, x: 0 } },
     farm: { plots, seed: 'turnip' },
-    barn: { n: {}, t: {}, h: {}, q: {}, br: null, pity: {} },
+    barn: { n: {}, t: {}, h: {}, q: {}, br: null, houses: 1, cd: [] },
     mine: { depth: 1, max: 1, prog: 0, blocks: 0, miners: 0 },
     tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0 },
     lake: { prog: 0, fishers: 0, last: null },
@@ -459,40 +459,55 @@ function barnCap() { return 5 + 5 * (S.bld.barn || 0); }
 function animalCost(a) { return Math.round(a.cost * Math.pow(1.25, S.barn.n[a.id] || 0) * (1 - 0.1 * P('r_cost'))); }
 function animalSpeed(a) { return (0.5 + (S.barn.h[a.id] ?? 100) / 100) * (1 + 0.02 * (S.skills.ranch.l - 1)) * (1 + 0.2 * P('r_speed')) * prodMult(); }
 function grades(id) { const q = S.barn.q[id] || { p: 0, g: 0 }, n = S.barn.n[id] || 0; return { n0: Math.max(0, n - (q.p || 0) - (q.g || 0)), p: q.p || 0, g: q.g || 0 }; }
+/* Breeding is a gamble: put two animals of the same grade in a house and the result comes at once.
+   Win: both become the next grade. Lose: both animals are gone. Then that house rests a few minutes. */
+const HOUSE_MAX = 5;
 function breedFrom(to) { return to === 'p' ? 'n0' : 'p'; }
-function breedCost(a, to) { return Math.round(a.cost * GRADE[to].costX * Math.pow(1.6, grades(a.id)[to])); }
-function breedChance(id, to) { return Math.min(0.9, GRADE[to].base + 0.01 * Math.max(0, S.skills.ranch.l - GRADE[to].lvl) + 0.05 * (S.barn.pity[id + '_' + to] || 0)); }
+function houseRest() { return P('r_twin') ? 150 : 300; }
+function houseCount() { return Math.min(HOUSE_MAX, Math.max(S.barn.houses || 1, P('r_twin') ? 2 : 1)); }
+function houseCost() { return Math.round(5000 * Math.pow(5, houseCount() - 1)); }
+function houseCd(i) { return (S.barn.cd || [])[i] || 0; }
+function freeHouse() { for (let i = 0; i < houseCount(); i++) if (houseCd(i) <= 0) return i; return -1; }
 function breedBlock(a, to) {
   const G = GRADE[to], g = grades(a.id);
-  const busy = [S.barn.br, S.barn.br2].filter(Boolean);
-  if (busy.length >= (P('r_twin') ? 2 : 1)) return L('بيت التهجين مشغول');
-  if (busy.some(b => b.a === a.id)) return L('هذا الحيوان يتهجّن الحين');
   if (S.skills.ranch.l < G.lvl) return L`يتطلب رعي ${G.lvl}`;
   if (g[breedFrom(to)] < 2) return L`تحتاج ${to === 'p' ? L('اثنين عاديين') : L('اثنين ممتازين')}`;
-  if ((S.barn.h[a.id] ?? 100) < 80) return L('السعادة أقل من 80%');
+  if (freeHouse() < 0) return L('كل البيوت ترتاح');
   return '';
 }
-function tickBreed(dt) { tickBreedIn('br', dt); tickBreedIn('br2', dt); }
-function tickBreedIn(k, dt) {
-  const B = S.barn[k]; if (!B) return;
-  if ((S.barn.h[B.a] ?? 100) < 50) return; // unhappy animals pause the breeding
-  B.t += dt;
-  if (B.t < B.need) return;
-  const a = ANIMALS.find(x => x.id === B.a), G = GRADE[B.to], key = B.a + '_' + B.to;
-  S.barn[k] = null;
-  if (grades(B.a)[breedFrom(B.to)] < 1) return log(L`🧬 فشل التهجين: ما بقي ${a.n} مناسب`, 'warn');
-  if (Math.random() < B.chance) {
+function tickBreed(dt) {
+  const cd = S.barn.cd || (S.barn.cd = []);
+  for (let i = 0; i < cd.length; i++) if (cd[i] > 0) cd[i] = Math.max(0, cd[i] - dt);
+  // Breeding started before the gamble update finishes right away with the chance it had.
+  for (const k of ['br', 'br2']) {
+    const B = S.barn[k]; if (!B) continue;
+    S.barn[k] = null;
+    const a = ANIMALS.find(x => x.id === B.a), G = GRADE[B.to];
+    if (!a || !G || grades(B.a)[breedFrom(B.to)] < 1 || Math.random() >= (B.chance || 0)) continue;
     const q = S.barn.q[B.a] || (S.barn.q[B.a] = { p: 0, g: 0 });
-    q.p = q.p || 0; q.g = q.g || 0;
-    if (B.to === 'g') q.p--;
-    q[B.to]++;
-    S.barn.pity[key] = 0;
+    if (B.to === 'g') q.p = (q.p || 0) - 1;
+    q[B.to] = (q[B.to] || 0) + 1;
     log(L`🧬 نجح التهجين! صار عندك ${a.n} ${G.n} ${G.e}`, 'season');
-    toast(`${G.e} ${a.n} ${G.n}!`);
-  } else {
-    S.barn.pity[key] = (S.barn.pity[key] || 0) + 1;
-    log(L`🧬 فشل تهجين ${a.n} ${G.n}... فرصتك القادمة أعلى (+5%)`, 'warn');
   }
+}
+function breedRoll(id, to) {
+  const a = ANIMALS.find(x => x.id === id), G = GRADE[to], i = freeHouse();
+  const q = S.barn.q[id] || (S.barn.q[id] = { p: 0, g: 0 });
+  q.p = q.p || 0; q.g = q.g || 0;
+  const cd = S.barn.cd || (S.barn.cd = []);
+  cd[i] = houseRest();
+  S.stats.breeds = (S.stats.breeds || 0) + 1;
+  const win = Math.random() < G.chance;
+  if (to === 'g') q.p -= 2;
+  if (win) {
+    q[to] += 2;
+    S.stats.breedWins = (S.stats.breedWins || 0) + 1;
+    log(L`🎰 نجح التهجين! صار عندك ${a.n} ${G.n} ×2 ${G.e}`, 'golden');
+  } else {
+    S.barn.n[id] = Math.max(0, (S.barn.n[id] || 0) - 2);
+    log(L`💀 فشل التهجين... خسرت ${a.n} ×2`, 'warn');
+  }
+  return win;
 }
 function tickRanch(dt) {
   tickBreed(dt);
@@ -933,11 +948,15 @@ const A = {
   breed: v => {
     const [id, to] = v.split(':'), a = ANIMALS.find(x => x.id === id);
     if (!a || !GRADE[to] || !BREEDABLE.includes(id) || breedBlock(a, to)) return;
-    const c = breedCost(a, to); if (S.gold < c) return;
-    S.gold -= c;
-    const k = S.barn.br ? 'br2' : 'br';
-    S.barn[k] = { a: id, to, t: 0, need: GRADE[to].time, chance: breedChance(id, to) };
-    log(L`🧬 بدأ تهجين ${a.n} ${GRADE[to].n} — فرصة النجاح ${Math.round(S.barn[k].chance * 100)}%`);
+    if (noFarm()) return toast(L('🚫 ممنوع في تحدي هذا الجيل'));
+    const win = breedRoll(id, to);
+    if (typeof breedVisual === 'function') breedVisual(a, to, win);
+  },
+  buyHouse: () => {
+    if (houseCount() >= HOUSE_MAX) return;
+    const c = houseCost(); if (S.gold < c) return;
+    S.gold -= c; S.barn.houses = houseCount() + 1;
+    log(L`🏠 بنيت بيت تهجين جديد (${houseCount()}/${HOUSE_MAX})`);
   },
   pet: v => { S.barn.h[v] = Math.min(100, (S.barn.h[v] ?? 100) + 25); toast(L('❤️ الحيوانات سعيدة')); },
   dig: () => { dig(mineMult()); },
@@ -1250,16 +1269,14 @@ function viewBarn() {
 }
 function breedPanel() {
   const lvlOk = S.skills.ranch.l >= GRADE.p.lvl;
-  let h = L`<div class="panel"><div class="ph"><h2>🧬 بيت التهجين</h2></div>
-  <p class="hint">هجّن حيوانين من نفس الدرجة لتحصل على درجة أعلى. <b>الممتاز ${gradeBadge('p')}</b> ينتج ضعف الإنتاج. <b>الذهبي ${gradeBadge('g')}</b> ينتج ضعف الإنتاج من منتج ذهبي سعره ×5.
-  التهجين مكلف وطويل وقد يفشل، لكن كل محاولة فاشلة ترفع فرصتك القادمة +5%. السعادة لازم تكون 80% عند البداية، وإذا نزلت تحت 50% يتوقف التهجين. الدرجات تبدأ من جديد مع كل جيل.</p>`;
+  let h = L`<div class="panel"><div class="ph"><h2>🎰 بيت التهجين</h2></div>
+  <p class="hint">حط حيوانين من نفس الدرجة وجرّب حظك! لو نجحت يصيرون الاثنين درجة أعلى، ولو فشلت <b>تخسرهم الاثنين</b>. بعد كل محاولة البيت يرتاح ${ftime(houseRest())}، وكل ما عندك بيوت أكثر تقدر تجرب أكثر.
+  <b>الممتاز ${gradeBadge('p')}</b> ينتج ضعف الإنتاج. <b>الذهبي ${gradeBadge('g')}</b> ينتج ضعف الإنتاج من منتج ذهبي سعره ×5. الدرجات تبدأ من جديد مع كل جيل.</p>`;
   if (!lvlOk) return h + L`<p class="hint">🔒 يتطلب مستوى رعي ${GRADE.p.lvl}</p></div>`;
-  for (const k of ['br', 'br2']) {
-    const B = S.barn[k], sx = k === 'br' ? '' : '2'; if (!B) continue;
-    const a = ANIMALS.find(x => x.id === B.a), G = GRADE[B.to];
-    h += L`<div class="card breeding"><div class="top"><span class="big">${icon(a.id + '-' + B.to,48)}</span><div class="meta"><b>جاري تهجين ${a.n} ${G.n} ${gradeBadge(B.to)}</b><small>فرصة النجاح ${Math.round(B.chance * 100)}%</small></div></div>
-      <div class="kv"><span>المتبقي</span><span id="br_tt${sx}"></span></div><div class="bar"><i id="br_bar${sx}"></i></div></div>`;
-  }
+  h += '<div class="houses">';
+  for (let i = 0; i < houseCount(); i++) h += `<span class="house" id="hs${i}"></span>`;
+  h += '</div>';
+  if (houseCount() < HOUSE_MAX) h += `<div class="row">${costBtn('buyHouse', '', houseCost(), L`🏠 بيت تهجين جديد (${houseCount() + 1}/${HOUSE_MAX}) — ${fmt(houseCost())}💰`)}</div>`;
   h += '<div class="grid">';
   let any = false;
   for (const id of BREEDABLE) {
@@ -1267,9 +1284,9 @@ function breedPanel() {
     any = true;
     h += `<div class="card"><div class="top"><span class="big">${icon(a,48)}</span><div class="meta"><b>${a.n}</b></div></div>`;
     for (const to of ['p', 'g']) {
-      const G = GRADE[to], why = breedBlock(a, to), c = breedCost(a, to);
-      h += L`<div class="kv grade-line g-${to}"><span>${gradeBadge(to)} ${G.n}: فرصة ${Math.round(breedChance(id, to) * 100)}% • ${ftime(G.time)}</span></div>
-        <div class="row">${why ? `<span class="stat">${why}</span>` : costBtn('breed', id + ':' + to, c, L`🧬 هجّن (${fmt(c)}💰)`, to === 'g' ? 'gold' : '')}</div>`;
+      const G = GRADE[to], why = breedBlock(a, to);
+      h += L`<div class="kv grade-line g-${to}"><span>${gradeBadge(to)} ${G.n} ×2</span><span>🎲 ${Math.round(G.chance * 100)}%</span></div>
+        <div class="row">${why ? `<span class="stat">${why}</span>` : L`<button class="btn ${to === 'g' ? 'gold' : ''}" data-a="breed" data-v="${id}:${to}">🎰 جرّب حظك</button>`}</div>`;
     }
     h += '</div>';
   }
@@ -1277,9 +1294,11 @@ function breedPanel() {
   return h + '</div></div>';
 }
 function updBarn() {
-  for (const k of ['br', 'br2']) {
-    const B = S.barn[k], sx = k === 'br' ? '' : '2', bb = $('br_bar' + sx);
-    if (B && bb) { bb.style.width = Math.min(100, B.t / B.need * 100) + '%'; $('br_tt' + sx).textContent = (S.barn.h[B.a] ?? 100) < 50 ? L('⏸️ متوقف — الحيوانات حزينة') : ftime(B.need - B.t); } }
+  for (let i = 0; i < houseCount(); i++) {
+    const el = $('hs' + i); if (!el) continue;
+    const c = houseCd(i), t = c > 0 ? `🏠 ${i + 1} · ⏳ ${ftime(c)}` : L`🏠 ${i + 1} · ✅ جاهز`;
+    if (el.textContent !== t) { el.textContent = t; el.className = 'house' + (c > 0 ? ' rest' : ' ready'); }
+  }
   for (const a of ANIMALS) {
     const t = $('an_t_' + a.id); if (!t) continue;
     const hp = S.barn.h[a.id] ?? 100;
@@ -1707,7 +1726,7 @@ function updLegacy() {
 
 const VIEWS = {
   farm: [viewFarm, updFarm, () => [S.off, S.leg.gen, zoneMode, S.bld.zoning, S.farm.plots.length, S.farm.seed, S.skills.farm.l, S.tools.can, S.season, S.weather, S.bld.harvester, S.bld.planter, S.bld.sprinkler, S.bld.greenhouse, hearts('mayor')]],
-  barn: [viewBarn, updBarn, () => [S.off, S.skills.ranch.l, barnCap(), S.bld.rancher, ...ANIMALS.map(a => S.barn.n[a.id] || 0), S.barn.q, S.barn.br && S.barn.br.a, S.barn.br2 && S.barn.br2.a, S.barn.pity, BREEDABLE.map(id => ['p', 'g'].map(to => breedBlock(ANIMALS.find(x => x.id === id), to) + Math.round(breedChance(id, to) * 100)))]],
+  barn: [viewBarn, updBarn, () => [S.off, S.skills.ranch.l, barnCap(), S.bld.rancher, ...ANIMALS.map(a => S.barn.n[a.id] || 0), S.barn.q, houseCount(), BREEDABLE.map(id => ['p', 'g'].map(to => breedBlock(ANIMALS.find(x => x.id === id), to)))]],
   mine: [viewMine, updMine, () => [S.off, S.mine.miners, S.tools.pick, ORES.filter(o => o.depth <= S.mine.max).length]],
   guild: [viewGuild, updGuild, () => {
     const D = S.dun, g = S.guild;

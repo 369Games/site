@@ -230,3 +230,24 @@ button.chip.notes-chip.new:after{content:'';position:absolute;top:-3px;inset-inl
 /* First-time tips: same card as the guide, with a blue accent */
 .tut-box.tip-box{border-color:#82abb4}
 .tut-box.tip-box .tut-head b{color:#bfe0e6}
+/* Breeding gamble: house chips and the pack-opening reveal */
+.houses{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.house{padding:4px 10px;border-radius:999px;font-size:13px;font-weight:700;border:1px solid var(--line,#0002);background:var(--paper2,#fff8)}
+.house.ready{border-color:#5fae5a;color:#2f6b2b}
+.house.rest{opacity:.7}
+.breed-fx{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:#000a;cursor:pointer}
+.bfx-card{min-width:280px;padding:26px 34px;border-radius:16px;text-align:center;display:grid;gap:8px;justify-items:center;
+  background:var(--paper,#f7ecd4);border:3px solid #8a6a2a;box-shadow:0 10px 40px #0008;animation:bfx-shake .18s linear infinite}
+.breed-fx.to-g .bfx-card{border-color:#e2bc6c}
+.bfx-pair{display:flex;gap:6px}
+.bfx-q{font-size:30px}
+.bfx-card b{font-size:30px}
+.bfx-card small{font-size:16px;display:flex;gap:6px;align-items:center}
+.breed-fx.win .bfx-card,.breed-fx.lose .bfx-card{animation:bfx-pop .45s ease-out}
+.breed-fx.win .bfx-card{border-color:#ffd76a;background:radial-gradient(circle,#fff6c8 0,#ffd76a 60%,#e2a83a 100%);box-shadow:0 0 0 4px #ffd76a,0 0 60px 20px #ffcf4daa}
+.breed-fx.win b{color:#7a5410}
+.breed-fx.lose .bfx-card{filter:grayscale(.85);border-color:#666}
+.breed-fx.lose .bfx-pair{opacity:.5}
+@keyframes bfx-shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-3deg) translateX(-3px)}75%{transform:rotate(3deg) translateX(3px)}}
+@keyframes bfx-pop{0%{transform:scale(.6)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.bfx-card{animation:none!important}}

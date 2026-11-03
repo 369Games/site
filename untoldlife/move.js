@@ -1,10 +1,10 @@
 'use strict';
-/* Moving to a new web address. Browsers keep each site's save separately, so a player on the old address
-   would lose their progress on the new one. This carries the save across in one click, in any browser:
-   - old site (SITE_CONFIG.moveTo): a "we moved" banner. Its button opens the new site with the save packed into
-     the link's #hash (compressed). The hash never reaches any server.
-   - new site (SITE_CONFIG.moveFrom): on load, a #move= hash is unpacked, checked and loaded after the player confirms.
-   Locally both settings are empty and nothing runs. */
+/* Moving from the old web address. Browsers keep each site's save separately, so a player on the old address
+   would lose their progress on the new one. The old address (tools/site/old-redirect.html) packs its save into
+   the link's #hash (compressed; the hash never reaches any server) and sends the player here.
+   On load, a #move= hash is unpacked and checked, then loaded with no question when there is no save here
+   or when it is further along (generation, then play time). The save it replaces is kept in untoldlife_save_prev.
+   Runs only when SITE_CONFIG.moveFrom is set (the live site). */
 const MOVE_KEYS = [SAVE_KEY, 'untoldlife_lang', 'untoldlife_audio', 'untoldlife_backup_at'];
 
 function b64url(bytes) { let s = ''; for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
@@ -32,22 +32,6 @@ function moveClean(st) {
 (function () {
   const C = siteConfig();
 
-  // ---- old site: banner + send ----
-  if (C.moveTo) {
-    const to = new URL(C.moveTo, location.href);
-    const bar = document.createElement('div');
-    bar.className = 'move-bar';
-    bar.innerHTML = `<span>${L`🚚 انتقلنا لعنوان جديد: <b>${to.host}</b>`}</span><button class="btn gold sm" id="moveGo">${L('انقل حفظي والعب هناك')}</button>`;
-    document.body.prepend(bar);
-    document.getElementById('moveGo').onclick = async () => {
-      if (typeof save === 'function') save();
-      const data = {};
-      for (const k of MOVE_KEYS) { try { const v = localStorage.getItem(k); if (v !== null) data[k] = v; } catch (x) { /* */ } }
-      const target = new URL('untoldlife/', to).href;
-      location.href = data[SAVE_KEY] ? target + '#move=' + await movePack(data) : target;
-    };
-  }
-
   // ---- new site: receive ----
   if (C.moveFrom && location.hash.startsWith('#move=')) moveReceive();
 })();
@@ -61,10 +45,9 @@ function moveReceive() {
       if (st && st.leg && !st.leg.mod && (info.mod === 'sig' || info.mod === 'legacy')) st.leg.mod = { r: info.mod, t: Date.now() };
       if (!st) return toast(L('❌ هذا ما هو ملف حفظ'));
       const mine = (() => { try { return parseSave(localStorage.getItem(SAVE_KEY)); } catch (x) { return null; } })();
-      const gen = x => (x.leg && x.leg.gen) || 1, nm = x => String(x.name || '').replace(/[<>&"'`]/g, '');
-      const ask = mine ? L`عندك حفظ هنا (${nm(mine)}، الجيل ${gen(mine)}). تبي تستبدله بحفظك من الموقع القديم (${nm(st)}، الجيل ${gen(st)})؟`
-        : L`تبي تكمل حفظك من الموقع القديم (${nm(st)}، الجيل ${gen(st)})؟`;
-      if (!confirm(ask)) return;
+      const gen = x => (x.leg && x.leg.gen) || 1, play = x => (x.stats && x.stats.play) || 0;
+      if (mine && ((gen(st) - gen(mine)) || (play(st) - play(mine))) <= 0) return; // the save here is already as far along
+      if (mine) { try { localStorage.setItem('untoldlife_save_prev', localStorage.getItem(SAVE_KEY)); } catch (x) { /* */ } }
       saveBlocked = true;
       try {
         localStorage.setItem(SAVE_KEY, encodeSave(moveClean(st)));

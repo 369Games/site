@@ -71,8 +71,8 @@ footer a{color:#b59d74}
 <header class="top"><div class="wrap">
   <a class="brand" href="./"><img class="brand-logo" src="img/logo-mark.png" alt="" width="40" height="40">369Games</a>
   <select class="lang" id="lang" aria-label="Language">
-    <option value="ar">العربية</option><option value="en">English</option><option value="es">Español</option>
-    <option value="pt">Português</option><option value="ru">Русский</option><option value="zh">简体中文</option>
+    <option value="ar">العربية</option><option value="en">English</option>
+    <option value="ru">Русский</option><option value="zh">简体中文</option>
   </select>
 </div></header>
 
@@ -169,12 +169,12 @@ const T = {
 };
 const KEY = 'untoldlife_lang'; // shared with the games, so the choice carries over
 function getLang() {
-  try { const v = localStorage.getItem(KEY); if (v && T[v]) return v; } catch (e) {}
+  try { let v = localStorage.getItem(KEY); if (v === 'es' || v === 'pt') v = 'en'; if (v && T[v] && document.querySelector('#lang option[value="' + v + '"]')) return v; } catch (e) {}
   return 'ar'; // same default as the games
 }
 function apply(lang) {
   const d = T[lang];
-  document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : lang === 'pt' ? 'pt-BR' : lang;
+  document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : lang;
   document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   document.querySelectorAll('[data-t]').forEach(el => { el.innerHTML = d[el.dataset.t]; });
   document.getElementById('lang').value = lang;

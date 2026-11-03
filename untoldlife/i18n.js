@@ -7,14 +7,14 @@ const LANG_KEY = 'untoldlife_lang';
 const LANGS = [
   ['ar', 'العربية', 'ع'],
   ['en', 'English', 'EN'],
-  ['es', 'Español', 'ES'],
-  ['pt', 'Português', 'PT'],
   ['ru', 'Русский', 'RU'],
   ['zh', '简体中文', '中文'],
 ];
 const LANG_PACKS = window.LANG_PACKS || {};
+// Spanish and Portuguese were retired (see tools/i18n-archive): those players move to English.
+const LANG_RETIRED = { es: 'en', pt: 'en' };
 const LANG = (() => {
-  try { const v = localStorage.getItem(LANG_KEY); if (v && LANGS.some(l => l[0] === v) && (v === 'ar' || LANG_PACKS[v])) return v; } catch (e) {}
+  try { let v = localStorage.getItem(LANG_KEY); if (LANG_RETIRED[v]) { v = LANG_RETIRED[v]; localStorage.setItem(LANG_KEY, v); } if (v && LANGS.some(l => l[0] === v) && (v === 'ar' || LANG_PACKS[v])) return v; } catch (e) {}
   return 'ar';
 })();
 const L_DICT = LANG === 'ar' ? null : LANG_PACKS[LANG];
@@ -57,7 +57,7 @@ function setLang(lang) {
   location.reload();
 }
 
-document.documentElement.lang = LANG === 'zh' ? 'zh-Hans' : LANG === 'pt' ? 'pt-BR' : LANG;
+document.documentElement.lang = LANG === 'zh' ? 'zh-Hans' : LANG;
 document.documentElement.dir = LANG === 'ar' ? 'rtl' : 'ltr';
 document.documentElement.dataset.lang = LANG;
 

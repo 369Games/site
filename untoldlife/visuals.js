@@ -37,7 +37,7 @@ function logVisualHTML(msg) {
     const add=(x,key)=>logIconMap.set(x.e+' '+x.n,icon(key || x)+' '+x.n);
     SEASONS.forEach((s,index)=>add(s,SEASON_ART_KEYS[index]));
     Object.values(ITEMS).forEach(x=>add(x));
-    BUILDINGS.forEach(x=>add(x,'building-'+x.id));
+    BUILDINGS.forEach(x=>add(x,x.art||'building-'+x.id));
     PERKS.forEach(x=>add(x,'perk-'+x.id));
     ACH.forEach(x=>add(x,'ach-'+x.id));
     MONSTERS.forEach(([n,e],i)=>add({n,e},'monster-'+i));

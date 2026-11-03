@@ -152,6 +152,8 @@ const BUILDINGS = [
   { id: 'kitchen', n: L('المطبخ'), e: '🍳', desc: L('الطعام يشفي ضعف الكمية في المعارك'), cost: 8000 },
   { id: 'sprinkler', n: L('رشاشات ماء'), e: '💦', desc: L('تسقي كل الأحواض تلقائياً'), cost: 15000 },
   { id: 'greenhouse', n: L('بيت محمي'), e: '🏡', desc: L('كل المحاصيل تنمو بسرعة كاملة في أي موسم'), cost: 80000 },
+  // No building art yet: shows the golden chicken.
+  { id: 'breedlab', n: L('أدوات التهجين'), e: '🧬', art: 'chicken-g', desc: L('لبيوت التهجين. المستوى 2: راحة 4 دقايق ونجاح 25% للممتاز و8% للذهبي. المستوى 3: راحة دقيقتين و33% و12%.'), cost: 25000, mult: 12, max: 2 },
 ];
 
 const NPCS = [
@@ -468,7 +470,8 @@ const BREED_LV = [
   { rest: 240, p: 0.25, g: 0.08, cost: 25000 },
   { rest: 120, p: 0.33, g: 0.12, cost: 300000 },
 ];
-function breedLv() { return BREED_LV[Math.min(BREED_LV.length - 1, S.barn.lab || 0)]; }
+// Level from the «Breeding tools» building (S.barn.lab is where 1.4.1 kept it for one day).
+function breedLv() { return BREED_LV[Math.min(BREED_LV.length - 1, Math.max(S.bld.breedlab || 0, S.barn.lab || 0))]; }
 function breedChance(to) { return breedLv()[to]; }
 function breedFrom(to) { return to === 'p' ? 'n0' : 'p'; }
 function houseRest() { return breedLv().rest; }
@@ -969,11 +972,6 @@ const A = {
     S.gold -= c; S.barn.houses = houseCount() + 1;
     log(L`🏠 بنيت بيت تهجين جديد (${houseCount()}/${HOUSE_MAX})`);
   },
-  buyLab: () => {
-    const nx = BREED_LV[(S.barn.lab || 0) + 1]; if (!nx || S.gold < nx.cost || S.skills.ranch.l < GRADE.p.lvl) return;
-    S.gold -= nx.cost; S.barn.lab = (S.barn.lab || 0) + 1;
-    log(L`🧬 طوّرت أدوات التهجين للمستوى ${S.barn.lab + 1}`, 'season');
-  },
   pet: v => { S.barn.h[v] = Math.min(100, (S.barn.h[v] ?? 100) + 25); toast(L('❤️ الحيوانات سعيدة')); },
   dig: () => { dig(mineMult()); },
   cast: () => { fish(fishPower()); },
@@ -1286,7 +1284,7 @@ function viewBarn() {
 function breedPanel() {
   const lvlOk = S.skills.ranch.l >= GRADE.p.lvl;
   let h = L`<div class="panel"><div class="ph"><h2>🧬 بيت التهجين</h2></div>
-  <p class="hint">حط حيوانين من نفس الدرجة وهجّنهم! لو نجح التهجين يصيرون الاثنين درجة أعلى، ولو فشل <b>تخسرهم الاثنين</b>. بعد كل محاولة البيت يرتاح ${ftime(houseRest())}، وكل ما عندك بيوت أكثر تقدر تهجّن أكثر. طوّر «أدوات التهجين» من السوق عشان ترتفع النسبة ويقل الانتظار.
+  <p class="hint">حط حيوانين من نفس الدرجة وهجّنهم! لو نجح التهجين يصيرون الاثنين درجة أعلى، ولو فشل <b>تخسرهم الاثنين</b>. بعد كل محاولة البيت يرتاح ${ftime(houseRest())}، وكل ما عندك بيوت أكثر تقدر تهجّن أكثر. طوّر «أدوات التهجين» من القرية عشان ترتفع النسبة ويقل الانتظار.
   <b>الممتاز ${gradeBadge('p')}</b> ينتج ضعف الإنتاج. <b>الذهبي ${gradeBadge('g')}</b> ينتج ضعف الإنتاج من منتج ذهبي سعره ×5. الدرجات تبدأ من جديد مع كل جيل.</p>`;
   if (!lvlOk) return h + L`<p class="hint">🔒 يتطلب مستوى رعي ${GRADE.p.lvl}</p></div>`;
   h += '<div class="houses">';
@@ -1497,23 +1495,13 @@ function viewSmith() {
 }
 
 /* ----- السوق ----- */
-// Market upgrade for the breeding houses: 3 levels, each with a shorter rest and better chances.
-function labPanel() {
-  if (S.skills.ranch.l < GRADE.p.lvl) return '';
-  const lv = S.barn.lab || 0, cur = breedLv(), nx = BREED_LV[lv + 1];
-  const line = x => L`⏳ ${ftime(x.rest)} • ${gradeBadge('p')} ${Math.round(x.p * 100)}% • ${gradeBadge('g')} ${Math.round(x.g * 100)}%`;
-  return L`<div class="panel"><div class="ph"><h2>🧬 أدوات التهجين</h2><span class="stat">المستوى ${lv + 1}/${BREED_LV.length}</span></div>
-    <p class="hint">تطوير لبيوت التهجين: يقلل وقت راحة البيت ويرفع نسبة النجاح. يرجع للمستوى الأول مع كل جيل.</p>
-    <div class="kv"><span>الحالي</span><span>${line(cur)}</span></div>
-    ${nx ? L`<div class="kv"><span>التالي</span><span>${line(nx)}</span></div><div class="row">${costBtn('buyLab', '', nx.cost, L`🧬 طوّر (${fmt(nx.cost)}💰)`)}</div>` : L('<p class="hint">✨ وصلت لأعلى مستوى</p>')}</div>`;
-}
 function viewMarket() {
   const ids = Object.keys(S.inv).filter(id => have(id) > 0);
   let total = 0; ids.forEach(id => { if (!S.locked[id]) total += sellPrice(id) * have(id); });
   let h = L`<div class="panel"><div class="ph"><h2>🛒 السوق والمخزن</h2>
     <button class="btn gold" data-a="shipAll">💰 بيع كل غير المقفل (<span id="mk_total">${fmt(total)}</span>💰)</button></div>
     ${dealCrop() ? L`<p class="hint">🧺 تاجر الموسم يشتري ${CROP[dealCrop()].e} ${CROP[dealCrop()].n} بـ ×3 السعر هذا الموسم.</p>` : ''}<p class="hint">🔒 = محمي من البيع الجماعي ومن صندوق الشحن ومن الأكل التلقائي. ${S.bld.bin ? L('📦 صندوق الشحن يبيع غير المقفل كل صباح.') : L('ابنِ صندوق الشحن في القرية ليبيع عنك تلقائياً.')}</p>${owned('bin') ? `<div class="row">${togBtn('bin')}</div>` : ''}`;
-  if (!ids.length) return h + L('<p class="hint">المخزن فارغ. ازرع واحصد أولاً!</p></div>') + labPanel();
+  if (!ids.length) return h + L('<p class="hint">المخزن فارغ. ازرع واحصد أولاً!</p></div>');
   for (const cat of Object.keys(CAT_NAMES)) {
     const list = ids.filter(id => ITEMS[id].cat === cat); if (!list.length) continue;
     h += `<h3>${CAT_NAMES[cat]}</h3><div class="inv">`;
@@ -1525,7 +1513,7 @@ function viewMarket() {
     }
     h += '</div>';
   }
-  return h + '</div>' + labPanel();
+  return h + '</div>';
 }
 function updMarket() {
   let total = 0;
@@ -1560,7 +1548,7 @@ function viewVillage() {
   h += L`</div></div><div class="panel"><div class="ph"><h2>🏗️ المباني والعمال</h2><div class="row" style="margin:0"><button class="btn ghost sm" data-a="allAuto" data-v="off">⏸️ إيقاف كل التلقائي</button><button class="btn ghost sm" data-a="allAuto" data-v="on">🟢 تشغيل الكل</button></div></div><p class="hint">هنا تصبح اللعبة "idle" فعلاً: وظّف من يعمل عنك. تقدر توقف أي عامل مؤقتاً لو تبغى تجرب شي بنفسك.</p><div class="grid">`;
   for (const b of BUILDINGS) {
     const l = S.bld[b.id] || 0, max = b.max || 1, c = bCost(b), done = l >= max, need = b.req && !S.bld[b.req];
-    h += `<div class="card"><div class="top"><span class="big">${icon('building-' + b.id,64)}</span><div class="meta"><b>${b.n}</b>${max > 1 ? ` (${l}/${max})` : ''}<small>${b.desc}</small></div></div>
+    h += `<div class="card"><div class="top"><span class="big">${icon(b.art || 'building-' + b.id,64)}</span><div class="meta"><b>${b.n}</b>${max > 1 ? ` (${l}/${max})` : ''}<small>${b.desc}</small></div></div>
       <div class="row">${done ? L('<span class="stat">✅ مكتمل</span>') : need ? L`<span class="stat">يتطلب ${BUILDINGS.find(x => x.id === b.req).n}</span>` : costBtn('build', b.id, c, `${l ? L('تطوير') : L('شراء')} (${fmt(c)}💰)`)}${l && TOGGLES[b.id] ? togBtn(b.id) : ''}</div></div>`;
   }
   return h + '</div></div>';
@@ -1759,7 +1747,7 @@ const VIEWS = {
     return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100)))];
   }],
   smith: [viewSmith, () => {}, () => [S.tools, S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
-  market: [viewMarket, updMarket, () => [S.off, dealCrop(), S.barn.lab, S.skills.ranch.l >= GRADE.p.lvl, Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
+  market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
   village: [viewVillage, () => {}, () => [dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => [have(n.love) > 0, have(n.like) > 0])]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, S.skills.fish.l, S.tools.rod, S.leg.gen]],
   legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length, dunGoal()]; }],

@@ -152,8 +152,7 @@ const BUILDINGS = [
   { id: 'kitchen', n: L('المطبخ'), e: '🍳', desc: L('الطعام يشفي ضعف الكمية في المعارك'), cost: 8000 },
   { id: 'sprinkler', n: L('رشاشات ماء'), e: '💦', desc: L('تسقي كل الأحواض تلقائياً'), cost: 15000 },
   { id: 'greenhouse', n: L('بيت محمي'), e: '🏡', desc: L('كل المحاصيل تنمو بسرعة كاملة في أي موسم'), cost: 80000 },
-  // No building art yet: shows the golden chicken.
-  { id: 'breedlab', n: L('أدوات التهجين'), e: '🧬', art: 'chicken-g', desc: L('تسرّع راحة بيوت التهجين وترفع نسبة النجاح'), cost: 25000, mult: 12, max: 2 },
+  { id: 'breedlab', n: L('أدوات التهجين'), e: '🧬', desc: L('تسرّع راحة بيوت التهجين وترفع نسبة النجاح'), cost: 25000, mult: 12, max: 2 },
 ];
 
 const NPCS = [

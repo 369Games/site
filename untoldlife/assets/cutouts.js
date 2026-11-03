@@ -114,3 +114,4 @@ const ART_CUTOUTS={
 };
 /* Independent breeding art; keep these entries when extracting original cutouts. */
 ["egg_g","milk_g","wool_g","chicken-p","chicken-g","cow-p","cow-g","sheep-p","sheep-g"].forEach((id,index)=>{ART_CUTOUTS['breeding:'+index]='art/breeding/'+id+'.png';});
+ART_CUTOUTS['breeding:9']='art/breeding/breedlab.webp';

@@ -11,3 +11,4 @@ Object.entries({barn:'building-barn',market:'building-bin',leaf:'sprout',heart:'
    are registered in assets/pass2-art.js instead of unrelated-image aliases. */
 /* Dedicated breeding sprites: no tint flag; loaded before game.js fallback aliases. */
 ["egg_g","milk_g","wool_g","chicken-p","chicken-g","cow-p","cow-g","sheep-p","sheep-g"].forEach((id,index)=>{ART[id]={sheet:'breeding',index};});
+ART['building-breedlab']={sheet:'breeding',index:9};

@@ -719,6 +719,10 @@ function killEnemy() {
   if (e.boss || Math.random() < dropCh()) give(mat.id, (e.boss ? 3 : 1) + (gsk('loot') >= 5 && Math.random() < 0.5 ? 1 : 0));
   if (e.boss && Math.random() < 0.25) give('gem');
   if (e.boss) log(L`🏆 هزمت الزعيم ${e.e} ${e.n}!`, 'good');
+  if (e.boss && f > (S.guild.bossTop || 0)) {
+    const gp = Math.round(f / 2); S.guild.bossTop = f; S.guild.gp += gp;
+    log(L`🎖️ النقابة سمعت بانتصارك على زعيم الطابق ${f}: +${gp} نقاط نقابة`, 'good');
+  }
   D.kills++;
   if (D.kills >= (e.boss ? 1 : 5)) {
     D.kills = 0;
@@ -795,7 +799,7 @@ function genQuest() {
   const req = Math.round(25 * Math.pow(2, r) * R(0.6, 1.4) * (0.8 + dur / 1200));
   return {
     id: g.qid, type: 'hunt', n: pick(HUNT_NAMES), dur, req,
-    gold: Math.round(req * dur / 25 * (1 + r * 0.3)), gp: Math.max(1, Math.round((3 + r * 3) * dur / 180)),
+    gold: Math.round(req * dur / 25 * (1 + r * 0.3)), gp: Math.max(2, Math.round((6 + r * 4) * dur / 90)),
     xp: Math.round(req * dur / 90), exp: 480,
   };
 }

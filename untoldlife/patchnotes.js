@@ -3,6 +3,10 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.8.1', date: '2026-11-05', big: false, title: L('نقاط النقابة أكثر'), items: [
+    L('📜 مهمات الصيد صارت تعطي تقريباً 4 أضعاف نقاط النقابة.'),
+    L('👑 أول مرة تهزم زعيم طابق في الجيل تاخذ نقاط نقابة: نص رقم الطابق (زعيم الطابق 30 = +15).'),
+  ] },
   { v: '1.8', date: '2026-11-04', big: true, title: L('النقابة صارت أقوى'), items: [
     L('🌟 مهارات المرتزق: شجرة جديدة في النقابة فيها القوة والغنائم والأكل السريع والمهام. تاخذ نقاط من مستوى القتال ورتبة النقابة، وتبدأ من الصفر مع كل جيل.'),
     L('🎖️ رتبتك في النقابة تحدد أعمق طابق: F لين 15، E لين 30، D لين 50، C لين 75، B لين 100، A لين 150، و S بلا حد.'),

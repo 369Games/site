@@ -1555,7 +1555,7 @@ function viewMine() {
   const cap = PICK_CAP[S.tools.pick];
   let h = L`<div class="panel"><div class="ph"><h2>⛏️ المنجم القديم</h2>${skillBar('mine')}</div>
   <p class="hint">اضغط زر الحفر لتكسير الصخور، أو وظّف عمالاً يحفرون عنك. كل 5 صخور في أعمق طابق تنزلك طابقاً. المعادن الأعمق أغلى وتحتاجها لتطوير أدواتك. الفأس ${TIER[S.tools.pick]} يسمح بالنزول حتى الطابق ${cap > 1e8 ? '∞' : cap}.</p>
-  <div class="minebox"><button class="digbtn" data-a="dig"><span class="dig-scene">${icon("rock",64)}${icon("pick-" + S.tools.pick,48)}</span>احفر!<small class="hold-hint">اضغط مطوّل ✊</small></button>
+  <div class="minebox"><button class="digbtn" data-a="dig"><span class="dig-scene">${icon("rock",64)}${icon(lgv('pick') && S.tools.pick >= 6 ? 'pick-7' : 'pick-' + S.tools.pick,48)}</span>احفر!<small class="hold-hint">اضغط مطوّل ✊</small></button>
   <div class="mineinfo">
     <div class="depth">الطابق <span id="m_depth"></span> <small style="font-size:14px;color:var(--muted)">/ الأعمق <span id="m_max"></span></small></div>
     <div class="kv"><span>صلابة الصخرة</span><span id="m_hard"></span></div><div class="bar"><i id="m_prog"></i></div>
@@ -2038,7 +2038,7 @@ function updLegacy() {
 const VIEWS = {
   farm: [viewFarm, updFarm, () => [S.off, S.leg.gen, zoneMode, S.bld.zoning, S.farm.plots.length, S.farm.seed, S.skills.farm.l, S.tools.can, S.season, S.weather, S.bld.harvester, S.bld.planter, S.bld.sprinkler, S.bld.greenhouse, hearts('mayor')]],
   barn: [viewBarn, updBarn, () => [S.off, S.skills.ranch.l, barnCap(), S.bld.rancher, ...ANIMALS.map(a => S.barn.n[a.id] || 0), S.barn.q, houseCount(), BREEDABLE.map(id => ['p', 'g'].map(to => breedBlock(ANIMALS.find(x => x.id === id), to)))]],
-  mine: [viewMine, updMine, () => [S.off, S.mine.miners, S.tools.pick, ORES.filter(o => o.depth <= S.mine.max).length]],
+  mine: [viewMine, updMine, () => [S.off, S.mine.miners, S.tools.pick, lgv('pick'), ORES.filter(o => o.depth <= S.mine.max).length]],
   guild: [viewGuild, updGuild, () => {
     const D = S.dun, g = S.guild;
     return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100)))];

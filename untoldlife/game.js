@@ -179,6 +179,8 @@ const TOOLS = [
 const LEG_TOOLS = { hoe: L('معزقة الخصوبة'), can: L('مرشة الحياة'), pick: L('فأس الدمار'), sword: L('سيف العاصفة'), armor: L('درع الحارس الخالد'), rod: L('سنارة الأعماق'), glove: L('قفازات العمالقة'), crook: L('عصا القطيع') };
 const LEG_COST = [['mithril', 500], ['adamant', 1000]];
 const LEG_RAR = [{ n: L('بيضاء'), c: 'w' }, { n: L('زرقاء'), c: 'b' }, { n: L('بنفسجية'), c: 'p' }, { n: L('ذهبية'), c: 'g' }];
+// Buffs panel label for a tool: its legendary name and roll once forged.
+function tlab(id, e, plain) { return lgv(id) && (S.tools[id] || 0) >= 6 ? `${e} ${LEG_TOOLS[id]} (+${lgv(id)}%)` : plain; }
 function lgv(id) { return (S.tlg || {})[id] || 0; }
 function lf(id) { return 1 + lgv(id) / 100; }
 function lgTier(v) { return v >= 100 ? 3 : v >= 60 ? 2 : v >= 30 ? 1 : 0; }
@@ -395,13 +397,13 @@ function goldMult() { return (1 + 0.1 * P('t_price')) * (1 + 0.05 * H('coin')) *
 function familyProd() { return [[L('💍 الزواج'), S.spouse ? 0.1 : 0], [L('🌈 بركة الوادي'), 0.05 * P('q_bless')], [L('🐌 مكافأة تحدي الزمن البطيء'), 0.1 * CC('slow')]]; }
 function speedSrc(kind) {
   const pen = [[L('⚠️ تحدي الزمن البطيء (نشط)'), inCh('slow') ? 0.5 : 1]];
-  if (kind === 'grow') return { gen: [[L`🌾 المعزقة ${TIER[S.tools.hoe]}`, 0.2 * S.tools.hoe * lf('hoe')], [L`📈 مستوى الزراعة ${S.skills.farm.l}`, 0.02 * (S.skills.farm.l - 1)], [L`👩‍🌾 نورة (${hearts('noura')} قلوب)`, 0.03 * hearts('noura')]],
+  if (kind === 'grow') return { gen: [[tlab('hoe', '🌾', L`🌾 المعزقة ${TIER[S.tools.hoe]}`), 0.2 * S.tools.hoe * lf('hoe')], [L`📈 مستوى الزراعة ${S.skills.farm.l}`, 0.02 * (S.skills.farm.l - 1)], [L`👩‍🌾 نورة (${hearts('noura')} قلوب)`, 0.03 * hearts('noura')]],
     fam: [[L('🌳 تربة خصبة'), 0.25 * P('f_grow')], [L('❄️ مكافأة تحدي الشتاء'), 0.15 * CC('winter')], ...familyProd()], pen };
-  if (kind === 'ranch') return { gen: [[L`🐑 عصا الراعي ${TIER[S.tools.crook || 0]}`, 0.5 * (S.tools.crook || 0) * lf('crook')], [L`📈 مستوى الرعي ${S.skills.ranch.l}`, 0.02 * (S.skills.ranch.l - 1)]],
+  if (kind === 'ranch') return { gen: [[tlab('crook', '🐑', L`🐑 عصا الراعي ${TIER[S.tools.crook || 0]}`), 0.5 * (S.tools.crook || 0) * lf('crook')], [L`📈 مستوى الرعي ${S.skills.ranch.l}`, 0.02 * (S.skills.ranch.l - 1)]],
     fam: [[L('🌳 حيوانات سعيدة'), 0.2 * P('r_speed')], ...familyProd()], pen };
-  if (kind === 'mine') return { gen: [[L`⛏️ الفأس ${TIER[S.tools.pick]}`, 0.6 * S.tools.pick * lf('pick')], [L`📈 مستوى التعدين ${S.skills.mine.l}`, 0.05 * (S.skills.mine.l - 1)]],
+  if (kind === 'mine') return { gen: [[tlab('pick', '⛏️', L`⛏️ الفأس ${TIER[S.tools.pick]}`), 0.6 * S.tools.pick * lf('pick')], [L`📈 مستوى التعدين ${S.skills.mine.l}`, 0.05 * (S.skills.mine.l - 1)]],
     fam: [[L('🌳 سواعد قوية'), 0.3 * P('m_power')], [L('🕳️ مكافأة تحدي تحت الأرض'), 0.2 * CC('underground')], ...familyProd()], pen };
-  return { gen: [[L`🎣 السنارة ${TIER[S.tools.rod]}`, 0.5 * S.tools.rod * lf('rod')], [L`📈 مستوى الصيد ${S.skills.fish.l}`, 0.03 * (S.skills.fish.l - 1)]],
+  return { gen: [[tlab('rod', '🎣', L`🎣 السنارة ${TIER[S.tools.rod]}`), 0.5 * S.tools.rod * lf('rod')], [L`📈 مستوى الصيد ${S.skills.fish.l}`, 0.03 * (S.skills.fish.l - 1)]],
     fam: [[L('🌳 سواعد قوية'), 0.3 * P('m_power')], ...familyProd()], pen };
 }
 function bucket(list) { return list.reduce((a, [, b]) => a + b, 1); }

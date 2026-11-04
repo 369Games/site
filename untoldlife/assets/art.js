@@ -16,6 +16,8 @@ ART['building-breedlab']={sheet:'breeding',index:9};
 for(let i=0;i<7;i++)ART['crook-'+i]={sheet:'crook',index:i};
 /* Worker's gloves, one picture per tier (assets/art/work-gloves). */
 for(let i=0;i<7;i++)ART['glove-'+i]={sheet:'glove',index:i};
+/* Salma's portraits: neutral, friendly, joyful (assets/art/salma-portraits). */
+for(let i=0;i<3;i++)ART['npc-salma-'+i]={sheet:'salma',index:i};
 /* Legendary tools from the forge, tier 7 (assets/art/legendary-tools). */
 for(const t of ['hoe','can','pick','sword','armor','rod','glove','crook'])ART[t+'-7']={sheet:'legend',index:t};
 /* Fishing v2: river, sea and king fish (assets/art/fishing-v2). */

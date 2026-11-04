@@ -3,7 +3,7 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
-  { v: '2.0', date: '2026-11-05', big: true, title: L('سلمى والهدايا الملكية'), items: [
+  { v: '1.9.5', date: '2026-11-05', big: true, title: L('سلمى والهدايا الملكية'), items: [
     L('👩‍🦱 جات القرية «سلمى» مربّية المواشي: كل ما زاد حبها زادت نسب التهجين، ولين 10 قلوب تتضاعف (33% تصير 67%، و12% تصير 25%).'),
     L('👑 الهدايا الملكية: كل واحد بالقرية يحب ملك سمك معيّن. تقدر تهديه مرة كل موسم وياخذ +5 قلوب على طول.'),
     L('🐟 ملك الأعماق لأبو سالم ورعد، الشبوط الذهبي لقاسم ونورة، وتنين النهر لليلى وسلمى.'),

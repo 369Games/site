@@ -66,7 +66,7 @@ const ANIMALS = [
   { id: 'bee', n: L('خلية نحل'), e: '🐝', cost: 20000, prod: 'honey', time: 240, lvl: 8 },
   { id: 'turkey', n: L('ديك رومي'), e: '🦃', cost: 60000, prod: 'meat', time: 300, lvl: 10 },
   // The priciest animal, but each one costs only 8% more than the last. Its grades have their own names.
-  { id: 'camel', n: L('بعير'), e: '🐪', cost: 1000000, prod: 'hashi', time: 600, lvl: 12, grow: 1.08, gn: { n0: L('مجهم'), p: L('وضحى'), g: L('شقحاء') } },
+  { id: 'camel', n: L('ناقة'), e: '🐪', cost: 1000000, prod: 'hashi', time: 600, lvl: 12, grow: 1.08, gn: { n0: L('مجهم'), p: L('وضحى'), g: L('شقحاء') } },
 ];
 function gName(a, to) { return (a.gn && a.gn[to]) || (to === 'n0' ? L('عادي') : GRADE[to].n); }
 [['egg', L('بيض'), '🥚', 25], ['milk', L('حليب'), '🥛', 120], ['wool', L('صوف'), '🧶', 350], ['cheese', L('جبن'), '🧀', 700], ['honey', L('عسل'), '🍯', 1500], ['meat', L('فخذ ديك رومي'), '🍗', 4000], ['hashi', L('لحم حاشي'), '🍖', 60000]]

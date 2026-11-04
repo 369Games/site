@@ -183,7 +183,9 @@ function lgv(id) { return (S.tlg || {})[id] || 0; }
 function lf(id) { return 1 + lgv(id) / 100; }
 function lgTier(v) { return v >= 100 ? 3 : v >= 60 ? 2 : v >= 30 ? 1 : 0; }
 function lgRoll() { return Math.random() < 0.005 ? 100 : Math.round(5 + 94 * Math.pow(Math.random(), 2.5)); }
-function lgCanPay() { return LEG_COST.every(([id, q]) => have(id) >= q); }
+// The first forge costs the full price; forging again costs 10% of it.
+function lgCost(t) { return LEG_COST.map(([id, q]) => [id, lgv(t) ? q / 10 : q]); }
+function lgCanPay(t) { return lgCost(t).every(([id, q]) => have(id) >= q); }
 
 const BUILDINGS = [
   { id: 'harvester', n: L('عامل حصاد'), e: '🧑‍🌾', desc: L('يحصد المحاصيل الجاهزة تلقائياً'), cost: 300 },
@@ -1206,10 +1208,10 @@ const A = {
     log(L`🔨 الحداد قاسم طوّر ${t.n} إلى ${TIER[l]}!`, 'good');
   },
   forge: v => {
-    const t = TOOLS.find(x => x.id === v); if (!t || (S.tools[v] || 0) < 6 || !lgCanPay()) return;
+    const t = TOOLS.find(x => x.id === v); if (!t || (S.tools[v] || 0) < 6 || !lgCanPay(v)) return;
     const old = lgv(v);
     if (old >= 60 && !confirm(L`عندك ${LEG_TOOLS[v]} بقوة +${old}%. الصياغة الجديدة تستبدلها حتى لو طلعت أقل. أكيد؟`)) return;
-    LEG_COST.forEach(([id, q]) => take(id, q));
+    lgCost(v).forEach(([id, q]) => take(id, q));
     const r = lgRoll(), k = LEG_RAR[lgTier(r)];
     (S.tlg || (S.tlg = {}))[v] = r;
     log(L`🔥 الحداد قاسم صاغ ${LEG_TOOLS[v]}: +${r}% قوة (${k.n})`, lgTier(r) >= 2 ? 'golden' : 'good');
@@ -1734,12 +1736,12 @@ function viewSmith() {
         <div class="kv"><span>التكلفة</span><span>${fmt(c.gold)}💰 + ${c.qty} ${icon(o)} (لديك ${fmt(have(c.ore))})</span></div>
         <div class="row"><button class="btn gold" data-a="upgrade" data-v="${t.id}" ${ok ? '' : 'disabled'}>🔨 طوّر</button></div>`;
     } else {
-      const pay = LEG_COST.map(([id, q]) => L`${fmt(q)} ${icon(ITEMS[id])} (لديك ${fmt(have(id))})`).join(' + ');
+      const pay = lgCost(t.id).map(([id, q]) => L`${fmt(q)} ${icon(ITEMS[id])} (لديك ${fmt(have(id))})`).join(' + ');
       h += L`<div class="lgbox"><b>🔥 الصياغة الأسطورية: ${LEG_TOOLS[t.id]}</b>
-        <small>${lv ? L('كل صياغة جديدة تعطي نسبة جديدة مكان القديمة.') : L('تصير أداة أسطورية بقوة زيادة من 5% لين 100% على تأثيرها.')} تنعاد للأدامانتيت مع الجيل الجديد.</small>
+        <small>${lv ? L('إعادة الصياغة بـ10% من السعر، وتعطي نسبة جديدة مكان القديمة.') : L('تصير أداة أسطورية بقوة زيادة من 5% لين 100% على تأثيرها.')} تنعاد للأدامانتيت مع الجيل الجديد.</small>
         <small class="lgodds"><span class="lgv w">⚪ 5–29% (58%)</span> <span class="lgv b">🔵 30–59% (22%)</span> <span class="lgv p">🟣 60–99% (19.5%)</span> <span class="lgv g">🟡 100% (0.5%)</span></small>
         <div class="kv"><span>التكلفة</span><span>${pay}</span></div>
-        <div class="row"><button class="btn gold" data-a="forge" data-v="${t.id}" ${lgCanPay() ? '' : 'disabled'}>${lv ? L('🔥 أعد الصياغة') : L('🔥 صياغة أسطورية')}</button></div></div>`;
+        <div class="row"><button class="btn gold" data-a="forge" data-v="${t.id}" ${lgCanPay(t.id) ? '' : 'disabled'}>${lv ? L('🔥 أعد الصياغة') : L('🔥 صياغة أسطورية')}</button></div></div>`;
     }
     h += '</div>';
   }
@@ -2039,7 +2041,7 @@ const VIEWS = {
     const D = S.dun, g = S.guild;
     return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100)))];
   }],
-  smith: [viewSmith, () => {}, () => [S.tools, S.tlg, lgCanPay(), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
+  smith: [viewSmith, () => {}, () => [S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
   village: [viewVillage, () => {}, () => [dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0]; })]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, S.skills.fish.l, S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],

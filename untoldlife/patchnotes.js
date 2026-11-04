@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.9.2', date: '2026-11-05', big: false, title: L('إعادة الصياغة أرخص'), items: [
+    L('🔥 أول صياغة أسطورية بنفس السعر (500 ميثريل و1000 أدامانتيت)، وإعادة الصياغة صارت بـ10% بس (50 ميثريل و100 أدامانتيت).'),
+  ] },
   { v: '1.9.1', date: '2026-11-05', big: false, title: L('مستوى القتال أسرع'), items: [
     L('⚔️ مستوى القتال صار يطلع تقريباً بضعف السرعة. الخبرة اللي جمعتها انحسبت على الطريقة الجديدة، فمستواك ارتفع على طول.'),
   ] },

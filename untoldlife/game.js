@@ -290,7 +290,7 @@ const NPC_BY = Object.fromEntries(NPCS.map(n => [n.id, n]));
 const GENDER = { m: { n: L('رجل'), e: '👨', child: L('ابن') }, f: { n: L('امرأة'), e: '👩', child: L('ابنة') } };
 /* Gifts change every season: each villager loves one thing and likes another, picked at random from their kind
    of items (Noura: this season's crops, Qasem: ores, Raad: monster loot...), preferring items the player already knows.
-   Their old favourite (np.love) still counts as loved all year. Love fades by half a heart a day once half a season
+   Love fades by half a heart a day once half a season
    of play passes without a gift; time away from the game doesn't count, and a spouse never fades. */
 const GIFT_GRACE = 4;
 function seasonCrops() { return CROPS.filter(c => c.season === S.season).map(c => c.id); }
@@ -916,7 +916,7 @@ function checkAch() {
 function goldGoal() { const g = Math.max(0, S.leg.gen - 3); if (!g) return 1e6; const v = 1e6 * Math.pow(1.85, g), d = Math.pow(10, Math.floor(Math.log10(v)) - 1); return Math.round(v / d) * d; }
 // The dungeon goal also sits at least 15 floors above where this generation started (the «Battle memory» perk starts you deep).
 function dunGoal() { return Math.max(30 + 3 * Math.max(0, S.leg.gen - 3), (S.gen.dun0 || 1) + 15); }
-function canRetire() { return S.gen.earned >= goldGoal() || S.dun.max >= dunGoal(); }
+function canRetire() { return S.gen.earned >= goldGoal() && S.dun.max >= dunGoal(); }
 // Dungeon stars only count floors climbed this generation, not the free start floor.
 // Stars per retirement have a cap that grows every 5 generations, and the mine gives at most 200 of them.
 const MINE_STAR_CAP = 200;
@@ -1156,8 +1156,8 @@ const A = {
     const [nid, item] = v.split(':'); const np = NPC_BY[nid];
     const st = S.npc[nid] || (S.npc[nid] = { pts: 0, gd: 0 });
     const gf = giftsOf(np);
-    if (st.gd === dayAbs() || st.pts >= 1000 || ![gf.love, gf.like, np.love].includes(item) || !take(item)) return;
-    const before = hearts(nid), loved = item === gf.love || item === np.love;
+    if (st.gd === dayAbs() || st.pts >= 1000 || ![gf.love, gf.like].includes(item) || !take(item)) return;
+    const before = hearts(nid), loved = item === gf.love;
     st.pts = Math.min(1000, st.pts + (loved ? 100 : 50)); st.gd = st.cd = dayAbs();
     log(L`🎁 أهديت ${np.n} ${ITEMS[item].e} — ${loved ? L('«واااو! هذا أكثر شيء أحبه!» +1 قلب') : L('«شكراً، لطيف منك» +½ قلب')}`);
     if (hearts(nid) > before) log(L`❤️ علاقتك مع ${np.n} صارت ${hearts(nid)} قلوب!`, 'good');
@@ -1692,7 +1692,6 @@ function viewVillage() {
       <div class="say">«${np.lines[Math.min(2, Math.floor(hr / 4))]}»</div><div class="gifts">`;
     const gf = giftsOf(np), left = giftDaysLeft(np);
     const gl = [[gf.love, L('❤️ يعشقه هالموسم: +1 قلب'), 'gold'], [gf.like, L('💗 يحبه هالموسم: +½ قلب'), 'ghost']];
-    if (np.love !== gf.love && np.love !== gf.like) gl.push([np.love, L('⭐ مفضّله طول السنة: +1 قلب'), 'ghost']);
     for (const [it, lab, cls] of gl) {
       const I = ITEMS[it];
       h += `<button class="btn ${cls} sm" data-a="gift" data-v="${np.id}:${it}" ${today || have(it) < 1 || st.pts >= 1000 ? 'disabled' : ''}>🎁 ${icon(I)} ${I.n} (${fmt(have(it))}) — ${lab}</button>`;
@@ -1875,7 +1874,7 @@ function viewLegacy() {
   <div class="two"><div>
     <div class="kv"><span>💰 ذهب هذا الجيل</span><span id="lg_e"></span></div><div class="bar gp"><i id="lg_eb"></i></div>
     <div class="kv"><span>🕳️ أعلى طابق في هذا الجيل</span><span id="lg_d"></span></div><div class="bar xp"><i id="lg_db"></i></div>
-    <p class="hint">شرط التقاعد في هذا الجيل: كسب ${fmt(goldGoal())} ذهب <b>أو</b> الوصول للطابق ${dunGoal()}. الشرط يكبر مع كل جيل بعد الثالث. النجوم تزيد كل ما كسبت ذهب أكثر ونزلت أعمق في الزنزانة والمنجم.</p>
+    <p class="hint">شرط التقاعد في هذا الجيل: كسب ${fmt(goldGoal())} ذهب <b>و</b> الوصول للطابق ${dunGoal()}، الاثنين مع بعض. الشرط يكبر مع كل جيل بعد الثالث. النجوم تزيد كل ما كسبت ذهب أكثر ونزلت أعمق في الزنزانة والمنجم.</p>
   </div><div class="retirebox"><div class="bigstar">${icon("legacy-crown",72)}<span class="legacy-gain-value">+<span id="lg_g"></span></span></div><small class="hint">نجوم لو تقاعدت الآن</small><small class="hint" id="lg_cap"></small>
     <button class="btn gold" data-a="retire" id="lg_btn">🌅 التقاعد وتسليم المزرعة</button><small class="hint" id="lg_why"></small></div></div>
   ${ch ? L`<div class="chbox"><b>${icon(ch)} تحدي هذا الجيل: ${ch.n}</b> — ${ch.rule}<div class="kv"><span>🎯 ${goalText(ch)}</span><span id="lg_chp"></span></div><div class="bar gp"><i id="lg_chb"></i></div></div>` : ''}
@@ -1943,7 +1942,7 @@ const VIEWS = {
   }],
   smith: [viewSmith, () => {}, () => [S.tools, S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
-  village: [viewVillage, () => {}, () => [dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(n.love) > 0]; })]],
+  village: [viewVillage, () => {}, () => [dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0]; })]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, S.skills.fish.l, S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],
   legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length, dunGoal()]; }],
   settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0]],

@@ -14,5 +14,7 @@ Object.entries({barn:'building-barn',market:'building-bin',leaf:'sprout',heart:'
 ART['building-breedlab']={sheet:'breeding',index:9};
 /* Shepherd's crook, one picture per tier (assets/art/shepherd-crooks). */
 for(let i=0;i<7;i++)ART['crook-'+i]={sheet:'crook',index:i};
+/* Worker's gloves, one picture per tier (assets/art/work-gloves). */
+for(let i=0;i<7;i++)ART['glove-'+i]={sheet:'glove',index:i};
 /* Fishing v2: river, sea and king fish (assets/art/fishing-v2). */
 ["trout","crayfish","eel","catfish","sturgeon","tuna","oyster","jelly","swordfish","whaleshark","k_lake","k_river","k_sea"].forEach((id,index)=>{ART[id]={sheet:'fish2',index};});

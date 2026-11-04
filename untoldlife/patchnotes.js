@@ -3,6 +3,11 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.7.1', date: '2026-11-04', big: false, title: L('التقاعد وقفازات العامل'), items: [
+    L('🌅 التقاعد صار يحتاج الشرطين مع بعض: ذهب الجيل والطابق.'),
+    L('🎁 أهل القرية يحبون بس هدايا الموسم الحين، ما في مفضّل طول السنة.'),
+    L('🧤 قفازات العامل صار لها صور لكل مستوى.'),
+  ] },
   { v: '1.7', date: '2026-11-04', big: true, title: L('ملاحظاتكم صارت تحديث'), items: [
     L('🏡 البيت المحمي صار يحمي 4 أحواض، وتقدر تطوره لين 12. باقي الحقل يمشي مع الموسم، فاختار وش تزرع تحته.'),
     L('🎁 أهل القرية يتغير اللي يحبونه كل موسم، ولو ما أهديتهم نص موسم يزعلون ويقل حبهم. الوقت اللي تكون فيه برا اللعبة ما ينحسب.'),

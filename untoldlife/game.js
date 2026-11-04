@@ -920,7 +920,7 @@ function catchFish() {
     S.lake.last = 'treasure'; S.stats.fish++; if (!offline) log(L`🧰 اصطدت صندوق كنز! +${fmt(g)}💰`, 'gold'); return;
   }
   const sp = curSpot(), K = KINGS.find(k => k.spot === sp.id);
-  if (K && S.skills.fish.l >= K.lvl && Math.random() < 0.0003) return landFish(K, 0); // bait doesn't help kings
+  if (K && S.skills.fish.l >= K.lvl && Math.random() < 0.0008) return landFish(K, 0); // bait doesn't help kings
   const av = FISH.filter(f => f.spot === sp.id && f.lvl <= S.skills.fish.l);
   const ws = av.map((f, i) => Math.pow(0.62, i) * Math.pow(1 + 0.15 * S.tools.rod, i));
   let r = Math.random() * ws.reduce((a, b) => a + b, 0), f = av[0];

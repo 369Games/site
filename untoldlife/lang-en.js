@@ -958,6 +958,7 @@
 "👑 الهدايا الملكية: كل واحد بالقرية يحب ملك سمك معيّن. تقدر تهديه مرة كل موسم وياخذ +5 قلوب على طول.": "👑 Royal gifts: every villager loves one king fish. You can give it once a season for +5 hearts at once.",
 "🐟 ملك الأعماق لأبو سالم ورعد، الشبوط الذهبي لقاسم ونورة، وتنين النهر لليلى وسلمى.": "🐟 The Lord of the Deep for Abu Salem and Raad, the golden carp for Qasem and Noura, and the river dragon for Leila and Salma.",
 "🍽️ ملوك السمك ما تنأكل في الزنزانة.": "🍽️ King fish are never eaten in the dungeon.",
+"🎣 فرصة صيد الملوك صارت 0.08% بكل صيدة (كانت 0.03%).": "🎣 The chance of catching a king is now 0.08% per catch (it was 0.03%).",
 "إعادة الصياغة أرخص": "Cheaper reforging",
 "🔥 أول صياغة أسطورية بنفس السعر (500 ميثريل و1000 أدامانتيت)، وإعادة الصياغة صارت بـ10% بس (50 ميثريل و100 أدامانتيت).": "🔥 The first legendary forge keeps its price (500 mithril and 1000 adamantite), and forging again now costs only 10% (50 mithril and 100 adamantite).",
 "مستوى القتال أسرع": "Faster combat levels",

@@ -802,11 +802,14 @@ const MSK = [
   { id: 'pow', e: '⚔️', n: L('القوة'), d: l => L`+${10 * l}% هجوم ودفاع` },
   { id: 'loot', e: '💰', n: L('الغنائم'), d: l => L`فرصة المواد ${Math.round(dropCh(l) * 100)}%` + (l >= 5 ? L(' • نص المرات مادة زيادة') : '') },
   { id: 'eat', e: '🍽️', n: L('الأكل السريع'), d: l => L`الانتظار بين الأكلات ${EAT_CD[l]}ث` },
-  { id: 'quest', e: '📜', n: L('المهام'), d: l => L`مهام الصيد أسرع ${10 * l}%` + (l >= 3 ? L(' • +1 خانة مهمة') : '') },
+  { id: 'quest', e: '📜', n: L('المهام'), d: l => L`مهام الصيد أسرع ${10 * l}% • +${20 * l}% نقاط النقابة` + (l >= 3 ? L(' • +1 خانة مهمة') : '') },
 ];
 function gsk(id) { return (S.guild.sk || {})[id] || 0; }
 function mskPow() { return 1 + 0.1 * gsk('pow'); }
 function mskPts() { return Math.floor(S.hero.lvl / 2) + 2 * rankIdx() - MSK.reduce((a, k) => a + gsk(k.id) * (gsk(k.id) + 1) / 2, 0); }
+// Guild points a hunt gives per 90 seconds at each rank (F..S); the quest skill adds +20% a level (×2 at level 5).
+const QUEST_GP = [6, 10, 16, 26, 40, 60, 80];
+function qGp(q) { return Math.round((q.type === 'deliver' ? Math.max(20, q.gp) : q.gp) * (1 + 0.2 * gsk('quest'))); }
 function qDur(q) { return Math.round(q.dur * (1 - 0.1 * gsk('quest'))); }
 function questMult() { return (1 + 0.04 * hearts('raad')) * (1 + 0.25 * P('w_quest')) * goldMult(); }
 function chanceOf(q) { return clamp(Math.pow(heroPower() / q.req, 2), 0.05, 1); }
@@ -816,13 +819,13 @@ function genQuest() {
   if (del.length && Math.random() < 0.45) {
     const id = pick(del), it = ITEMS[id];
     const qty = Math.max(1, Math.round(R(3, 10) * (1 + r * 0.4) * Math.pow(60 / it.price, 0.35)));
-    return { id: g.qid, type: 'deliver', item: id, qty, gold: Math.round(it.price * qty * 1.7), gp: 1, exp: 480 }; // rank comes from hunts
+    return { id: g.qid, type: 'deliver', item: id, qty, gold: Math.round(it.price * qty * 1.7), gp: 20, exp: 480 };
   }
   const dur = pick([45, 90, 180, 360, 600]);
   const req = Math.round(25 * Math.pow(2, r) * R(0.6, 1.4) * (0.8 + dur / 1200));
   return {
     id: g.qid, type: 'hunt', n: pick(HUNT_NAMES), dur, req,
-    gold: Math.round(req * dur / 25 * (1 + r * 0.3)), gp: Math.max(2, Math.round((6 + r * 4) * dur / 90)),
+    gold: Math.round(req * dur / 25 * (1 + r * 0.3)), gp: Math.max(2, Math.round(QUEST_GP[r] * dur / 90)),
     xp: Math.round(req * dur / 90), exp: 480,
   };
 }
@@ -835,8 +838,8 @@ function tickGuild(dt) {
       g.active.splice(g.active.indexOf(q), 1);
       if (Math.random() < q.chance) {
         const m = questMult();
-        addGold(Math.round(q.gold * m)); g.gp += q.gp; heroXp(q.xp); S.stats.quests++;
-        log(L`✅ نجحت مهمة «${Lx(q.n)}»: +${fmt(q.gold * m)}💰 +${q.gp} نقاط نقابة`, 'good');
+        addGold(Math.round(q.gold * m)); g.gp += qGp(q); heroXp(q.xp); S.stats.quests++;
+        log(L`✅ نجحت مهمة «${Lx(q.n)}»: +${fmt(q.gold * m)}💰 +${qGp(q)} نقاط نقابة`, 'good');
       } else log(L`❌ فشلت مهمة «${Lx(q.n)}»... حاول عندما تصبح أقوى`, 'bad');
     }
   }
@@ -1196,8 +1199,8 @@ const A = {
     const q = g.board[i];
     if (q.type === 'deliver') {
       if (!take(q.item, q.qty)) return toast(L('ما عندك الكمية المطلوبة'));
-      const m = questMult(); addGold(Math.round(q.gold * m)); g.gp += q.gp; S.stats.quests++;
-      log(L`📬 سلّمت ${q.qty} ${ITEMS[q.item].e} ${ITEMS[q.item].n}: +${fmt(q.gold * m)}💰 +${q.gp} نقاط`, 'good');
+      const m = questMult(); addGold(Math.round(q.gold * m)); g.gp += qGp(q); S.stats.quests++;
+      log(L`📬 سلّمت ${q.qty} ${ITEMS[q.item].e} ${ITEMS[q.item].n}: +${fmt(q.gold * m)}💰 +${qGp(q)} نقاط`, 'good');
     } else {
       if (g.active.length >= questSlots()) return toast(L('كل الخانات مشغولة'));
       g.active.push({ ...q, dur: qDur(q), t: 0, chance: chanceOf(q) });
@@ -1649,11 +1652,11 @@ function viewGuild() {
   g.board.forEach(q => {
     if (q.type === 'deliver') {
       const it = ITEMS[q.item], ok = have(q.item) >= q.qty;
-      h += L`<div class="quest"><div class="qi"><b>📦 توصيل ${q.qty} × ${icon(it)} ${it.n}</b><small>لديك ${fmt(have(q.item))} • المكافأة ${fmt(q.gold * questMult())}💰 + ${q.gp} نقاط</small></div>
+      h += L`<div class="quest"><div class="qi"><b>📦 توصيل ${q.qty} × ${icon(it)} ${it.n}</b><small>لديك ${fmt(have(q.item))} • المكافأة ${fmt(q.gold * questMult())}💰 + ${qGp(q)} نقاط</small></div>
         <button class="btn sm" data-a="quest" data-v="${q.id}" ${ok ? '' : 'disabled'}>سلّم</button></div>`;
     } else {
       const ch = chanceOf(q), cl = ch >= 0.8 ? 'hi' : ch >= 0.4 ? 'mid' : 'lo';
-      h += L`<div class="quest"><div class="qi"><b>⚔️ ${Lx(q.n)}</b><small>القوة المطلوبة ${fmt(q.req)} • ⏱ ${ftime(qDur(q))} • ${fmt(q.gold * questMult())}💰 + ${q.gp} نقاط + ${fmt(q.xp)} خبرة</small>
+      h += L`<div class="quest"><div class="qi"><b>⚔️ ${Lx(q.n)}</b><small>القوة المطلوبة ${fmt(q.req)} • ⏱ ${ftime(qDur(q))} • ${fmt(q.gold * questMult())}💰 + ${qGp(q)} نقاط + ${fmt(q.xp)} خبرة</small>
         <small>نسبة النجاح: <span class="chance ${cl}">${Math.round(ch * 100)}%</span></small></div>
         <button class="btn sm" data-a="quest" data-v="${q.id}" ${g.active.length >= questSlots() ? 'disabled' : ''}>قبول</button></div>`;
     }

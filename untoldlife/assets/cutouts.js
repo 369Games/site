@@ -117,6 +117,7 @@ const ART_CUTOUTS={
 ART_CUTOUTS['breeding:9']='art/breeding/breedlab.webp';
 for(let i=0;i<7;i++)ART_CUTOUTS['crook:'+i]='art/shepherd-crooks/crook-'+i+'.webp';
 for(let i=0;i<7;i++)ART_CUTOUTS['glove:'+i]='art/work-gloves/glove-'+i+'.webp';
+['goat','goat-p','goat-g','cheese','cheese_g','turkey','turkey-p','turkey-g','meat','meat_g'].forEach((id,i)=>{ART_CUTOUTS['goatturkey:'+i]='art/goat-turkey/'+id+'.webp';});
 ['neutral','friendly','joyful'].forEach((m,i)=>{ART_CUTOUTS['salma:'+i]='art/portraits/salma-'+m+'-v2.webp';});
 for(const t of ['hoe','can','pick','sword','armor','rod','glove','crook'])ART_CUTOUTS['legend:'+t]='art/legendary-tools/'+t+'-7.webp';
 ["trout","crayfish","eel","catfish","sturgeon","tuna","oyster","jelly","swordfish","whaleshark","k_lake","k_river","k_sea"].forEach((id,index)=>{ART_CUTOUTS['fish2:'+index]='art/fishing-v2/'+id+'.webp';});

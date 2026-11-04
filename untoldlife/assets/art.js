@@ -16,6 +16,8 @@ ART['building-breedlab']={sheet:'breeding',index:9};
 for(let i=0;i<7;i++)ART['crook-'+i]={sheet:'crook',index:i};
 /* Worker's gloves, one picture per tier (assets/art/work-gloves). */
 for(let i=0;i<7;i++)ART['glove-'+i]={sheet:'glove',index:i};
+/* Goats and turkeys with their products and grades (assets/art/goat-turkey). */
+['goat','goat-p','goat-g','cheese','cheese_g','turkey','turkey-p','turkey-g','meat','meat_g'].forEach((id,index)=>{ART[id]={sheet:'goatturkey',index};});
 /* Salma's portraits: neutral, friendly, joyful (assets/art/salma-portraits). */
 for(let i=0;i<3;i++)ART['npc-salma-'+i]={sheet:'salma',index:i};
 /* Legendary tools from the forge, tier 7 (assets/art/legendary-tools). */

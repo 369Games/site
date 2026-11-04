@@ -348,8 +348,8 @@ function newState() {
     tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0, crook: 0, glove: 0 },
     lake: { prog: 0, fishers: 0, last: null, spot: 'lake', bait: 0, autoBait: false },
     hero: { lvl: 1, xp: 0, hp: 60 },
-    dun: { active: false, floor: 1, max: 1, kills: 0, enemy: null, auto: true, autoEat: true, resting: false, ht: 0, et: 0, retry: 0 },
-    guild: { gp: 0, board: [], active: [], boardT: 0, qid: 0 },
+    dun: { active: false, floor: 1, max: 1, kills: 0, enemy: null, auto: true, autoEat: true, resting: false, ht: 0, et: 0, retry: 0, eatCd: 0 },
+    guild: { gp: 0, board: [], active: [], boardT: 0, qid: 0, sk: {}, refCd: 0 },
     bld: {}, off: {}, spouse: null, gender: null,
     npc: Object.fromEntries(NPCS.map(n => [n.id, { pts: 250, gd: 0 }])),
     stats: { earned: 0, harvests: 0, products: 0, blocks: 0, kills: 0, quests: 0, play: 0, fish: 0 },
@@ -659,8 +659,8 @@ function blockDone() {
 
 /* ---------------- البطل والقتال ---------------- */
 function heroMaxHp() { return Math.floor((60 + 20 * (S.hero.lvl - 1) + ARMOR_HP[S.tools.armor]) * (1 + 0.05 * hearts('leila')) * warMult()); }
-function heroAtk() { return (6 + 3 * (S.hero.lvl - 1) + SWORD[S.tools.sword]) * warMult(); }
-function heroDef() { return 1 + (S.hero.lvl - 1) + ARMOR_DEF[S.tools.armor]; }
+function heroAtk() { return (6 + 3 * (S.hero.lvl - 1) + SWORD[S.tools.sword]) * warMult() * mskPow(); }
+function heroDef() { return (1 + (S.hero.lvl - 1) + ARMOR_DEF[S.tools.armor]) * mskPow(); }
 function heroPower() { return Math.round(heroAtk() * 2 + heroDef() * 2 + heroMaxHp() / 5); }
 function hxpNeed(l) { return Math.floor(50 * Math.pow(l, 2.2)); }
 function heroXp(x) {
@@ -689,26 +689,40 @@ function foodList() {
   return Object.keys(S.inv).filter(id => cats.includes(ITEMS[id].cat) && !S.locked[id])
     .sort((a, b) => ITEMS[a].price - ITEMS[b].price);
 }
+/* Eating has a cooldown (10s, down to 2s with the «fast eating» skill), so food can't make you unbeatable.
+   It picks the cheapest food that fills the missing health, or the most filling one if none does (golden items are never eaten). */
+const EAT_CD = [10, 8, 6, 4, 3, 2];
+function eatCd() { return EAT_CD[gsk('eat')]; }
 function eat() {
-  const f = foodList()[0]; if (!f) return false;
-  take(f); S.hero.hp = Math.min(heroMaxHp(), S.hero.hp + healOf(f));
-  return true;
+  const D = S.dun, h = S.hero, mhp = heroMaxHp(), list = foodList().filter(id => !ITEMS[id].golden);
+  if (!list.length) return 'none';
+  if (D.eatCd > 0) return 'cd';
+  const miss = mhp - h.hp; if (miss < 1) return 'full';
+  const f = list.find(id => healOf(id) >= miss) || list[list.length - 1];
+  take(f); h.hp = Math.min(mhp, h.hp + healOf(f)); D.eatCd = eatCd();
+  return 'ok';
 }
+// What a monster on floor f gives (xp before the xp bonuses, which heroXp adds).
+function enemyLoot(f, boss) {
+  return { gold: Math.round((3 + 2 * f + 0.15 * f * f) * (boss ? 5 : 1) * goldMult()), xp: (4 + 1.5 * f + 0.1 * f * f) * (boss ? 4 : 1) };
+}
+function dropCh(l = gsk('loot')) { return 0.35 + 0.08 * l; }
 function killEnemy() {
   const D = S.dun, e = D.enemy, f = D.floor;
-  addGold(Math.round((3 + 2 * f + 0.15 * f * f) * (e.boss ? 5 : 1) * goldMult()));
+  const lt = enemyLoot(f, e.boss);
+  addGold(lt.gold);
   if (e.boss && f > 100) { S.leg.stars += 1; S.leg.totalStars += 1; log(L('🌟 زعيم من الأعماق المنسية أعطاك نجمة إرث!'), 'season'); }
-  heroXp((4 + 1.5 * f + 0.1 * f * f) * (e.boss ? 4 : 1));
+  heroXp(lt.xp);
   S.stats.kills++;
   const mats = MONSTER_MATS.filter(m => m.f <= f);
   const mat = Math.random() < 0.7 ? mats[mats.length - 1] : pick(mats);
-  if (e.boss || Math.random() < 0.35) give(mat.id, e.boss ? 3 : 1);
+  if (e.boss || Math.random() < dropCh()) give(mat.id, (e.boss ? 3 : 1) + (gsk('loot') >= 5 && Math.random() < 0.5 ? 1 : 0));
   if (e.boss && Math.random() < 0.25) give('gem');
   if (e.boss) log(L`🏆 هزمت الزعيم ${e.e} ${e.n}!`, 'good');
   D.kills++;
   if (D.kills >= (e.boss ? 1 : 5)) {
     D.kills = 0;
-    if (D.floor === D.max && !deepLocked()) { D.max++; if (f % 5 === 0 || e.boss) log(L`🗝️ فتحت الطابق ${D.max} في الزنزانة`); }
+    if (D.floor === D.max && !deepLocked() && D.max < floorCap()) { D.max++; if (f % 5 === 0 || e.boss) log(L`🗝️ فتحت الطابق ${D.max} في الزنزانة`); }
     if (D.auto && !(D.retry > 0)) D.floor = Math.min(D.max, D.floor + 1);
   }
   D.enemy = makeEnemy(D.floor);
@@ -725,13 +739,14 @@ function tickCombat(dt) {
   if (h.hp > mhp) h.hp = mhp;
   if (D.retry > 0) D.retry -= dt;
   if (D.allyT > 0) D.allyT -= dt;
+  if (D.eatCd > 0) D.eatCd = Math.max(0, D.eatCd - dt);
   if (!D.active || D.resting) {
     h.hp = Math.min(mhp, h.hp + regenRate() * dt);
     if (D.active && D.resting && h.hp >= mhp) { D.resting = false; log(L('💪 تعافيت تماماً وعدت للزنزانة')); }
     return;
   }
   if (!D.enemy) D.enemy = makeEnemy(D.floor);
-  if (D.autoEat) { let g = 0; while (h.hp < mhp * 0.4 && g++ < 20 && eat()); }
+  if (D.autoEat && h.hp < mhp * 0.4) eat();
   h.hp = Math.min(mhp, h.hp + mhp * 0.005 * dt); // تعافٍ بسيط أثناء القتال
   D.ht += dt; D.et += dt;
   while (D.ht >= 1) {
@@ -750,7 +765,22 @@ function tickCombat(dt) {
 
 /* ---------------- النقابة والمهمات ---------------- */
 function rankIdx() { let r = 0; RANKS.forEach((x, i) => { if (S.guild.gp >= x[1]) r = i; }); return r; }
-function questSlots() { return 1 + (S.bld.merc || 0); }
+function questSlots() { return 1 + (S.bld.merc || 0) + (gsk('quest') >= 3 ? 1 : 0); }
+/* Your guild rank limits how deep you can open the dungeon. Never below the start floor + 15, so the retire goal can always be reached. */
+const RANK_FLOOR = [15, 30, 50, 75, 100, 150, Infinity];
+function floorCap() { return Math.max(RANK_FLOOR[rankIdx()], (S.gen.dun0 || 1) + 15); }
+/* Mercenary skills: only for the guild and the dungeon, and they start over every generation.
+   Points: 1 for every 2 combat levels + 2 for every guild rank. Level n of a skill costs n points. */
+const MSK = [
+  { id: 'pow', e: '⚔️', n: L('القوة'), d: l => L`+${10 * l}% هجوم ودفاع` },
+  { id: 'loot', e: '💰', n: L('الغنائم'), d: l => L`فرصة المواد ${Math.round(dropCh(l) * 100)}%` + (l >= 5 ? L(' • نص المرات مادة زيادة') : '') },
+  { id: 'eat', e: '🍽️', n: L('الأكل السريع'), d: l => L`الانتظار بين الأكلات ${EAT_CD[l]}ث` },
+  { id: 'quest', e: '📜', n: L('المهام'), d: l => L`مهام الصيد أسرع ${10 * l}%` + (l >= 3 ? L(' • +1 خانة مهمة') : '') },
+];
+function gsk(id) { return (S.guild.sk || {})[id] || 0; }
+function mskPow() { return 1 + 0.1 * gsk('pow'); }
+function mskPts() { return Math.floor(S.hero.lvl / 2) + 2 * rankIdx() - MSK.reduce((a, k) => a + gsk(k.id) * (gsk(k.id) + 1) / 2, 0); }
+function qDur(q) { return Math.round(q.dur * (1 - 0.1 * gsk('quest'))); }
 function questMult() { return (1 + 0.04 * hearts('raad')) * (1 + 0.25 * P('w_quest')) * goldMult(); }
 function chanceOf(q) { return clamp(Math.pow(heroPower() / q.req, 2), 0.05, 1); }
 function genQuest() {
@@ -759,7 +789,7 @@ function genQuest() {
   if (del.length && Math.random() < 0.45) {
     const id = pick(del), it = ITEMS[id];
     const qty = Math.max(1, Math.round(R(3, 10) * (1 + r * 0.4) * Math.pow(60 / it.price, 0.35)));
-    return { id: g.qid, type: 'deliver', item: id, qty, gold: Math.round(it.price * qty * 1.7), gp: 2 + r * 2, exp: 480 };
+    return { id: g.qid, type: 'deliver', item: id, qty, gold: Math.round(it.price * qty * 1.7), gp: 1, exp: 480 }; // rank comes from hunts
   }
   const dur = pick([45, 90, 180, 360, 600]);
   const req = Math.round(25 * Math.pow(2, r) * R(0.6, 1.4) * (0.8 + dur / 1200));
@@ -784,6 +814,7 @@ function tickGuild(dt) {
     }
   }
   for (const q of [...g.board]) { q.exp = (q.exp ?? 480) - dt; if (q.exp <= 0) g.board.splice(g.board.indexOf(q), 1); }
+  if (g.refCd > 0) g.refCd = Math.max(0, g.refCd - dt);
   if (g.board.length < 4) { g.boardT += dt; if (g.boardT >= 40) { g.boardT = 0; g.board.push(genQuest()); } }
 }
 
@@ -1122,7 +1153,17 @@ const A = {
   dunEat: () => { S.dun.autoEat = !S.dun.autoEat; },
   floor: v => { const D = S.dun; const f = clamp(D.floor + (+v), 1, D.max); if (f !== D.floor) { D.floor = f; D.kills = 0; D.enemy = null; } },
   floorMax: () => { S.dun.floor = S.dun.max; S.dun.kills = 0; S.dun.enemy = null; },
-  eatNow: () => { if (!eat()) toast(L('ما عندك طعام غير مقفل')); },
+  eatNow: () => {
+    const r = eat();
+    if (r === 'none') toast(L('ما عندك طعام غير مقفل'));
+    else if (r === 'cd') toast(L`⏳ تقدر تاكل بعد ${Math.ceil(S.dun.eatCd)}ث`);
+    else if (r === 'full') toast(L('❤️ صحتك كاملة'));
+  },
+  mskUp: v => {
+    const k = MSK.find(x => x.id === v), l = gsk(v); if (!k || l >= 5 || mskPts() < l + 1) return;
+    (S.guild.sk || (S.guild.sk = {}))[v] = l + 1;
+    log(L`🌟 طوّرت مهارة ${k.e} ${k.n} للمستوى ${l + 1}`, 'good');
+  },
   quest: v => {
     const g = S.guild, i = g.board.findIndex(q => q.id === +v); if (i < 0) return;
     const q = g.board[i];
@@ -1132,14 +1173,14 @@ const A = {
       log(L`📬 سلّمت ${q.qty} ${ITEMS[q.item].e} ${ITEMS[q.item].n}: +${fmt(q.gold * m)}💰 +${q.gp} نقاط`, 'good');
     } else {
       if (g.active.length >= questSlots()) return toast(L('كل الخانات مشغولة'));
-      g.active.push({ ...q, t: 0, chance: chanceOf(q) });
+      g.active.push({ ...q, dur: qDur(q), t: 0, chance: chanceOf(q) });
       log(L`📜 بدأت مهمة «${Lx(q.n)}»`);
     }
     g.board.splice(i, 1); g.boardT = 0;
   },
   refreshBoard: () => {
-    const c = refreshCost(); if (S.gold < c) return;
-    S.gold -= c; S.guild.board = []; fillBoard();
+    const c = refreshCost(); if (S.gold < c || S.guild.refCd > 0) return;
+    S.gold -= c; S.guild.board = []; S.guild.refCd = 60; fillBoard();
   },
   upgrade: v => {
     const l = (S.tools[v] || 0) + 1; if (l > 6 || !TOOLS.some(x => x.id === v)) return;
@@ -1253,7 +1294,7 @@ function toolCost(l) {
   return { gold: Math.round(500 * Math.pow(6, l - 1) * disc), ore: ORES[l - 1].id, qty: Math.round((10 + 10 * l) * disc) };
 }
 function bCost(b) { const l = S.bld[b.id] || 0; return b.costs ? b.costs[Math.min(l, b.costs.length - 1)] : Math.round(b.cost * Math.pow(b.mult || 1, l)); }
-function refreshCost() { return 25 * Math.pow(rankIdx() + 1, 2); }
+function refreshCost() { return 100 * Math.pow(rankIdx() + 1, 2); }
 
 /* Human click limit for the buttons that pay per click (dig, cast).
    A fast hand manages about 10 clicks a second, so anything faster is ignored: an auto-clicker gains nothing over a person.
@@ -1531,7 +1572,7 @@ function viewGuild() {
     <div class="kv"><span>❤️ الصحة</span><span id="h_hpt"></span></div><div class="bar hp"><i id="h_hp"></i></div>
     <div class="kv"><span>✨ الخبرة</span><span id="h_xpt"></span></div><div class="bar xp"><i id="h_xp"></i></div>
     <div class="row" id="h_stats"></div>
-    <p class="hint">طوّر السيف والدرع عند الحداد. الطعام من مزرعتك يشفيك أثناء القتال (المقفل 🔒 لا يؤكل).</p>
+    <p class="hint">طوّر السيف والدرع عند الحداد. الطعام من مزرعتك يشفيك أثناء القتال (المقفل 🔒 لا يؤكل)، وبين كل أكلة وأكلة ${eatCd()} ثواني.</p>
   </div>
   <div class="panel"><div class="ph"><h2>🕳️ الزنزانة</h2><span class="stat">أنت في الطابق <b>${D.floor}</b> • المفتوح حتى <b>${D.max}</b></span></div>
     ${P('w_ally') ? L('<p class="hint">🛡️ رفيق المعارك يقاتل معك.</p>') : ''}
@@ -1544,7 +1585,7 @@ function viewGuild() {
     <div class="row">
       <button class="btn ghost sm" data-a="dunAuto">${D.auto ? '✅' : '⬜'} تقدم تلقائي</button>
       <button class="btn ghost sm" data-a="dunEat">${D.autoEat ? '✅' : '⬜'} أكل تلقائي</button>
-      <button class="btn ghost sm" data-a="eatNow">🍽️ كُل الآن</button>
+      <button class="btn ghost sm" data-a="eatNow" id="eatBtn">🍽️ كُل الآن</button>
     </div>
     <div class="duninfo" id="dunInfo"></div>
     <div class="enemy" id="enemyBox"></div>
@@ -1566,12 +1607,21 @@ function viewGuild() {
         <button class="btn sm" data-a="quest" data-v="${q.id}" ${ok ? '' : 'disabled'}>سلّم</button></div>`;
     } else {
       const ch = chanceOf(q), cl = ch >= 0.8 ? 'hi' : ch >= 0.4 ? 'mid' : 'lo';
-      h += L`<div class="quest"><div class="qi"><b>⚔️ ${Lx(q.n)}</b><small>القوة المطلوبة ${fmt(q.req)} • ⏱ ${ftime(q.dur)} • ${fmt(q.gold * questMult())}💰 + ${q.gp} نقاط + ${fmt(q.xp)} خبرة</small>
+      h += L`<div class="quest"><div class="qi"><b>⚔️ ${Lx(q.n)}</b><small>القوة المطلوبة ${fmt(q.req)} • ⏱ ${ftime(qDur(q))} • ${fmt(q.gold * questMult())}💰 + ${q.gp} نقاط + ${fmt(q.xp)} خبرة</small>
         <small>نسبة النجاح: <span class="chance ${cl}">${Math.round(ch * 100)}%</span></small></div>
         <button class="btn sm" data-a="quest" data-v="${q.id}" ${g.active.length >= questSlots() ? 'disabled' : ''}>قبول</button></div>`;
     }
   });
-  h += `<div class="row">${costBtn('refreshBoard', undefined, refreshCost(), L`🔄 مهمات جديدة (${fmt(refreshCost())}💰)`, 'ghost sm')}</div></div></div></div>`;
+  h += `<div class="row"><button class="btn ghost sm" data-a="refreshBoard" id="g_ref"></button></div></div>`;
+  const pts = mskPts();
+  h += L`<div class="panel"><div class="ph"><h2>🌟 مهارات المرتزق</h2><span class="stat">نقاط: <b>${pts}</b></span></div>
+    <p class="hint">تفيد الزنزانة والنقابة بس، وتبدأ من الصفر مع كل جيل. تاخذ نقطة كل مستويين قتال ونقطتين مع كل رتبة نقابة. المستوى رقم ن يكلف ن نقاط.</p>`;
+  for (const k of MSK) {
+    const l = gsk(k.id), dots = [0, 1, 2, 3, 4].map(i => i < l ? '●' : '○').join('');
+    h += L`<div class="quest"><div class="qi"><b>${k.e} ${k.n} <small>${dots}</small></b><small>${l ? k.d(l) : L('لسا ما طوّرتها')}${l < 5 ? L` ← ${k.d(l + 1)}` : ''}</small></div>
+      ${l < 5 ? L`<button class="btn sm" data-a="mskUp" data-v="${k.id}" ${pts < l + 1 ? 'disabled' : ''}>طوّر (${l + 1} نقاط)</button>` : L('<span class="chance hi">الأعلى</span>')}</div>`;
+  }
+  h += `</div></div></div>`;
   return h;
 }
 function assess(f) {
@@ -1589,10 +1639,20 @@ function diffTag(f) {
 }
 function dunInfoHtml() {
   const D = S.dun, e0 = makeEnemy(D.floor), need = e0.boss ? 1 : 5, boss = f => f % 10 === 0 ? L(' 👑 زعيم') : '';
-  let x = L`<div class="kv"><span>صعوبة الطابق ${D.floor} (الحالي)${boss(D.floor)}</span>${diffTag(D.floor)}</div>`;
+  const lt = enemyLoot(D.floor, e0.boss), mats = MONSTER_MATS.filter(m => m.f <= D.floor), top = mats[mats.length - 1];
+  const dc = e0.boss ? 1 : dropCh(), pc = v => Math.round(v * 100) + '%';
+  let drops = `${icon(ITEMS[top.id])} ${top.n} ${e0.boss ? '×3' : pc(dc * (0.7 + 0.3 / mats.length))}`;
+  if (mats.length > 1) drops += L` • مواد أقدم ${pc(dc * 0.3 * (mats.length - 1) / mats.length)}`;
+  if (e0.boss) drops += L` • 💎 جوهرة 25%` + (D.floor > 100 ? L(' • 🌟 نجمة إرث') : '');
+  let x = L`<div class="kv"><span>🎁 غنائم الوحش</span><span>${fmt(lt.gold)}💰 • ${fmt(lt.xp * xpMult() * (1 + 0.3 * P('w_xp')))} ✨</span></div>
+    <p class="hint" style="margin:0 0 6px">ممكن يطيح: ${drops}</p>
+    <div class="kv"><span>صعوبة الطابق ${D.floor} (الحالي)${boss(D.floor)}</span>${diffTag(D.floor)}</div>`;
   if (D.floor < D.max) {
     x += L`<div class="kv"><span>صعوبة الطابق ${D.floor + 1}${boss(D.floor + 1)}</span>${diffTag(D.floor + 1)}</div>
       <p class="ok">✅ الطابق ${D.floor + 1} مفتوح لك — اضغط «طابق أصعب ▶» للانتقال إليه الآن.</p>`;
+  } else if (D.max >= floorCap() && !deepLocked()) {
+    const nr = RANK_FLOOR.findIndex(c => c > D.max);
+    x += L`<p class="hint" style="margin:6px 0 0">🔒 الطابق ${D.max + 1} يحتاج رتبة <b>${RANKS[nr][0]}</b> في نقابة المرتزقة. طلّع رتبتك بمهمات الصيد.</p>`;
   } else if (deepLocked()) {
     x += L('<p class="hint" style="margin:6px 0 0">🔒 بعد الطابق 100 تبدأ <b>الأعماق المنسية</b> — تنفتح في الجيل الرابع.</p>');
   } else {
@@ -1620,6 +1680,9 @@ function updGuild() {
   $('g_gp').style.width = (hi ? (g.gp - lo) / (hi - lo) * 100 : 100) + '%';
   $('g_gpt').textContent = hi ? L`${fmt(g.gp)} / ${fmt(hi)} للرتبة ${RANKS[r + 1][0]}` : L`${fmt(g.gp)} — أعلى رتبة!`;
   $('g_pow').textContent = fmt(heroPower());
+  const eb2 = $('eatBtn'); if (eb2) eb2.textContent = D.eatCd > 0 ? L`🍽️ ${Math.ceil(D.eatCd)}ث` : L('🍽️ كُل الآن');
+  const rb = $('g_ref');
+  if (rb) { rb.disabled = g.refCd > 0 || S.gold < refreshCost(); rb.textContent = g.refCd > 0 ? L`🔄 مهمات جديدة بعد ${Math.ceil(g.refCd)}ث` : L`🔄 مهمات جديدة (${fmt(refreshCost())}💰)`; }
   g.active.forEach(q => {
     const b = $('q_' + q.id); if (!b) return;
     b.style.width = (q.t / q.dur * 100) + '%';
@@ -1939,7 +2002,7 @@ const VIEWS = {
   mine: [viewMine, updMine, () => [S.off, S.mine.miners, S.tools.pick, ORES.filter(o => o.depth <= S.mine.max).length]],
   guild: [viewGuild, updGuild, () => {
     const D = S.dun, g = S.guild;
-    return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100)))];
+    return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100)))];
   }],
   smith: [viewSmith, () => {}, () => [S.tools, S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],

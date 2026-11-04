@@ -357,7 +357,7 @@ function newState() {
     mine: { depth: 1, max: 1, prog: 0, blocks: 0, miners: 0 },
     tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0, crook: 0, glove: 0 }, tlg: {},
     lake: { prog: 0, fishers: 0, last: null, spot: 'lake', bait: 0, autoBait: false },
-    hero: { lvl: 1, xp: 0, hp: 60 },
+    hero: { lvl: 1, xp: 0, hp: 60, xc: 1 },
     dun: { active: false, floor: 1, max: 1, kills: 0, enemy: null, auto: true, autoEat: true, resting: false, ht: 0, et: 0, retry: 0, eatCd: 0 },
     guild: { gp: 0, board: [], active: [], boardT: 0, qid: 0, sk: {}, refCd: 0 },
     bld: {}, off: {}, spouse: null, gender: null,
@@ -672,7 +672,8 @@ function heroMaxHp() { return Math.floor((60 + 20 * (S.hero.lvl - 1) + ARMOR_HP[
 function heroAtk() { return (6 + 3 * (S.hero.lvl - 1) + SWORD[S.tools.sword] * lf('sword')) * warMult() * mskPow(); }
 function heroDef() { return (1 + (S.hero.lvl - 1) + ARMOR_DEF[S.tools.armor] * lf('armor')) * mskPow(); }
 function heroPower() { return Math.round(heroAtk() * 2 + heroDef() * 2 + heroMaxHp() / 5); }
-function hxpNeed(l) { return Math.floor(50 * Math.pow(l, 2.2)); }
+// Combat levels come about twice as fast as before 1.9.1 (the old curve was 50·l^2.2): the same xp gives about double the level.
+function hxpNeed(l) { return Math.floor(5.5 * Math.pow(l, 2.2)); }
 function heroXp(x) {
   const h = S.hero; h.xp += x * xpMult() * (1 + 0.3 * P('w_xp'));
   while (h.xp >= hxpNeed(h.lvl)) {
@@ -2295,6 +2296,12 @@ function migrate(o) {
   const st = deepMerge(newState(), o);
   if (!o.gen) { st.gen.earned = (o.stats && o.stats.earned) || 0; st.gen.days = Math.max(0, dayAbsOf(st) - 1); }
   if (!st.leg.family) st.leg.family = st.name;
+  if (o.hero && !o.hero.xc) { // saves from before the new xp curve: same total xp, re-levelled on the new curve
+    const h = st.hero; let x = h.xp || 0;
+    for (let l = 1; l < h.lvl; l++) x += Math.floor(50 * Math.pow(l, 2.2));
+    h.lvl = 1; while (x >= hxpNeed(h.lvl)) { x -= hxpNeed(h.lvl); h.lvl++; }
+    h.xp = x; h.xc = 1;
+  }
   if (!st.gender && st.spouse && NPC_BY[st.spouse]) st.gender = NPC_BY[st.spouse].g === 'f' ? 'm' : 'f';
   for (const n of NPCS) {
     const x = st.npc[n.id] || (st.npc[n.id] = { pts: 0, gd: 0 });

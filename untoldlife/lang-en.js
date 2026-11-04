@@ -943,6 +943,8 @@
 "☁️ نصيحة: اربط حسابك من «المزيد» عشان ما يضيع تقدمك وتكمل من أي جهاز": "☁️ Tip: link an account in «More» so your progress is never lost and you can continue on any device",
 "☁️ اربط حسابك عشان ما يضيع تقدمك": "☁️ Link an account so your progress isn't lost",
 "☁️ كمّلنا من حفظك في السحابة (الجيل {0}) لأنه أبعد من حفظ هذا الجهاز": "☁️ Continued from your cloud save (generation {0}) because it's further along than this device's save",
+"مستوى القتال أسرع": "Faster combat levels",
+"⚔️ مستوى القتال صار يطلع تقريباً بضعف السرعة. الخبرة اللي جمعتها انحسبت على الطريقة الجديدة، فمستواك ارتفع على طول.": "⚔️ Combat levels now come about twice as fast. The xp you already earned was counted on the new curve, so your level went up right away.",
 "الأدوات الأسطورية": "Legendary tools",
 "🔥 بعد الأدامانتيت تقدر تصوغ أي أداة عند الحداد وتصير أسطورية: معزقة الخصوبة، مرشة الحياة، فأس الدمار، سيف العاصفة، درع الحارس الخالد، سنارة الأعماق، قفازات العمالقة، وعصا القطيع.": "🔥 After adamantite you can forge any tool at the blacksmith into a legendary one: Hoe of Plenty, Can of Life, Pickaxe of Ruin, Storm Sword, Armour of the Eternal Guard, Rod of the Deep, Gloves of Giants and Crook of the Herd.",
 "✨ كل صياغة تكلف 500 ميثريل و1000 أدامانتيت، وتعطي قوة زيادة من 5% لين 100%. النسب العالية نادرة، وتقدر تعيد الصياغة وتتغير النسبة.": "✨ Each forge costs 500 mithril and 1000 adamantite and gives 5% to 100% extra power. High numbers are rare, and you can forge again to get a new number.",

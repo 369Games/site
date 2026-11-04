@@ -215,7 +215,14 @@ const NPCS = [
     lines: [L('انتبه لنفسك في الزنزانة، الجروح هناك عميقة.'), L('كُل جيداً قبل القتال، الطعام دواء.'), L('أشعر بالأمان حين أعرف أنك بخير.')] },
   { id: 'raad', g: 'm', n: L('رعد'), role: L('قائد نقابة المرتزقة'), story: L('جاب الأراضي البعيدة مرتزقاً قبل أن يستقر في الوادي ويؤسس النقابة. صارم مع المبتدئين لأنه فقد رفاقاً في الأعماق، لكنه يحترم من يثبت نفسه. يجمع أنياب الوحوش تذكاراً من معاركه.'), e: '🤺', love: 'fang', like: 'gel', perk: h => L`+${4 * h}% مكافآت المهمات`,
     lines: [L('مرتزق جديد؟ أثبت نفسك أولاً.'), L('سمعت عن انتصاراتك، أحسنت.'), L('أنت أسطورة النقابة الآن!')] },
+  { id: 'salma', g: 'f', n: L('سلمى'), role: L('مربّية المواشي'), story: L('ربّت أجيالاً من الحيوانات في مزرعة أهلها خلف التلال، وتعرف من نظرة أي اثنين يطلع منهم أحسن نسل. جاءت الوادي لما سمعت عن بيوت التهجين، وتحب الصوف والحليب، وتحلم تشوف تنين النهر بعينها.'), e: '👩‍🦱', love: 'wool', like: 'milk',
+    perk: h => L`نسب التهجين ×${(1 + 0.103 * h).toFixed(2)}`,
+    lines: [L('الحيوان يعرف اللي يحبه، اعتنِ فيهم زين.'), L('شفت قطيعك؟ صار أحلى من قطيع أهلي!'), L('أنت ويّاي نقدر نطلع أندر سلالة في الوادي.')] },
 ];
+/* Royal gifts: each villager has a fixed favourite king fish. Once a season you can give it for +5 hearts at once,
+   apart from the daily gift. Kings are never eaten as food. */
+const KING_GIFT = { mayor: 'k_sea', raad: 'k_sea', smith: 'k_lake', noura: 'k_lake', leila: 'k_river', salma: 'k_river' };
+function seasonKey() { return S.year * 4 + S.season; }
 const TOGGLES = {
   harvester: L('الحصاد التلقائي'), planter: L('الزراعة التلقائية'), zoning: L('تخصيص الحقول'), sprinkler: L('الرشاشات'),
   greenhouse: L('البيت المحمي'), bin: L('صندوق الشحن'), rancher: L('الراعي'), miners: L('عمال المنجم'), fishers: L('الصيادين'),
@@ -310,7 +317,7 @@ const GIFT_GRACE = 4;
 function seasonCrops() { return CROPS.filter(c => c.season === S.season).map(c => c.id); }
 function giftPool(np) {
   const ores = [...ORES.map(o => o.id), 'gem'], loot = MONSTER_MATS.map(m => m.id), farm = ['egg', 'milk', 'wool', 'honey'];
-  return { noura: seasonCrops(), leila: [...seasonCrops(), 'egg', 'milk'], mayor: [...farm, ...seasonCrops()], smith: ores, raad: loot }[np.id] || seasonCrops();
+  return { noura: seasonCrops(), leila: [...seasonCrops(), 'egg', 'milk'], mayor: [...farm, ...seasonCrops()], smith: ores, raad: loot, salma: farm }[np.id] || seasonCrops();
 }
 function giftRng(seed) { let h = 2166136261; for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0) / 4294967296); }
 function giftsOf(np) {
@@ -571,7 +578,8 @@ const BREED_LV = [
 ];
 // Level from the «Breeding tools» building (S.barn.lab is where 1.4.1 kept it for one day).
 function breedLv() { return BREED_LV[Math.min(BREED_LV.length - 1, Math.max(S.bld.breedlab || 0, S.barn.lab || 0))]; }
-function breedChance(to) { return breedLv()[to]; }
+// Salma's hearts raise the chances: at 10 hearts the best tools go from 33% to 67% and from 12% to 25%.
+function breedChance(to) { return Math.min(to === 'p' ? 0.9 : 0.4, breedLv()[to] * (1 + (to === 'p' ? 0.103 : 0.108) * hearts('salma'))); }
 function breedFrom(to) { return to === 'p' ? 'n0' : 'p'; }
 function houseRest() { return breedLv().rest; }
 function houseCount() { return Math.min(HOUSE_MAX, S.barn.houses || 1); }
@@ -701,7 +709,7 @@ function regenRate() { return heroMaxHp() * 0.03 * (S.bld.inn ? 2 : 1); }
 function healOf(id) { return (ITEMS[id].price * 1.5 + 10) * (S.bld.kitchen ? 2 : 1); }
 function foodList() {
   const cats = noFarm() ? ['crop', 'animal', 'fish', 'monster'] : ['crop', 'animal', 'fish'];
-  return Object.keys(S.inv).filter(id => cats.includes(ITEMS[id].cat) && !S.locked[id])
+  return Object.keys(S.inv).filter(id => cats.includes(ITEMS[id].cat) && !S.locked[id] && !KINGS.some(k => k.id === id))
     .sort((a, b) => ITEMS[a].price - ITEMS[b].price);
 }
 /* Eating has a cooldown (10s, down to 2s with the «fast eating» skill), so food can't make you unbeatable.
@@ -1223,6 +1231,15 @@ const A = {
   sellAll: v => { const g = sellItem(v, have(v)); if (g) toast(`+${fmt(g)}💰`); },
   shipAll: () => { const g = shipAll(false); if (!g) toast(L('لا يوجد ما يُباع (أو كله مقفل)')); },
   lock: v => { if (S.locked[v]) delete S.locked[v]; else S.locked[v] = 1; },
+  kingGift: v => {
+    const np = NPC_BY[v], kid = KING_GIFT[v]; if (!np || !kid) return;
+    const st = S.npc[v] || (S.npc[v] = { pts: 0, gd: 0 });
+    if (st.kk === seasonKey() || st.pts >= 1000 || !take(kid)) return;
+    const before = hearts(v);
+    st.pts = Math.min(1000, st.pts + 500); st.kk = seasonKey(); st.cd = dayAbs();
+    log(L`👑 أهديت ${np.n} ${ITEMS[kid].e} ${ITEMS[kid].n}! «ما أصدق! هذي أغلى هدية جتني» +5 قلوب`, 'golden');
+    if (hearts(v) > before) log(L`❤️ علاقتك مع ${np.n} صارت ${hearts(v)} قلوب!`, 'good');
+  },
   gift: v => {
     const [nid, item] = v.split(':'); const np = NPC_BY[nid];
     const st = S.npc[nid] || (S.npc[nid] = { pts: 0, gd: 0 });
@@ -1254,7 +1271,7 @@ const A = {
   npcInfo: v => {
     const np = NPC_BY[v]; if (!np) return;
     const hr = Math.floor(((S.npc[v] || {}).pts || 0) / 100);
-    openModal(`<div class="npc-story">${icon('npc-' + v + '-' + Math.min(2, Math.floor(hr / 4)), 112)}<div><h2>${np.n}</h2><small class="hint">${np.role}</small></div></div><p class="npc-story-text">${np.story}</p><div class="row"><button class="btn ghost" data-a="closeBox">✖</button></div>`);
+    openModal(`<div class="npc-story">${ART['npc-' + v + '-0'] ? icon('npc-' + v + '-' + Math.min(2, Math.floor(hr / 4)), 112) : `<span class="tool-emoji npc-emoji">${np.e}</span>`}<div><h2>${np.n}</h2><small class="hint">${np.role}</small></div></div><p class="npc-story-text">${np.story}</p><div class="row"><button class="btn ghost" data-a="closeBox">✖</button></div>`);
   },
   theme: () => { theme = theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem(THEME_KEY, theme); } catch (e) { /* */ } applyTheme(); },
   buyPerk: v => {
@@ -1790,7 +1807,7 @@ function viewVillage() {
     const st = S.npc[np.id] || { pts: 0, gd: 0 }, hr = Math.floor(st.pts / 100), half = st.pts % 100 >= 50, today = st.gd === dayAbs();
     let hs = '';
     for (let i = 0; i < 10; i++) hs += i < hr ? '❤' : (i === hr && half) ? '<span class="half">❤</span>' : '♡';
-    h += L`<div class="card npc-card"><button class="npc-info" data-a="npcInfo" data-v="${np.id}" title="القصة" aria-label="القصة">?</button><div class="top"><span class="big">${icon('npc-' + np.id + '-' + Math.min(2,Math.floor(hr/4)),96)}</span><div class="meta"><b>${np.n}</b><small class="npc-role">${np.role}</small>
+    h += L`<div class="card npc-card"><button class="npc-info" data-a="npcInfo" data-v="${np.id}" title="القصة" aria-label="القصة">?</button><div class="top"><span class="big">${ART['npc-' + np.id + '-0'] ? icon('npc-' + np.id + '-' + Math.min(2,Math.floor(hr/4)),96) : `<span class="tool-emoji npc-emoji">${np.e}</span>`}</span><div class="meta"><b>${np.n}</b><small class="npc-role">${np.role}</small>
       <div class="hearts">${hs}</div><small>المكافأة: ${np.perk(hearts(np.id))}${S.spouse === np.id ? L(' (مضاعفة 💍)') : ''}</small></div></div>
       <div class="say">«${np.lines[Math.min(2, Math.floor(hr / 4))]}»</div><div class="gifts">`;
     const gf = giftsOf(np), left = giftDaysLeft(np);
@@ -1798,6 +1815,11 @@ function viewVillage() {
     for (const [it, lab, cls] of gl) {
       const I = ITEMS[it];
       h += `<button class="btn ${cls} sm" data-a="gift" data-v="${np.id}:${it}" ${today || have(it) < 1 || st.pts >= 1000 ? 'disabled' : ''}>🎁 ${icon(I)} ${I.n} (${fmt(have(it))}) — ${lab}</button>`;
+    }
+    const kid = KING_GIFT[np.id], K = kid && ITEMS[kid];
+    if (K) {
+      const done = st.kk === seasonKey();
+      h += `<button class="btn royal sm" data-a="kingGift" data-v="${np.id}" ${done || have(kid) < 1 || st.pts >= 1000 ? 'disabled' : ''}>👑 ${icon(K)} ${K.n} (${fmt(have(kid))}) — ${done ? L('أهديته هالموسم') : L('هدية ملكية: +5 قلوب، مرة كل موسم')}</button>`;
     }
     let mar = '';
     if (S.spouse === np.id) mar = L('<p class="okline">💍 شريك حياتك — مكافأته مضاعفة ويساعدك (+10% لكل الإنتاج)</p>');
@@ -2045,7 +2067,7 @@ const VIEWS = {
   }],
   smith: [viewSmith, () => {}, () => [S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
-  village: [viewVillage, () => {}, () => [dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0]; })]],
+  village: [viewVillage, () => {}, () => [dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, S.skills.fish.l, S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],
   legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length, dunGoal()]; }],
   settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0]],

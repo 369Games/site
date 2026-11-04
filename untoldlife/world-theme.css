@@ -291,3 +291,8 @@ button.chip.notes-chip.new:after{content:'';position:absolute;top:-3px;inset-inl
 .lgbox{margin-top:8px;padding:8px 10px;border:1px dashed #a45cff88;border-radius:10px;display:grid;gap:4px}
 .lgodds{display:flex;flex-wrap:wrap;gap:4px 10px}
 @media (prefers-reduced-motion:reduce){.lgf.g{animation:none}}
+
+/* Royal (king fish) gift button and the emoji stand-in for a villager without a portrait yet */
+.btn.royal{background:linear-gradient(135deg,#6b3fa0,#b8862b);color:#fff6dc;border-color:#ffcf40}
+.btn.royal:disabled{opacity:.55}
+.tool-emoji.npc-emoji{width:96px;height:96px;font-size:64px}

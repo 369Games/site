@@ -977,7 +977,12 @@ function checkAch() {
 
 /* ---------------- التقاعد ---------------- */
 // The retirement goal grows after generation 3, so strong legacy perks can't turn a generation into a few minutes.
-function goldGoal() { const g = Math.max(0, S.leg.gen - 3); if (!g) return 1e6; const v = 1e6 * Math.pow(1.85, g), d = Math.pow(10, Math.floor(Math.log10(v)) - 1); return Math.round(v / d) * d; }
+// Retire gold goal: 1M up to gen 3, then ×1.7 a generation up to gen 10, ×1.3 up to gen 20 and ×1.1 after that.
+function goldGoal() {
+  const G = S.leg.gen; if (G <= 3) return 1e6;
+  let v = 1e6; for (let k = 4; k <= G; k++) v *= k <= 10 ? 1.7 : k <= 20 ? 1.3 : 1.1;
+  const d = Math.pow(10, Math.floor(Math.log10(v)) - 1); return Math.round(v / d) * d;
+}
 // The dungeon goal also sits at least 15 floors above where this generation started (the «Battle memory» perk starts you deep).
 function dunGoal() { return Math.max(30 + 3 * Math.max(0, S.leg.gen - 3), (S.gen.dun0 || 1) + 15); }
 function canRetire() { return S.gen.earned >= goldGoal() && S.dun.max >= dunGoal(); }

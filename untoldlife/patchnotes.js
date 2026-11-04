@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.9.8', date: '2026-11-05', big: false, title: L('شرط التقاعد أرحم'), items: [
+    L('🌅 شرط ذهب التقاعد صار يكبر أبطأ: ×1.7 كل جيل لين الجيل 10، بعدها ×1.3 لين الجيل 20، وبعدها ×1.1.'),
+  ] },
   { v: '1.9.7', date: '2026-11-05', big: true, title: L('الماعز والديك الرومي'), items: [
     L('🐐 حيوان جديد في الحظيرة: الماعز ينتج 🧀 جبن (يفتح بمستوى رعي 6).'),
     L('🦃 والديك الرومي ينتج 🍗 فخذ ديك رومي (يفتح بمستوى رعي 10).'),

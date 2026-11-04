@@ -959,6 +959,8 @@
 "☁️ نصيحة: اربط حسابك من «المزيد» عشان ما يضيع تقدمك وتكمل من أي جهاز": "☁️ Tip: link an account in «More» so your progress is never lost and you can continue on any device",
 "☁️ اربط حسابك عشان ما يضيع تقدمك": "☁️ Link an account so your progress isn't lost",
 "☁️ كمّلنا من حفظك في السحابة (الجيل {0}) لأنه أبعد من حفظ هذا الجهاز": "☁️ Continued from your cloud save (generation {0}) because it's further along than this device's save",
+"شرط التقاعد أرحم": "A kinder retire goal",
+"🌅 شرط ذهب التقاعد صار يكبر أبطأ: ×1.7 كل جيل لين الجيل 10، بعدها ×1.3 لين الجيل 20، وبعدها ×1.1.": "🌅 The retire gold goal now grows more slowly: ×1.7 a generation up to generation 10, then ×1.3 up to generation 20, then ×1.1.",
 "الماعز والديك الرومي": "Goats and turkeys",
 "🐐 حيوان جديد في الحظيرة: الماعز ينتج 🧀 جبن (يفتح بمستوى رعي 6).": "🐐 A new animal in the barn: goats make 🧀 cheese (opens at ranching level 6).",
 "🦃 والديك الرومي ينتج 🍗 فخذ ديك رومي (يفتح بمستوى رعي 10).": "🦃 And turkeys give 🍗 turkey legs (opens at ranching level 10).",

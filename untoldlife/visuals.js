@@ -186,7 +186,7 @@ function breedVisual(a, to, win) {
     if (!box.isConnected) return;
     box.classList.add(win ? 'win' : 'lose');
     box.querySelector('.bfx-card').innerHTML = win
-      ? `<div class="bfx-pair">${icon(res, 72)}${icon(res, 72)}</div><b>${L('✨ نجح!')}</b><small>${a.n} ${G.n} ×2 ${gradeBadge(to)}</small>`
+      ? `<div class="bfx-pair">${icon(res, 72)}${icon(res, 72)}</div><b>${L('✨ نجح!')}</b><small>${a.n} ${typeof gName === 'function' ? gName(a, to) : G.n} ×2 ${gradeBadge(to)}</small>`
       : `<div class="bfx-pair">${icon(from, 64)}${icon(from, 64)}</div><b>${L('💀 فشل')}</b><small>${P('r_twin') ? L('حيواناتك سالمة') : L`خسرت ${a.n} ×2`}</small>`;
   }, wait);
   setTimeout(() => box.isConnected && box.remove(), wait + (win ? 2600 : 1700));

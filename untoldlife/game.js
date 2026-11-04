@@ -65,15 +65,18 @@ const ANIMALS = [
   { id: 'goat', n: L('ماعز'), e: '🐐', cost: 10000, prod: 'cheese', time: 150, lvl: 6 },
   { id: 'bee', n: L('خلية نحل'), e: '🐝', cost: 20000, prod: 'honey', time: 240, lvl: 8 },
   { id: 'turkey', n: L('ديك رومي'), e: '🦃', cost: 60000, prod: 'meat', time: 300, lvl: 10 },
+  // The priciest animal, but each one costs only 8% more than the last. Its grades have their own names.
+  { id: 'camel', n: L('بعير'), e: '🐪', cost: 1000000, prod: 'hashi', time: 600, lvl: 12, grow: 1.08, gn: { n0: L('مجهم'), p: L('وضحى'), g: L('شقحاء') } },
 ];
-[['egg', L('بيض'), '🥚', 25], ['milk', L('حليب'), '🥛', 120], ['wool', L('صوف'), '🧶', 350], ['cheese', L('جبن'), '🧀', 700], ['honey', L('عسل'), '🍯', 1500], ['meat', L('فخذ ديك رومي'), '🍗', 4000]]
+function gName(a, to) { return (a.gn && a.gn[to]) || (to === 'n0' ? L('عادي') : GRADE[to].n); }
+[['egg', L('بيض'), '🥚', 25], ['milk', L('حليب'), '🥛', 120], ['wool', L('صوف'), '🧶', 350], ['cheese', L('جبن'), '🧀', 700], ['honey', L('عسل'), '🍯', 1500], ['meat', L('فخذ ديك رومي'), '🍗', 4000], ['hashi', L('لحم حاشي'), '🍖', 60000]]
   .forEach(([id, n, e, price]) => addItem(id, { n, e, price, cat: 'animal' }));
 // Golden animals give golden products worth 5x the base price.
-[['egg_g', L('بيضة ذهبية'), 125], ['milk_g', L('حليب ذهبي'), 600], ['wool_g', L('صوف ذهبي'), 1750], ['cheese_g', L('جبن ذهبي'), 3500], ['meat_g', L('فخذ ديك رومي ذهبي'), 20000]]
+[['egg_g', L('بيضة ذهبية'), 125], ['milk_g', L('حليب ذهبي'), 600], ['wool_g', L('صوف ذهبي'), 1750], ['cheese_g', L('جبن ذهبي'), 3500], ['meat_g', L('فخذ ديك رومي ذهبي'), 20000], ['hashi_g', L('لحم حاشي ذهبي'), 300000]]
   .forEach(([id, n, price]) => addItem(id, { n, e: '🌟', price, cat: 'animal', golden: true }));
 // Until dedicated art exists, golden products reuse the base art with a gold tint.
-if (typeof ART !== 'undefined') ['egg', 'milk', 'wool', 'cheese', 'meat'].forEach(b => { if (!ART[b + '_g'] && ART[b]) ART[b + '_g'] = { ...ART[b], tint: true }; });
-const BREEDABLE = ['chicken', 'cow', 'sheep', 'goat', 'turkey'];
+if (typeof ART !== 'undefined') ['egg', 'milk', 'wool', 'cheese', 'meat', 'hashi'].forEach(b => { if (!ART[b + '_g'] && ART[b]) ART[b + '_g'] = { ...ART[b], tint: true }; });
+const BREEDABLE = ['chicken', 'cow', 'sheep', 'goat', 'turkey', 'camel'];
 const GRADE_SVG = {
   p: '<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>',
   g: '<svg viewBox="0 0 24 24"><path d="M3 18.5h18l-1.6-10-4.6 4.2L12 5l-2.8 7.7-4.6-4.2zM3.5 20.2h17v1.8h-17z"/></svg>',
@@ -192,16 +195,16 @@ function lgCost(t) { return LEG_COST.map(([id, q]) => [id, lgv(t) ? q / 10 : q])
 function lgCanPay(t) { return lgCost(t).every(([id, q]) => have(id) >= q); }
 
 const BUILDINGS = [
-  { id: 'harvester', n: L('عامل حصاد'), e: '🧑‍🌾', desc: L('يحصد المحاصيل الجاهزة تلقائياً'), cost: 300 },
+  { id: 'harvester', n: L('عامل حصاد'), e: '🧑‍🌾', desc: L('يحصد المحاصيل الجاهزة تلقائياً'), cost: 300, mult: 3, max: 5, cover: 1 },
   { id: 'bin', n: L('صندوق الشحن'), e: '📦', desc: L('يبيع كل الأغراض غير المقفلة نهاية كل يوم'), cost: 600 },
-  { id: 'planter', n: L('عامل زراعة'), e: '👨‍🌾', desc: L('يعيد زراعة الأحواض الفارغة بالبذرة المختارة'), cost: 1500, req: 'harvester' },
+  { id: 'planter', n: L('عامل زراعة'), e: '👨‍🌾', desc: L('يعيد زراعة الأحواض الفارغة بالبذرة المختارة'), cost: 1500, req: 'harvester', mult: 3, max: 5, cover: 1 },
   { id: 'zoning', n: L('تخصيص الحقول'), e: '🎯', desc: L('خصص لكل حوض محصولاً ثابتاً يعيد عامل الزراعة زراعته'), cost: 5000, req: 'planter' },
   { id: 'barn', n: L('توسعة الحظيرة'), e: '🏚️', desc: L('+5 سعة لكل نوع حيوان'), cost: 1200, mult: 3, max: 6 },
   { id: 'merc', n: L('رفيق مرتزق'), e: '🧝', desc: L('+1 مهمة متزامنة في النقابة'), cost: 2000, mult: 5, max: 3 },
   { id: 'inn', n: L('النُزل'), e: '🛏️', desc: L('مضاعفة سرعة استعادة الصحة'), cost: 2500 },
   { id: 'rancher', n: L('راعي'), e: '🤠', desc: L('يعتني بالحيوانات ويبقي سعادتها كاملة'), cost: 6000 },
   { id: 'kitchen', n: L('المطبخ'), e: '🍳', desc: L('الطعام يشفي ضعف الكمية في المعارك'), cost: 8000 },
-  { id: 'sprinkler', n: L('رشاشات ماء'), e: '💦', desc: L('تسقي كل الأحواض تلقائياً'), cost: 15000 },
+  { id: 'sprinkler', n: L('رشاشات ماء'), e: '💦', desc: L('تسقي الأحواض تلقائياً'), cost: 15000, mult: 3, max: 5, cover: 1 },
   { id: 'greenhouse', n: L('بيت محمي'), e: '🏡', desc: L('يحمي 4 أحواض من عقوبة خارج الموسم، وكل تطوير يزيد 4 (لين 12). أول الأحواض في الحقل هي اللي تحت البيت.'), costs: [100000, 300000, 1000000], max: 3 },
   { id: 'breedlab', n: L('أدوات التهجين'), e: '🧬', desc: L('تسرّع راحة بيوت التهجين وترفع نسبة النجاح'), cost: 25000, mult: 12, max: 2 },
 ];
@@ -253,7 +256,7 @@ const PERKS = [
   { id: 't_offline', req: ['t_price', 3], b: 'trade', n: L('نوم هانئ'), e: '😴', max: 4, cost: 3, mult: 1.8, eff: l => L`التقدم أثناء الغياب حتى ${12 + 6 * l} ساعة` },
   { id: 't_stars', req: ['t_offline', 2], b: 'trade', n: L('حكمة الأجيال'), e: '🌟', max: 10, cost: 4, mult: 1.7, eff: l => L`+${10 * l}% نجوم الإرث` },
   { id: 'q_workers', req: ['q_hearts', 3], b: 'family', n: L('العمال يتذكرونك'), e: '🧑‍🌾', max: 3, cost: 3, mult: 2.5, start: 1,
-    eff: l => ['—', L('تبدأ مع عامل الحصاد وعامل الزراعة'), L('الحصاد والزراعة + صندوق الشحن والرشاشات'), L('كل ما سبق + الراعي وتخصيص الحقول')][l] },
+    eff: l => ['—', L('تبدأ مع عامل الحصاد وعامل الزراعة (50% من الحقل)'), L('الحصاد والزراعة + صندوق الشحن والرشاشات (50%)'), L('كل ما سبق + الراعي وتخصيص الحقول')][l] },
   { id: 'q_hearts', b: 'family', n: L('سمعة الجد'), e: '💞', max: 5, cost: 2, mult: 1.7, start: 1, eff: l => L`أهل القرية يبدؤون من ${2.5 + l} قلوب` },
   { id: 'q_heirs', req: ['q_hearts', 3], b: 'family', n: L('خزانة العائلة'), e: '🗝️', max: 2, cost: 5, mult: 3, eff: l => L`${3 + l} خيارات لقطع الإرث عند التقاعد` },
   { id: 'q_bless', req: ['q_workers', 2], b: 'family', n: L('بركة الوادي'), e: '🌈', max: Infinity, cost: 10, mult: 1.35, eff: l => L`+${5 * l}% لكل شيء (بلا حد)` },
@@ -266,12 +269,12 @@ const PERKS = [
   { id: 'q_tools', ks: 1, b: 'family', n: L('إرث الأدوات'), e: '🧰', max: 1, cost: 25, mult: 1, start: 1, eff: () => L('أدواتك تنتقل للجيل الجديد بدرجة أقل بدل ما ترجع للصفر') },
 ];
 const HEIRLOOMS = [
-  { id: 'sword', n: L('سيف الجد'), e: '🗡️', max: 6, eff: l => L`تبدأ كل جيل بسيف ${TIER[l]}` },
-  { id: 'armor', n: L('درع الأب'), e: '🛡️', max: 6, eff: l => L`تبدأ كل جيل بدرع ${TIER[l]}` },
-  { id: 'hoe', n: L('معزقة الأجداد'), e: '🌾', max: 6, eff: l => L`تبدأ كل جيل بمعزقة ${TIER[l]}` },
-  { id: 'can', n: L('المرشة الذهبية'), e: '🚿', max: 6, eff: l => L`تبدأ كل جيل بمرشة ${TIER[l]}` },
-  { id: 'pick', n: L('فأس العائلة'), e: '⛏️', max: 6, eff: l => L`تبدأ كل جيل بفأس ${TIER[l]}` },
-  { id: 'rod', n: L('سنارة الجد'), e: '🎣', max: 6, eff: l => L`تبدأ كل جيل بسنارة ${TIER[l]}` },
+  { id: 'sword', n: L('سيف الجد'), e: '🗡️', max: 6, eff: l => L`تبدأ كل جيل بسيف ${TIER[l]} • +${l}% ذهب` },
+  { id: 'armor', n: L('درع الأب'), e: '🛡️', max: 6, eff: l => L`تبدأ كل جيل بدرع ${TIER[l]} • +${l}% ذهب` },
+  { id: 'hoe', n: L('معزقة الأجداد'), e: '🌾', max: 6, eff: l => L`تبدأ كل جيل بمعزقة ${TIER[l]} • +${l}% ذهب` },
+  { id: 'can', n: L('المرشة الذهبية'), e: '🚿', max: 6, eff: l => L`تبدأ كل جيل بمرشة ${TIER[l]} • +${l}% ذهب` },
+  { id: 'pick', n: L('فأس العائلة'), e: '⛏️', max: 6, eff: l => L`تبدأ كل جيل بفأس ${TIER[l]} • +${l}% ذهب` },
+  { id: 'rod', n: L('سنارة الجد'), e: '🎣', max: 6, eff: l => L`تبدأ كل جيل بسنارة ${TIER[l]} • +${l}% ذهب` },
   { id: 'cow', n: L('بقرة العائلة'), e: '🐄', max: 10, eff: l => L`تبدأ كل جيل ومعك ${l} بقرة` },
   { id: 'diary', n: L('مذكرات الجد'), e: '📜', max: 20, eff: l => L`+${10 * l}% خبرة لكل المهارات` },
   { id: 'coin', n: L('العملة القديمة'), e: '🪙', max: 20, eff: l => L`+${5 * l}% ذهب من كل المصادر` },
@@ -318,7 +321,7 @@ const GENDER = { m: { n: L('رجل'), e: '👨', child: L('ابن') }, f: { n: L
 const GIFT_GRACE = 4;
 function seasonCrops() { return CROPS.filter(c => c.season === S.season).map(c => c.id); }
 function giftPool(np) {
-  const ores = [...ORES.map(o => o.id), 'gem'], loot = MONSTER_MATS.map(m => m.id), farm = ['egg', 'milk', 'wool', 'cheese', 'honey', 'meat'];
+  const ores = [...ORES.map(o => o.id), 'gem'], loot = MONSTER_MATS.map(m => m.id), farm = ['egg', 'milk', 'wool', 'cheese', 'honey', 'meat', 'hashi'];
   return { noura: seasonCrops(), leila: [...seasonCrops(), 'egg', 'milk'], mayor: [...farm, ...seasonCrops()], smith: ores, raad: loot, salma: farm }[np.id] || seasonCrops();
 }
 function giftRng(seed) { let h = 2166136261; for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0) / 4294967296); }
@@ -371,6 +374,7 @@ function newState() {
     tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0, crook: 0, glove: 0 }, tlg: {},
     lake: { prog: 0, fishers: 0, last: null, spot: 'lake', bait: 0, autoBait: false },
     hero: { lvl: 1, xp: 0, hp: 60, xc: 1 },
+    wv: 1,
     dun: { active: false, floor: 1, max: 1, kills: 0, enemy: null, auto: true, autoEat: true, resting: false, ht: 0, et: 0, retry: 0, eatCd: 0 },
     guild: { gp: 0, board: [], active: [], boardT: 0, qid: 0, sk: {}, refCd: 0 },
     bld: {}, off: {}, spouse: null, gender: null,
@@ -398,7 +402,9 @@ const CC = id => S.leg.ch[id] || 0;
 const inCh = id => S.gen.ch === id;
 function bless() { return 1 + 0.05 * P('q_bless'); }
 function achMult() { return 1 + 0.01 * Object.keys(S.leg.ach).length; }
-function goldMult() { return (1 + 0.1 * P('t_price')) * (1 + 0.05 * H('coin')) * (1 + 0.1 * CC('noworkers')) * achMult() * bless() * (inCh('poverty') ? 0.5 : 1); }
+// Tool heirlooms also give +1% gold per level, so they stay worth taking next to the «Tool legacy» perk.
+function heirToolGold() { return ['sword', 'armor', 'hoe', 'can', 'pick', 'rod'].reduce((a, k) => a + H(k), 0) * 0.01; }
+function goldMult() { return (1 + 0.1 * P('t_price')) * (1 + 0.05 * H('coin') + heirToolGold()) * (1 + 0.1 * CC('noworkers')) * achMult() * bless() * (inCh('poverty') ? 0.5 : 1); }
 /* Production speeds use two buckets. Inside a bucket the bonuses add up; the two buckets multiply.
    - this generation: tools, skill levels, villagers (starts over every generation)
    - the family: legacy perks, challenge rewards, the valley's blessing, marriage
@@ -518,7 +524,12 @@ function growMult(c, gh) {
   return m;
 }
 function plotSpeed(p) { return growMult(CROP[p.c], S.farm.plots.indexOf(p) < ghCount()) * (p.w ? waterMult() : 1); }
-function autoWet() { return S.weather === 'rain' || on('sprinkler'); }
+/* The harvester, planter and sprinklers work on part of the field, growing with each level: 10%, 25%, 50%, 75%, 100%.
+   They cover the first plots in the field. */
+const WORK_COVER = [0, 0.1, 0.25, 0.5, 0.75, 1];
+function coverN(id) { return on(id) ? Math.ceil(S.farm.plots.length * WORK_COVER[Math.min(5, S.bld[id] || 0)]) : 0; }
+function covers(id, i) { return i < coverN(id); }
+function autoWet(i) { return S.weather === 'rain' || covers('sprinkler', i); }
 function isReady(p) { return p.c && p.p >= CROP[p.c].grow; }
 function plotCrop(p) {
   const a = on('zoning') && p.a && CROP[p.a];
@@ -529,7 +540,7 @@ function plant(i) {
   const p = S.farm.plots[i]; if (p.c || noFarm()) return false;
   const c = plotCrop(p);
   if (!c || !cropUnlocked(c) || S.gold < seedCost(c)) return false;
-  S.gold -= seedCost(c); p.c = c.id; p.p = 0; p.w = autoWet();
+  S.gold -= seedCost(c); p.c = c.id; p.p = 0; p.w = autoWet(i);
   return true;
 }
 function harvest(i) {
@@ -552,21 +563,21 @@ function water(i) {
 }
 function plotCost() { return Math.round(80 * Math.pow(1.75, S.farm.plots.length - 4)); }
 function tickFarm(dt) {
-  const wet = autoWet();
+  const hv = coverN('harvester'), pl = coverN('planter');
   S.farm.plots.forEach((p, i) => {
     if (p.c) {
-      if (wet) p.w = true;
+      if (autoWet(i)) p.w = true;
       const c = CROP[p.c];
       if (p.p < c.grow) p.p = Math.min(c.grow, p.p + dt * plotSpeed(p));
     }
-    if (on('harvester') && isReady(p)) harvest(i);
-    if (on('planter') && !p.c) plant(i);
+    if (i < hv && isReady(p)) harvest(i);
+    if (i < pl && !p.c) plant(i);
   });
 }
 
 /* ---------------- الحظيرة ---------------- */
 function barnCap() { return 5 + 5 * (S.bld.barn || 0); }
-function animalCost(a) { return Math.round(a.cost * Math.pow(1.25, S.barn.n[a.id] || 0) * (1 - 0.1 * P('r_cost'))); }
+function animalCost(a) { return Math.round(a.cost * Math.pow(a.grow || 1.25, S.barn.n[a.id] || 0) * (1 - 0.1 * P('r_cost'))); }
 function animalSpeed(a) { return (0.5 + (S.barn.h[a.id] ?? 100) / 100) * speedMult('ranch'); }
 function grades(id) { const q = S.barn.q[id] || { p: 0, g: 0 }, n = S.barn.n[id] || 0; return { n0: Math.max(0, n - (q.p || 0) - (q.g || 0)), p: q.p || 0, g: q.g || 0 }; }
 /* Breeding: put two animals of the same grade in a house and the result comes at once.
@@ -607,7 +618,7 @@ function tickBreed(dt) {
     const q = S.barn.q[B.a] || (S.barn.q[B.a] = { p: 0, g: 0 });
     if (B.to === 'g') q.p = (q.p || 0) - 1;
     q[B.to] = (q[B.to] || 0) + 1;
-    log(L`🧬 نجح التهجين! صار عندك ${a.n} ${G.n} ${G.e}`, 'season');
+    log(L`🧬 نجح التهجين! صار عندك ${a.n} ${gName(a, B.to)} ${G.e}`, 'season');
   }
 }
 function breedRoll(id, to) {
@@ -622,7 +633,7 @@ function breedRoll(id, to) {
     if (to === 'g') q.p -= 2;
     q[to] += 2;
     S.stats.breedWins = (S.stats.breedWins || 0) + 1;
-    log(L`🧬 نجح التهجين! صار عندك ${a.n} ${G.n} ×2 ${G.e}`, 'golden');
+    log(L`🧬 نجح التهجين! صار عندك ${a.n} ${gName(a, to)} ×2 ${G.e}`, 'golden');
   } else if (P('r_twin')) {
     log(L`🧬 فشل التهجين، لكن ${a.n} سالمة بفضل «مربّي خبير»`, 'warn');
   } else {
@@ -1018,7 +1029,7 @@ function applyStartNow(id, l) {
   else if (id === 'm_miners' && !nw) S.mine.miners += 2;
   else if (id === 'q_workers' && !nw) {
     const add = [[], ['harvester', 'planter'], ['bin', 'sprinkler'], ['rancher', 'zoning']][l] || [];
-    for (const k of add) S.bld[k] = S.bld[k] || 1;
+    for (const k of add) S.bld[k] = Math.max(S.bld[k] || 0, BUILDINGS.find(b => b.id === k).cover ? 3 : 1);
   }
   else if (id === 'q_hearts') for (const n of NPCS) { const st = S.npc[n.id] || (S.npc[n.id] = { pts: 0, gd: 0 }); st.pts = Math.max(st.pts, heartStart()); }
   else if (id === 'w_floor') {
@@ -1044,8 +1055,8 @@ function applyGenStart(oldTools) {
   if (!nw) {
     S.mine.miners = 2 * P('m_miners');
     const q = P('q_workers');
-    if (q >= 1) { S.bld.harvester = 1; S.bld.planter = 1; }
-    if (q >= 2) { S.bld.bin = 1; S.bld.sprinkler = 1; }
+    if (q >= 1) { S.bld.harvester = 3; S.bld.planter = 3; }
+    if (q >= 2) { S.bld.bin = 1; S.bld.sprinkler = 3; }
     if (q >= 3) { S.bld.rancher = 1; S.bld.zoning = 1; }
   }
   let f = Math.max(1, Math.floor(LG.best.dun * 0.1 * P('w_floor')));
@@ -1097,6 +1108,7 @@ function doRetire() {
   const keep = { leg: LG, stats: S.stats, locked: S.locked }, oldTools = { ...S.tools };
   const nm = (RS.name || '').trim().slice(0, 24) || childName();
   S = newState(); Object.assign(S, keep);
+  for (const o of [...ORES.map(x => x.id), 'gem']) S.locked[o] = 1; // ores start locked again every generation
   S.name = nm; S.gender = RS.gender; S.started = true; S.gen.ch = RS.ch; S.gen.prevTools = oldTools;
   applyGenStart(oldTools); fillBoard();
   S.last = Date.now(); logs = []; logDirty = true; zoneMode = false; lastSig = ''; tab = 'farm';
@@ -1422,7 +1434,7 @@ const TABS = [
 ];
 function renderTabs() {
   const ready = S.farm.plots.filter(isReady).length;
-  const badge = { farm: !on('harvester') && ready ? ready : 0, legacy: canRetire() ? '⭐' : 0 };
+  const badge = { farm: ready, legacy: canRetire() ? '⭐' : 0 };
   $('tabs').innerHTML = tabsMarkup(TABS,badge,tab);
 }
 function skillBar(k) {
@@ -1522,7 +1534,7 @@ function viewBarn() {
       <div class="meta"><b>${a.n}</b> × ${n}<small>تنتج ${icon(pr)} ${pr.n} (${fmt(sellPrice(a.prod))}💰) كل ${ftime(a.time)}</small></div></div>`;
     if (!un) h += L`<p class="hint">يتطلب مستوى رعي ${a.lvl}</p>`;
     else {
-      if (n && BREEDABLE.includes(a.id)) { const g = grades(a.id); h += L`<div class="grades"><span class="g-norm">${icon(a,40)}<b>عادي</b><em>×${g.n0}</em></span><span class="g-prem">${icon(a.id+'-p',40)}${gradeBadge('p')}<b>ممتاز</b><em>×${g.p}</em></span><span class="g-gold">${icon(a.id+'-g',40)}${gradeBadge('g')}<b>ذهبي</b><em>×${g.g}</em></span></div>`; }
+      if (n && BREEDABLE.includes(a.id)) { const g = grades(a.id); h += L`<div class="grades"><span class="g-norm">${icon(a,40)}<b>${gName(a, 'n0')}</b><em>×${g.n0}</em></span><span class="g-prem">${icon(a.id+'-p',40)}${gradeBadge('p')}<b>${gName(a, 'p')}</b><em>×${g.p}</em></span><span class="g-gold">${icon(a.id+'-g',40)}${gradeBadge('g')}<b>${gName(a, 'g')}</b><em>×${g.g}</em></span></div>`; }
       if (n) h += L`<div class="kv"><span>الإنتاج</span><span id="an_tt_${a.id}"></span></div><div class="bar"><i id="an_t_${a.id}"></i></div>
         <div class="kv"><span>السعادة</span><span id="an_hh_${a.id}"></span></div><div class="bar joy"><i id="an_h_${a.id}"></i></div>`;
       h += `<div class="row">${costBtn('buyAnimal', a.id, c, L`شراء (${fmt(c)}💰)`, 'gold', n >= barnCap())}
@@ -1550,7 +1562,7 @@ function breedPanel() {
     h += `<div class="card"><div class="top"><span class="big">${icon(a,48)}</span><div class="meta"><b>${a.n}</b></div></div>`;
     for (const to of ['p', 'g']) {
       const G = GRADE[to], why = breedBlock(a, to);
-      h += L`<div class="kv grade-line g-${to}"><span>${gradeBadge(to)} ${G.n} ×2</span><span>نسبة النجاح ${Math.round(breedChance(to) * 100)}%</span></div>
+      h += L`<div class="kv grade-line g-${to}"><span>${gradeBadge(to)} ${gName(a, to)} ×2</span><span>نسبة النجاح ${Math.round(breedChance(to) * 100)}%</span></div>
         <div class="row">${why ? `<span class="stat">${why}</span>` : L`<button class="btn ${to === 'g' ? 'gold' : ''}" data-a="breed" data-v="${id}:${to}">🧬 هجّن</button>`}</div>`;
     }
     h += '</div>';
@@ -1840,7 +1852,7 @@ function viewVillage() {
   h += L`</div></div><div class="panel"><div class="ph"><h2>🏗️ المباني والعمال</h2><div class="row" style="margin:0"><button class="btn ghost sm" data-a="allAuto" data-v="off">⏸️ إيقاف كل التلقائي</button><button class="btn ghost sm" data-a="allAuto" data-v="on">🟢 تشغيل الكل</button></div></div><p class="hint">هنا تصبح اللعبة "idle" فعلاً: وظّف من يعمل عنك. تقدر توقف أي عامل مؤقتاً لو تبغى تجرب شي بنفسك.</p><div class="grid">`;
   for (const b of BUILDINGS) {
     const l = S.bld[b.id] || 0, max = b.max || 1, c = bCost(b), done = l >= max, need = b.req && !S.bld[b.req];
-    h += `<div class="card"><div class="top"><span class="big">${icon(b.art || 'building-' + b.id,64)}</span><div class="meta"><b>${b.n}</b>${max > 1 ? ` (${l}/${max})` : ''}<small>${b.desc}</small></div></div>
+    h += `<div class="card"><div class="top"><span class="big">${icon(b.art || 'building-' + b.id,64)}</span><div class="meta"><b>${b.n}</b>${max > 1 ? ` (${l}/${max})` : ''}<small>${b.desc}</small>${b.cover ? L`<small class="hint">يغطي ${Math.round(WORK_COVER[l] * 100)}% من الحقل${l < 5 ? L` ← ${Math.round(WORK_COVER[l + 1] * 100)}%` : ''}</small>` : ''}</div></div>
       <div class="row">${done ? L('<span class="stat">✅ مكتمل</span>') : need ? L`<span class="stat">يتطلب ${BUILDINGS.find(x => x.id === b.req).n}</span>` : costBtn('build', b.id, c, `${l ? L('تطوير') : L('شراء')} (${fmt(c)}💰)`)}${l && TOGGLES[b.id] ? togBtn(b.id) : ''}</div></div>`;
   }
   return h + '</div></div>';
@@ -2120,7 +2132,7 @@ function renderHeader() {
   hc.classList.toggle('hidden', !cc);
   if (cc) visualText(hc, `${icon('challenge-' + cc.id)} ${cc.n}: ${S.gen.chDone ? L('✅ أنجزته') : Math.floor(Math.min(1, chValue(cc) / chGoal(cc)) * 100) + '%'}`);
   renderSky();
-  const ready = (on('harvester') ? 0 : S.farm.plots.filter(isReady).length) + (canRetire() ? 1000 : 0);
+  const ready = S.farm.plots.filter((p, i) => isReady(p) && !covers('harvester', i)).length + (canRetire() ? 1000 : 0);
   if (ready !== lastBadge) { lastBadge = ready; renderTabs(); }
 }
 
@@ -2332,6 +2344,7 @@ function migrate(o) {
   const st = deepMerge(newState(), o);
   if (!o.gen) { st.gen.earned = (o.stats && o.stats.earned) || 0; st.gen.days = Math.max(0, dayAbsOf(st) - 1); }
   if (!st.leg.family) st.leg.family = st.name;
+  if (!o.wv) { for (const k of ['harvester', 'planter', 'sprinkler']) if (st.bld[k]) st.bld[k] = 5; st.wv = 1; }
   if (o.hero && !o.hero.xc) { // saves from before the new xp curve: same total xp, re-levelled on the new curve
     const h = st.hero; let x = h.xp || 0;
     for (let l = 1; l < h.lvl; l++) x += Math.floor(50 * Math.pow(l, 2.2));

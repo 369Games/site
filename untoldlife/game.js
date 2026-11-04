@@ -62,16 +62,18 @@ const ANIMALS = [
   { id: 'chicken', n: L('دجاجة'), e: '🐔', cost: 150, prod: 'egg', time: 30, lvl: 1 },
   { id: 'cow', n: L('بقرة'), e: '🐄', cost: 1500, prod: 'milk', time: 60, lvl: 3 },
   { id: 'sheep', n: L('خروف'), e: '🐑', cost: 4500, prod: 'wool', time: 120, lvl: 5 },
+  { id: 'goat', n: L('ماعز'), e: '🐐', cost: 10000, prod: 'cheese', time: 150, lvl: 6 },
   { id: 'bee', n: L('خلية نحل'), e: '🐝', cost: 20000, prod: 'honey', time: 240, lvl: 8 },
+  { id: 'turkey', n: L('ديك رومي'), e: '🦃', cost: 60000, prod: 'meat', time: 300, lvl: 10 },
 ];
-[['egg', L('بيض'), '🥚', 25], ['milk', L('حليب'), '🥛', 120], ['wool', L('صوف'), '🧶', 350], ['honey', L('عسل'), '🍯', 1500]]
+[['egg', L('بيض'), '🥚', 25], ['milk', L('حليب'), '🥛', 120], ['wool', L('صوف'), '🧶', 350], ['cheese', L('جبن'), '🧀', 700], ['honey', L('عسل'), '🍯', 1500], ['meat', L('فخذ ديك رومي'), '🍗', 4000]]
   .forEach(([id, n, e, price]) => addItem(id, { n, e, price, cat: 'animal' }));
 // Golden animals give golden products worth 5x the base price.
-[['egg_g', L('بيضة ذهبية'), 125], ['milk_g', L('حليب ذهبي'), 600], ['wool_g', L('صوف ذهبي'), 1750]]
+[['egg_g', L('بيضة ذهبية'), 125], ['milk_g', L('حليب ذهبي'), 600], ['wool_g', L('صوف ذهبي'), 1750], ['cheese_g', L('جبن ذهبي'), 3500], ['meat_g', L('فخذ ديك رومي ذهبي'), 20000]]
   .forEach(([id, n, price]) => addItem(id, { n, e: '🌟', price, cat: 'animal', golden: true }));
 // Until dedicated art exists, golden products reuse the base art with a gold tint.
-if (typeof ART !== 'undefined') ['egg', 'milk', 'wool'].forEach(b => { if (!ART[b + '_g'] && ART[b]) ART[b + '_g'] = { ...ART[b], tint: true }; });
-const BREEDABLE = ['chicken', 'cow', 'sheep'];
+if (typeof ART !== 'undefined') ['egg', 'milk', 'wool', 'cheese', 'meat'].forEach(b => { if (!ART[b + '_g'] && ART[b]) ART[b + '_g'] = { ...ART[b], tint: true }; });
+const BREEDABLE = ['chicken', 'cow', 'sheep', 'goat', 'turkey'];
 const GRADE_SVG = {
   p: '<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>',
   g: '<svg viewBox="0 0 24 24"><path d="M3 18.5h18l-1.6-10-4.6 4.2L12 5l-2.8 7.7-4.6-4.2zM3.5 20.2h17v1.8h-17z"/></svg>',
@@ -316,7 +318,7 @@ const GENDER = { m: { n: L('رجل'), e: '👨', child: L('ابن') }, f: { n: L
 const GIFT_GRACE = 4;
 function seasonCrops() { return CROPS.filter(c => c.season === S.season).map(c => c.id); }
 function giftPool(np) {
-  const ores = [...ORES.map(o => o.id), 'gem'], loot = MONSTER_MATS.map(m => m.id), farm = ['egg', 'milk', 'wool', 'honey'];
+  const ores = [...ORES.map(o => o.id), 'gem'], loot = MONSTER_MATS.map(m => m.id), farm = ['egg', 'milk', 'wool', 'cheese', 'honey', 'meat'];
   return { noura: seasonCrops(), leila: [...seasonCrops(), 'egg', 'milk'], mayor: [...farm, ...seasonCrops()], smith: ores, raad: loot, salma: farm }[np.id] || seasonCrops();
 }
 function giftRng(seed) { let h = 2166136261; for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0) / 4294967296); }

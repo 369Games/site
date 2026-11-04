@@ -13,7 +13,12 @@ function icon(value, size = 24, variant = '') {
   const drawn = artMarkup(key,size,obj ? obj.n || '' : '');
   if(drawn)return drawn;
   const sprite = PX[key];
-  if (!sprite) return obj ? (obj.e || '') : String(value || '');
+  if (!sprite) {
+    // An animal grade picture that isn't drawn yet (e.g. goat-p): show the animal's emoji.
+    const ag = !obj && /^([a-z]+)-[pg]$/.exec(String(value)), an = ag && typeof ANIMALS !== 'undefined' && ANIMALS.find(x => x.id === ag[1]);
+    if (an) return an.e;
+    return obj ? (obj.e || '') : String(value || '');
+  }
   const label = obj ? (obj.n || '') : '';
   size = Math.max(sprite.size, Math.round(size / sprite.size) * sprite.size);
   return `<img class="px${sprite.size===32?' px32':''}" src="assets/${sprite.file}" ${imageTagAttributes("assets/"+sprite.file,key)} data-fallback-emoji="${fallbackEmojiForKey(key)}" width="${size}" height="${size}" alt="${label.replace(/[&<>"']/g, '')}" draggable="false">`;

@@ -303,3 +303,10 @@ button.chip.notes-chip.new:after{content:'';position:absolute;top:-3px;inset-inl
 /* New version notice */
 .updbar{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;background:#3b2a1a;color:#fff6dc;border:1px solid #e2bc6c;border-radius:12px;padding:8px 12px;box-shadow:0 8px 24px #0006;max-width:92vw;font-size:14px}
 .updbar .btn{white-space:nowrap;flex:none}
+
+/* Ad banner at the bottom (ads.js); the page keeps room for it so it never covers the game */
+#adbar{position:fixed;left:0;right:0;bottom:0;height:90px;z-index:40;background:var(--paper);border-top:1px solid var(--line);overflow:hidden}
+body.has-ad{padding-bottom:96px}body.has-ad #toast{bottom:110px}
+@media(max-width:600px){#adbar{height:60px}body.has-ad{padding-bottom:66px}body.has-ad #toast{bottom:76px}}
+/* Ko-fi support button */
+.btn.kofi{background:#29abe0;color:#fff;border-color:#1b8fbd}

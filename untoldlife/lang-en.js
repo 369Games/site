@@ -864,6 +864,7 @@
 "🌙 واجهة داكنة": "🌙 Dark theme",
 "✍️ أرسل ملاحظاتك": "✍️ Send feedback",
 "🏠 كل ألعابنا": "🏠 All our games",
+"☕ ادعمنا على Ko-fi": "☕ Support us on Ko-fi",
 "سياسة الخصوصية": "Privacy policy",
 "عن الاستديو": "About us",
 "💬 ملاحظاتك": "💬 Feedback",

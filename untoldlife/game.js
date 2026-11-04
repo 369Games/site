@@ -164,16 +164,26 @@ const ARMOR_HP = [0, 30, 80, 160, 320, 640, 1200];
 // Hold to dig or fish: hits per second for each level of the worker's gloves.
 const HOLD_RATE = [2, 3, 4, 5, 6, 8, 10];
 const TOOLS = [
-  { id: 'hoe', n: L('المعزقة'), e: '🌾', eff: l => L`+${l * 20}% سرعة نمو المحاصيل` },
-  { id: 'can', n: L('المرشة'), e: '🚿', eff: l => L`السقي يسرّع النمو ×${(2 + 0.25 * l).toFixed(2)}${l >= 1 ? L(' • زر "سقي الكل"') : ''}` },
-  { id: 'pick', n: L('الفأس'), e: '⛏️', eff: l => L`قوة حفر ×${(1 + 0.6 * l).toFixed(1)} • أقصى عمق ${PICK_CAP[l] > 1e8 ? '∞' : PICK_CAP[l]}` },
-  { id: 'sword', n: L('السيف'), e: '🗡️', eff: l => L`+${SWORD[l]} هجوم` },
-  { id: 'armor', n: L('الدرع'), e: '🛡️', eff: l => L`+${ARMOR_DEF[l]} دفاع • +${ARMOR_HP[l]} صحة` },
-  { id: 'rod', n: L('السنارة'), e: '🎣', eff: l => L`قوة الصيد ×${(1 + 0.5 * l).toFixed(1)} • أسماك نادرة أكثر` },
-  // No art of its own yet: shows the emoji.
-  { id: 'glove', n: L('قفازات العامل'), e: '🧤', eff: l => L`الضغط المطوّل: ${HOLD_RATE[l]} ضربات بالثانية في المنجم والبحيرة` },
-  { id: 'crook', n: L('عصا الراعي'), e: '🐑', eff: l => L`+${l * 50}% سرعة الإنتاج الحيواني` },
+  { id: 'hoe', n: L('المعزقة'), e: '🌾', eff: (l, m = 1) => L`+${Math.round(l * 20 * m)}% سرعة نمو المحاصيل` },
+  { id: 'can', n: L('المرشة'), e: '🚿', eff: (l, m = 1) => L`السقي يسرّع النمو ×${(2 + 0.25 * l * m).toFixed(2)}${l >= 1 ? L(' • زر "سقي الكل"') : ''}` },
+  { id: 'pick', n: L('الفأس'), e: '⛏️', eff: (l, m = 1) => L`قوة حفر ×${(1 + 0.6 * l * m).toFixed(1)} • أقصى عمق ${PICK_CAP[l] > 1e8 ? '∞' : PICK_CAP[l]}` },
+  { id: 'sword', n: L('السيف'), e: '🗡️', eff: (l, m = 1) => L`+${Math.round(SWORD[l] * m)} هجوم` },
+  { id: 'armor', n: L('الدرع'), e: '🛡️', eff: (l, m = 1) => L`+${Math.round(ARMOR_DEF[l] * m)} دفاع • +${Math.round(ARMOR_HP[l] * m)} صحة` },
+  { id: 'rod', n: L('السنارة'), e: '🎣', eff: (l, m = 1) => L`قوة الصيد ×${(1 + 0.5 * l * m).toFixed(1)} • أسماك نادرة أكثر` },
+  { id: 'glove', n: L('قفازات العامل'), e: '🧤', eff: (l, m = 1) => L`الضغط المطوّل: ${Math.round(HOLD_RATE[l] * m)} ضربات بالثانية في المنجم والبحيرة` },
+  { id: 'crook', n: L('عصا الراعي'), e: '🐑', eff: (l, m = 1) => L`+${Math.round(l * 50 * m)}% سرعة الإنتاج الحيواني` },
 ];
+/* Legendary forge: an adamantite tool can be forged into its legendary form for 500 mithril + 1000 adamantite.
+   Each forge rolls a bonus from 5% to 100% on the tool's own effect; forging again rolls a new one (it replaces the old).
+   Low rolls are common: white 5–29%, blue 30–59%, purple 60–99%, gold = 100% (0.5%). Starts over every generation. */
+const LEG_TOOLS = { hoe: L('معزقة الخصوبة'), can: L('مرشة الحياة'), pick: L('فأس الدمار'), sword: L('سيف العاصفة'), armor: L('درع الحارس الخالد'), rod: L('سنارة الأعماق'), glove: L('قفازات العمالقة'), crook: L('عصا القطيع') };
+const LEG_COST = [['mithril', 500], ['adamant', 1000]];
+const LEG_RAR = [{ n: L('بيضاء'), c: 'w' }, { n: L('زرقاء'), c: 'b' }, { n: L('بنفسجية'), c: 'p' }, { n: L('ذهبية'), c: 'g' }];
+function lgv(id) { return (S.tlg || {})[id] || 0; }
+function lf(id) { return 1 + lgv(id) / 100; }
+function lgTier(v) { return v >= 100 ? 3 : v >= 60 ? 2 : v >= 30 ? 1 : 0; }
+function lgRoll() { return Math.random() < 0.005 ? 100 : Math.round(5 + 94 * Math.pow(Math.random(), 2.5)); }
+function lgCanPay() { return LEG_COST.every(([id, q]) => have(id) >= q); }
 
 const BUILDINGS = [
   { id: 'harvester', n: L('عامل حصاد'), e: '🧑‍🌾', desc: L('يحصد المحاصيل الجاهزة تلقائياً'), cost: 300 },
@@ -345,7 +355,7 @@ function newState() {
     farm: { plots, seed: 'turnip' },
     barn: { n: {}, t: {}, h: {}, q: {}, br: null, houses: 1, cd: [], lab: 0 },
     mine: { depth: 1, max: 1, prog: 0, blocks: 0, miners: 0 },
-    tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0, crook: 0, glove: 0 },
+    tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0, crook: 0, glove: 0 }, tlg: {},
     lake: { prog: 0, fishers: 0, last: null, spot: 'lake', bait: 0, autoBait: false },
     hero: { lvl: 1, xp: 0, hp: 60 },
     dun: { active: false, floor: 1, max: 1, kills: 0, enemy: null, auto: true, autoEat: true, resting: false, ht: 0, et: 0, retry: 0, eatCd: 0 },
@@ -383,13 +393,13 @@ function goldMult() { return (1 + 0.1 * P('t_price')) * (1 + 0.05 * H('coin')) *
 function familyProd() { return [[L('💍 الزواج'), S.spouse ? 0.1 : 0], [L('🌈 بركة الوادي'), 0.05 * P('q_bless')], [L('🐌 مكافأة تحدي الزمن البطيء'), 0.1 * CC('slow')]]; }
 function speedSrc(kind) {
   const pen = [[L('⚠️ تحدي الزمن البطيء (نشط)'), inCh('slow') ? 0.5 : 1]];
-  if (kind === 'grow') return { gen: [[L`🌾 المعزقة ${TIER[S.tools.hoe]}`, 0.2 * S.tools.hoe], [L`📈 مستوى الزراعة ${S.skills.farm.l}`, 0.02 * (S.skills.farm.l - 1)], [L`👩‍🌾 نورة (${hearts('noura')} قلوب)`, 0.03 * hearts('noura')]],
+  if (kind === 'grow') return { gen: [[L`🌾 المعزقة ${TIER[S.tools.hoe]}`, 0.2 * S.tools.hoe * lf('hoe')], [L`📈 مستوى الزراعة ${S.skills.farm.l}`, 0.02 * (S.skills.farm.l - 1)], [L`👩‍🌾 نورة (${hearts('noura')} قلوب)`, 0.03 * hearts('noura')]],
     fam: [[L('🌳 تربة خصبة'), 0.25 * P('f_grow')], [L('❄️ مكافأة تحدي الشتاء'), 0.15 * CC('winter')], ...familyProd()], pen };
-  if (kind === 'ranch') return { gen: [[L`🐑 عصا الراعي ${TIER[S.tools.crook || 0]}`, 0.5 * (S.tools.crook || 0)], [L`📈 مستوى الرعي ${S.skills.ranch.l}`, 0.02 * (S.skills.ranch.l - 1)]],
+  if (kind === 'ranch') return { gen: [[L`🐑 عصا الراعي ${TIER[S.tools.crook || 0]}`, 0.5 * (S.tools.crook || 0) * lf('crook')], [L`📈 مستوى الرعي ${S.skills.ranch.l}`, 0.02 * (S.skills.ranch.l - 1)]],
     fam: [[L('🌳 حيوانات سعيدة'), 0.2 * P('r_speed')], ...familyProd()], pen };
-  if (kind === 'mine') return { gen: [[L`⛏️ الفأس ${TIER[S.tools.pick]}`, 0.6 * S.tools.pick], [L`📈 مستوى التعدين ${S.skills.mine.l}`, 0.05 * (S.skills.mine.l - 1)]],
+  if (kind === 'mine') return { gen: [[L`⛏️ الفأس ${TIER[S.tools.pick]}`, 0.6 * S.tools.pick * lf('pick')], [L`📈 مستوى التعدين ${S.skills.mine.l}`, 0.05 * (S.skills.mine.l - 1)]],
     fam: [[L('🌳 سواعد قوية'), 0.3 * P('m_power')], [L('🕳️ مكافأة تحدي تحت الأرض'), 0.2 * CC('underground')], ...familyProd()], pen };
-  return { gen: [[L`🎣 السنارة ${TIER[S.tools.rod]}`, 0.5 * S.tools.rod], [L`📈 مستوى الصيد ${S.skills.fish.l}`, 0.03 * (S.skills.fish.l - 1)]],
+  return { gen: [[L`🎣 السنارة ${TIER[S.tools.rod]}`, 0.5 * S.tools.rod * lf('rod')], [L`📈 مستوى الصيد ${S.skills.fish.l}`, 0.03 * (S.skills.fish.l - 1)]],
     fam: [[L('🌳 سواعد قوية'), 0.3 * P('m_power')], ...familyProd()], pen };
 }
 function bucket(list) { return list.reduce((a, [, b]) => a + b, 1); }
@@ -486,7 +496,7 @@ function addXp(k, x) {
 
 /* ---------------- المزرعة ---------------- */
 function cropUnlocked(c) { return S.skills.farm.l >= c.lvl && (c.season !== 4 || S.leg.gen >= 3); }
-function waterMult() { return 2 + 0.25 * S.tools.can; }
+function waterMult() { return 2 + 0.25 * S.tools.can * lf('can'); }
 // The greenhouse covers the first 4 plots per level; the rest follow the season.
 function ghCount() { return on('greenhouse') ? 4 * Math.min(3, S.bld.greenhouse || 0) : 0; }
 function growMult(c, gh) {
@@ -658,9 +668,9 @@ function blockDone() {
 }
 
 /* ---------------- البطل والقتال ---------------- */
-function heroMaxHp() { return Math.floor((60 + 20 * (S.hero.lvl - 1) + ARMOR_HP[S.tools.armor]) * (1 + 0.05 * hearts('leila')) * warMult()); }
-function heroAtk() { return (6 + 3 * (S.hero.lvl - 1) + SWORD[S.tools.sword]) * warMult() * mskPow(); }
-function heroDef() { return (1 + (S.hero.lvl - 1) + ARMOR_DEF[S.tools.armor]) * mskPow(); }
+function heroMaxHp() { return Math.floor((60 + 20 * (S.hero.lvl - 1) + ARMOR_HP[S.tools.armor] * lf('armor')) * (1 + 0.05 * hearts('leila')) * warMult()); }
+function heroAtk() { return (6 + 3 * (S.hero.lvl - 1) + SWORD[S.tools.sword] * lf('sword')) * warMult() * mskPow(); }
+function heroDef() { return (1 + (S.hero.lvl - 1) + ARMOR_DEF[S.tools.armor] * lf('armor')) * mskPow(); }
 function heroPower() { return Math.round(heroAtk() * 2 + heroDef() * 2 + heroMaxHp() / 5); }
 function hxpNeed(l) { return Math.floor(50 * Math.pow(l, 2.2)); }
 function heroXp(x) {
@@ -1194,6 +1204,16 @@ const A = {
     const t = TOOLS.find(x => x.id === v);
     log(L`🔨 الحداد قاسم طوّر ${t.n} إلى ${TIER[l]}!`, 'good');
   },
+  forge: v => {
+    const t = TOOLS.find(x => x.id === v); if (!t || (S.tools[v] || 0) < 6 || !lgCanPay()) return;
+    const old = lgv(v);
+    if (old >= 60 && !confirm(L`عندك ${LEG_TOOLS[v]} بقوة +${old}%. الصياغة الجديدة تستبدلها حتى لو طلعت أقل. أكيد؟`)) return;
+    LEG_COST.forEach(([id, q]) => take(id, q));
+    const r = lgRoll(), k = LEG_RAR[lgTier(r)];
+    (S.tlg || (S.tlg = {}))[v] = r;
+    log(L`🔥 الحداد قاسم صاغ ${LEG_TOOLS[v]}: +${r}% قوة (${k.n})`, lgTier(r) >= 2 ? 'golden' : 'good');
+    toast(L`✨ ${LEG_TOOLS[v]}: +${r}% (${k.n})`);
+  },
   sell1: v => { sellItem(v, 1); },
   sellAll: v => { const g = sellItem(v, have(v)); if (g) toast(`+${fmt(g)}💰`); },
   shipAll: () => { const g = shipAll(false); if (!g) toast(L('لا يوجد ما يُباع (أو كله مقفل)')); },
@@ -1331,7 +1351,7 @@ function workClickOk(e) {
 // Hold to dig or fish: keep pressing the button and it hits by itself, at the gloves' speed.
 // A quick tap is still a normal click. Hits from holding never go above 10 a second, like a fast hand.
 const hold = { a: '', t: 0, start: 0, n: 0, end: 0 };
-function holdRate() { return HOLD_RATE[Math.min(6, S.tools.glove || 0)]; }
+function holdRate() { return Math.round(HOLD_RATE[Math.min(6, S.tools.glove || 0)] * lf('glove')); }
 function holdStop() { if (hold.t) { clearInterval(hold.t); if (hold.n) hold.end = performance.now(); } hold.t = 0; hold.a = ''; }
 document.addEventListener('pointerdown', e => {
   const b = e.target.closest('[data-a=dig],[data-a=cast]');
@@ -1701,15 +1721,25 @@ function viewSmith() {
   for (const t of TOOLS) {
     if (t.id === 'rod' && S.leg.gen < 2) continue;
     const l = S.tools[t.id] || 0, ti = k => { const key = t.art || t.id + '-' + k; return ART[key] || PX[key] ? icon(key, 48) : `<span class="tool-emoji">${t.e}</span>`; };
-    h += L`<div class="card"><div class="top"><span class="big">${ti(l)}</span><div class="meta"><b>${t.n} ${TIER[l]}</b><small>المستوى ${l} من 6</small></div></div>
-      <div class="kv nowrow"><span>✅ الحالي</span><span>${t.eff(l)}</span></div>`;
+    const lv = l >= 6 ? lgv(t.id) : 0, rar = LEG_RAR[lgTier(lv)];
+    // The legendary picture is <id>-7 once its art exists; until then the adamantite one, in the roll's colour frame.
+    const top = lv ? `<span class="lgf ${rar.c}">${ART[t.id + '-7'] || PX[t.id + '-7'] ? icon(t.id + '-7', 48) : ti(6)}</span>` : ti(l);
+    h += L`<div class="card ${lv ? 'lgcard ' + rar.c : ''}"><div class="top"><span class="big">${top}</span><div class="meta"><b>${lv ? LEG_TOOLS[t.id] : t.n + ' ' + TIER[l]}</b><small>${lv ? L`<span class="lgv ${rar.c}">+${lv}% قوة • ${rar.n}</span>` : L`المستوى ${l} من 6`}</small></div></div>
+      <div class="kv nowrow"><span>✅ الحالي</span><span>${t.eff(l, lv ? lf(t.id) : 1)}</span></div>`;
     if (l < 6) {
       const c = toolCost(l + 1), o = ITEMS[c.ore], ok = S.gold >= c.gold && have(c.ore) >= c.qty;
       h += `<div class="tool-compare">${ti(l)}<span aria-hidden="true">${LANG === 'ar' ? '←' : '→'}</span>${ti(l + 1)}</div>`;
       h += L`<div class="kv"><span>⬆️ التالي: ${TIER[l + 1]}</span><span>${t.eff(l + 1)}</span></div>
         <div class="kv"><span>التكلفة</span><span>${fmt(c.gold)}💰 + ${c.qty} ${icon(o)} (لديك ${fmt(have(c.ore))})</span></div>
         <div class="row"><button class="btn gold" data-a="upgrade" data-v="${t.id}" ${ok ? '' : 'disabled'}>🔨 طوّر</button></div>`;
-    } else h += L('<p class="hint">✨ وصل لأعلى مستوى!</p>');
+    } else {
+      const pay = LEG_COST.map(([id, q]) => L`${fmt(q)} ${icon(ITEMS[id])} (لديك ${fmt(have(id))})`).join(' + ');
+      h += L`<div class="lgbox"><b>🔥 الصياغة الأسطورية: ${LEG_TOOLS[t.id]}</b>
+        <small>${lv ? L('كل صياغة جديدة تعطي نسبة جديدة مكان القديمة.') : L('تصير أداة أسطورية بقوة زيادة من 5% لين 100% على تأثيرها.')} تنعاد للأدامانتيت مع الجيل الجديد.</small>
+        <small class="lgodds"><span class="lgv w">⚪ 5–29% (58%)</span> <span class="lgv b">🔵 30–59% (22%)</span> <span class="lgv p">🟣 60–99% (19.5%)</span> <span class="lgv g">🟡 100% (0.5%)</span></small>
+        <div class="kv"><span>التكلفة</span><span>${pay}</span></div>
+        <div class="row"><button class="btn gold" data-a="forge" data-v="${t.id}" ${lgCanPay() ? '' : 'disabled'}>${lv ? L('🔥 أعد الصياغة') : L('🔥 صياغة أسطورية')}</button></div></div>`;
+    }
     h += '</div>';
   }
   return h + '</div></div>';
@@ -1859,7 +1889,7 @@ function buffsHtml() {
   h += g(L('💰 الذهب من كل المصادر'), [[L`👴 العمدة (${hearts('mayor')} قلوب) — البيع فقط`, 1 + 0.02 * hearts('mayor')], [L('🌳 مساومة'), 1 + 0.1 * P('t_price')], [L('🪙 العملة القديمة'), 1 + 0.05 * H('coin')],
     [L('🙅 مكافأة تحدي بدون عمال'), 1 + 0.1 * CC('noworkers')], [L`🏅 الإنجازات (${Object.keys(S.leg.ach).length})`, achMult()], [L('🌈 بركة الوادي'), bless()], [L('⚠️ تحدي القحط (نشط)'), inCh('poverty') ? 0.5 : 1]]);
   h += g(L('⚔️ الهجوم والصحة'), [[L('🌳 دم المحارب'), 1 + 0.15 * P('w_power')], [L('⚔️ مكافأة تحدي المحارب'), 1 + 0.1 * CC('warrior')], [L('🌈 بركة الوادي'), bless()]],
-    [[L('🗡️ الهجوم'), fmt(heroAtk()) + L` (السيف +${SWORD[S.tools.sword]})`], [L('🛡️ الدفاع'), fmt(heroDef()) + L` (الدرع +${ARMOR_DEF[S.tools.armor]})`],
+    [[L('🗡️ الهجوم'), fmt(heroAtk()) + L` (السيف +${fmt(SWORD[S.tools.sword] * lf('sword'))})`], [L('🛡️ الدفاع'), fmt(heroDef()) + L` (الدرع +${fmt(ARMOR_DEF[S.tools.armor] * lf('armor'))})`],
       [L('❤️ الصحة القصوى'), fmt(heroMaxHp()) + (hearts('leila') ? L` (ليلى +${5 * hearts('leila')}%)` : '')], [L('⚡ القوة'), fmt(heroPower())],
       [L('💤 التعافي'), (S.bld.inn ? '6' : '3') + L('% بالثانية خارج القتال')], [L('🍽️ الطعام يشفي'), S.bld.kitchen ? L('×2 (المطبخ)') : '×1']]);
   h += g(L('📜 مكافآت المهمات'), [[L`🤺 رعد (${hearts('raad')} قلوب)`, 1 + 0.04 * hearts('raad')], [L('🌳 سمعة العائلة'), 1 + 0.25 * P('w_quest')], [L('💰 مضاعف الذهب'), goldMult()]],
@@ -2008,7 +2038,7 @@ const VIEWS = {
     const D = S.dun, g = S.guild;
     return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100)))];
   }],
-  smith: [viewSmith, () => {}, () => [S.tools, S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
+  smith: [viewSmith, () => {}, () => [S.tools, S.tlg, lgCanPay(), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
   village: [viewVillage, () => {}, () => [dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0]; })]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, S.skills.fish.l, S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],

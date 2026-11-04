@@ -279,3 +279,15 @@ button.chip.notes-chip.new:after{content:'';position:absolute;top:-3px;inset-inl
 .digbtn .hold-hint{display:block;font-size:11px;opacity:.7;font-weight:600;margin-top:2px}
 .tool-emoji{display:inline-grid;place-items:center;width:48px;height:48px;font-size:34px;line-height:1}
 .warnline{color:#e08a7a!important}
+
+/* Legendary tools: frame and text colour by the forge roll (white, blue, purple, gold) */
+.lgf{display:inline-flex;border-radius:12px;padding:3px;border:3px solid #e8e4da;box-shadow:0 0 6px #fff5;background:#0003}
+.lgf.b{border-color:#4aa3ff;box-shadow:0 0 10px #4aa3ffaa}
+.lgf.p{border-color:#a45cff;box-shadow:0 0 12px #a45cffcc}
+.lgf.g{border-color:#ffcf40;box-shadow:0 0 16px #ffcf40;animation:lgglow 1.6s ease-in-out infinite alternate}
+@keyframes lgglow{to{box-shadow:0 0 26px #ffdf70}}
+.card.lgcard.b{border-color:#4aa3ff88}.card.lgcard.p{border-color:#a45cffaa}.card.lgcard.g{border-color:#ffcf40}
+.lgv{font-weight:700;color:#e8e4da}.lgv.b{color:#6db6ff}.lgv.p{color:#c08bff}.lgv.g{color:#ffd34d}
+.lgbox{margin-top:8px;padding:8px 10px;border:1px dashed #a45cff88;border-radius:10px;display:grid;gap:4px}
+.lgodds{display:flex;flex-wrap:wrap;gap:4px 10px}
+@media (prefers-reduced-motion:reduce){.lgf.g{animation:none}}

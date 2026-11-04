@@ -840,7 +840,8 @@ function fish(amount) {
 function curSpot() { return SPOTS.find(s => s.id === S.lake.spot && S.skills.fish.l >= s.lvl) || SPOTS[0]; }
 function baitX() { return S.lake.bait > 0 ? 2 : 1; }
 function rareChance() { return Math.min(0.4, (0.08 + 0.01 * S.tools.rod) * baitX()); }
-function legChance() { return Math.min(0.1, (0.01 + 0.002 * S.tools.rod) * baitX()); }
+// Kept low on purpose: the album is permanent, so its legendaries and kings should take a few generations.
+function legChance() { return Math.min(0.03, (0.003 + 0.0005 * S.tools.rod) * baitX()); }
 // Fish album (kept by the family across generations): every fish with all 3 rarities gives +4% fish price, every king +10%.
 function albumBits(id) { return (S.leg.album || {})[id] || 0; }
 function albumRows() { return FISH.filter(f => (albumBits(f.id) & 7) === 7).length; }
@@ -861,7 +862,7 @@ function catchFish() {
     S.lake.last = 'treasure'; S.stats.fish++; if (!offline) log(L`🧰 اصطدت صندوق كنز! +${fmt(g)}💰`, 'gold'); return;
   }
   const sp = curSpot(), K = KINGS.find(k => k.spot === sp.id);
-  if (K && S.skills.fish.l >= K.lvl && Math.random() < 0.002 * bx) return landFish(K, 0);
+  if (K && S.skills.fish.l >= K.lvl && Math.random() < 0.0003) return landFish(K, 0); // bait doesn't help kings
   const av = FISH.filter(f => f.spot === sp.id && f.lvl <= S.skills.fish.l);
   const ws = av.map((f, i) => Math.pow(0.62, i) * Math.pow(1 + 0.15 * S.tools.rod, i));
   let r = Math.random() * ws.reduce((a, b) => a + b, 0), f = av[0];

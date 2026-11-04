@@ -3,6 +3,11 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.7.2', date: '2026-11-04', big: false, title: L('ألبوم الأسماك صار أصعب'), items: [
+    L('📖 الألبوم يبقى مع العائلة للأبد، فصار تكميله ياخذ كذا جيل: الأسماك الأسطورية والملوك صارت أندر.'),
+    L('🪱 الطُّعم ما عاد يضاعف فرصة الملوك، لكنه للحين يضاعف النادرة والأسطورية.'),
+    L('✅ اللي كمّلته من الألبوم يبقى لك.'),
+  ] },
   { v: '1.7.1', date: '2026-11-04', big: false, title: L('التقاعد وقفازات العامل'), items: [
     L('🌅 التقاعد صار يحتاج الشرطين مع بعض: ذهب الجيل والطابق.'),
     L('🎁 أهل القرية يحبون بس هدايا الموسم الحين، ما في مفضّل طول السنة.'),

@@ -296,3 +296,10 @@ button.chip.notes-chip.new:after{content:'';position:absolute;top:-3px;inset-inl
 .btn.royal{background:linear-gradient(135deg,#6b3fa0,#b8862b);color:#fff6dc;border-color:#ffcf40}
 .btn.royal:disabled{opacity:.55}
 .tool-emoji.npc-emoji{width:96px;height:96px;font-size:64px}
+
+/* First screen: the «enter the village» button stays in view at the bottom; a shorter letter on phones */
+.intro-go{position:sticky;bottom:-32px;margin:14px -8px -10px;padding:12px 8px 10px;background:var(--paper);box-shadow:0 -12px 14px -8px var(--paper)}
+@media(max-width:600px){.intro-go{bottom:-24px}.mbox .letter{padding:14px 16px;margin:12px 0 22px}.mbox .letter p{font-size:13px;line-height:1.75}.lang-pick .btn{min-height:34px;padding:5px 10px;font-size:12px}.mbox h2{margin-bottom:10px}}
+/* New version notice */
+.updbar{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;background:#3b2a1a;color:#fff6dc;border:1px solid #e2bc6c;border-radius:12px;padding:8px 12px;box-shadow:0 8px 24px #0006;max-width:92vw;font-size:14px}
+.updbar .btn{white-space:nowrap;flex:none}

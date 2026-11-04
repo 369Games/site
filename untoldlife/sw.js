@@ -21,7 +21,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (KILL) return;
   const req = e.request, url = new URL(req.url);
-  if (req.method !== 'GET' || url.origin !== location.origin || /\.mp3$/i.test(url.pathname) || req.headers.has('range')) return;
+  // ?fresh= is the game's new-version check: always from the network, never saved.
+  if (req.method !== 'GET' || url.origin !== location.origin || /\.mp3$/i.test(url.pathname) || req.headers.has('range') || url.searchParams.has('fresh')) return;
 
   if (req.mode === 'navigate') {
     e.respondWith((async () => {

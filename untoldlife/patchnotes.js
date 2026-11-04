@@ -3,6 +3,10 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.10.1', date: '2026-11-05', big: false, title: L('بداية أسهل على الجوال'), items: [
+    L('📱 زر «ادخل القرية» صار يبين على طول في أول شاشة على الجوال، ورسالة الجد صارت أصغر.'),
+    L('✨ لما ينزل تحديث جديد وأنت فاتح اللعبة، يطلع لك تنبيه تحدّث منه.'),
+  ] },
   { v: '1.10', date: '2026-11-05', big: true, title: L('النوق وملاحظاتكم'), items: [
     L('🐪 أغلى حيوان في الحظيرة: الناقة تنتج 🍖 لحم حاشي (يفتح بمستوى رعي 12). يبدأ بـ«مجهم»، والممتاز «وضحى»، والذهبية «شقحاء» تنتج لحم حاشي ذهبي.'),
     L('💰 سعر الناقة يبدأ بمليون، وكل ناقة تزيد 8% بس.'),

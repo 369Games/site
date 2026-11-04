@@ -1355,6 +1355,7 @@ const A = {
     save();
   },
   closeModal: () => closeModal(),
+  reloadNew: () => { try { save(); } catch (e) { /* */ } location.reload(); },
   side: v => { sideTab = v; lastBuffs = ''; renderSide(); },
 };
 function toolCost(l) {
@@ -2215,9 +2216,30 @@ function showIntro() {
   <p style="text-align:end">— جدك</p></div>
   ${langPick()}<label><b>ما اسمك؟</b></label><input id="nameIn" maxlength="20" placeholder="اكتب اسمك هنا">
   <label><b>أنت؟</b></label>${genderPick('introGender', introGender)}
-  <button class="btn gold" data-a="start" style="width:100%;font-size:17px">🏡 ادخل القرية</button>`);
+  <div class="intro-go"><button class="btn gold" data-a="start" style="width:100%;font-size:17px">🏡 ادخل القرية</button></div>`);
   setTimeout(() => { const i = $('nameIn'); if (i) { i.focus(); i.onkeydown = e => { if (e.key === 'Enter') A.start(); }; } }, 50);
 }
+/* New version notice: an idle game tab can stay open for days, so every 10 minutes (and when the player comes back)
+   the page checks whether a newer version is on the site and offers to reload. */
+const MY_V = ((document.querySelector('script[src*="game.js?v="]') || {}).src || '').replace(/.*v=(\d+).*/, '$1');
+let updAt = 0, updShown = false;
+async function checkUpdate() {
+  if (!/^\d+$/.test(MY_V) || updShown || document.hidden || location.protocol === 'file:' || Date.now() - updAt < 300000) return;
+  updAt = Date.now();
+  try {
+    const t = await (await fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' })).text();
+    const v = (t.match(/game\.js\?v=(\d+)/) || [])[1];
+    if (v && +v > +MY_V) showUpdate();
+  } catch (e) { /* offline: try again later */ }
+}
+function showUpdate() {
+  updShown = true;
+  const d = document.createElement('div'); d.className = 'updbar'; d.setAttribute('role', 'status');
+  d.innerHTML = `<span>${L('✨ نزل تحديث جديد للعبة')}</span><button class="btn gold sm" data-a="reloadNew">${L('🔄 حدّث الحين')}</button>`;
+  document.body.appendChild(d);
+}
+setTimeout(checkUpdate, 60000); setInterval(checkUpdate, 600000);
+document.addEventListener('visibilitychange', checkUpdate);
 function showOffline(secs, gold, items) {
   const li = Object.entries(items).filter(([, n]) => n > 0).map(([id, n]) => `<li>${icon(ITEMS[id])} ${ITEMS[id].n} +${fmt(n)}</li>`).join('');
   openModal(L`<h2>🌙 أهلاً بعودتك يا ${S.name}!</h2>

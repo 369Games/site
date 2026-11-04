@@ -9,7 +9,7 @@
    - never two uploads from this device less than 25 seconds apart; the «Upload now» button once a minute;
    - the database rules (tools/firestore.rules) refuse any write less than 20 seconds after the last one,
      using the server's clock (ts), so a script that skips the game can't flood it either. */
-const CLOUD = { on: false, ready: false, user: null, last: 0, lastPlay: -1, busy: false, err: '', sentTo: '', pending: null, sentAt: 0, manualAt: 0, retryT: 0 };
+const CLOUD = { on: false, ready: false, user: null, last: 0, lastPlay: -1, busy: false, err: '', sentTo: '', pending: null, sentAt: 0, manualAt: 0, retryT: 0, seenT: 0, checkedAt: 0 };
 const FB_VER = '10.14.1';
 const EMAIL_KEY = 'untoldlife_email', NUDGE_KEY = 'untoldlife_cloud_nudge';
 const PREV_KEY = 'untoldlife_save_prev';   // the save that lost to the other one, kept just in case
@@ -105,8 +105,10 @@ async function cloudUpload(force) {
   CLOUD.busy = true;
   try {
     const doc = await cloudDoc();
-    await doc.set({ game: 'untoldlife', save: encodeSave(S), ...cloudSummary(S), t: Date.now(), ts: firebase.firestore.FieldValue.serverTimestamp() });
-    CLOUD.last = CLOUD.sentAt = Date.now(); CLOUD.lastPlay = play; CLOUD.err = '';
+    if (await cloudNewer(doc)) return; // another device saved further: this page now loads that save
+    const t = Date.now();
+    await doc.set({ game: 'untoldlife', save: encodeSave(S), ...cloudSummary(S), t, ts: firebase.firestore.FieldValue.serverTimestamp() });
+    CLOUD.seenT = t; CLOUD.last = CLOUD.sentAt = Date.now(); CLOUD.lastPlay = play; CLOUD.err = '';
   } catch (e) {
     // Refused by the 20-second rule (another device uploaded just now): try once more a little later.
     if (e && e.code === 'permission-denied' && !CLOUD.retried) { CLOUD.retried = true; CLOUD.sentAt = Date.now(); cloudRetry(GAP_MS); }
@@ -114,6 +116,28 @@ async function cloudUpload(force) {
   }
   if (!CLOUD.err && CLOUD.sentAt === CLOUD.last) CLOUD.retried = false;
   CLOUD.busy = false; cloudRefresh();
+}
+/* Version check, so two devices never overwrite each other's progress.
+   Every upload stamps the save with its time (t), and this page remembers the stamp of the cloud copy it last wrote or
+   loaded. If the cloud has a different stamp, another device saved since then: when that save got further
+   (generation first, then play time) this page loads it, keeping its own as a backup; otherwise ours replaces it. */
+async function cloudNewer(doc) {
+  const snap = await doc.get(); if (!snap.exists) return false;
+  const d = snap.data(); if (!d.t || d.t === CLOUD.seenT) return false;
+  const info = readSave(d.save); CLOUD.seenT = d.t; if (!info) return false;
+  const here = cloudSummary(S), there = cloudSummary(info.st);
+  if (there.gen > here.gen || (there.gen === here.gen && there.play > here.play)) {
+    try { localStorage.setItem(PREV_KEY, encodeSave(S)); } catch (e) { /* */ }
+    cloudApply(info); return true;
+  }
+  return false;
+}
+// Coming back to the tab: look for newer progress from another device first (at most every 20 seconds).
+async function cloudCheck() {
+  if (!CLOUD.user || !S || !S.started || CLOUD.busy || CLOUD.pending || saveBlocked || Date.now() - CLOUD.checkedAt < 20000) return;
+  CLOUD.checkedAt = Date.now(); CLOUD.busy = true;
+  try { if (await cloudNewer(await cloudDoc())) return; } catch (e) { /* the next upload tries again */ }
+  CLOUD.busy = false; cloudUpload();
 }
 function cloudRetry(ms) {
   if (CLOUD.retryT) return;
@@ -139,7 +163,7 @@ async function cloudOnSignIn() {
     return cloudApply(info);
   }
   if (there.gen !== here.gen || Math.abs(there.play - here.play) > 60 || there.name !== here.name) { try { localStorage.setItem(PREV_KEY, d.save); } catch (e) { /* */ } }
-  CLOUD.lastPlay = there.play; CLOUD.last = d.t || 0; cloudRefresh();
+  CLOUD.lastPlay = there.play; CLOUD.last = d.t || 0; CLOUD.seenT = d.t || 0; cloudRefresh();
   return cloudUpload(true);
 }
 function cloudApply(info) {
@@ -212,7 +236,7 @@ A.cloudChip = () => {
 // Sync while playing, and when the page is hidden or closed.
 // A hidden tab doesn't upload every 3 minutes: the save goes up when it's hidden, and again when the player comes back.
 setInterval(() => { if (!document.hidden) cloudUpload(); }, SYNC_MS);
-document.addEventListener('visibilitychange', () => cloudUpload());
+document.addEventListener('visibilitychange', () => document.hidden ? cloudUpload() : cloudCheck());
 window.addEventListener('pagehide', () => cloudUpload());
 // One gentle suggestion to link an account, after the first retirement or an hour of play.
 setInterval(() => {

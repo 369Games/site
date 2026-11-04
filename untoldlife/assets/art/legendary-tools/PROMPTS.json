@@ -1,0 +1,104 @@
+{
+  "generator": "Built-in image generation",
+  "size": 512,
+  "output": "assets/art/legendary-tools",
+  "jobs": [
+    {
+      "id": "hoe-7",
+      "file": "hoe-7.png",
+      "tool": "hoe",
+      "tier": 7,
+      "assetId": "legendary-tool-hoe-7",
+      "name": "Hoe of Plenty",
+      "description": "a hoe with a living wood handle wrapped in green vines and small flowers, a blade of glowing emerald crystal, tiny golden wheat leaves and green sparkles.",
+      "reference": "D:/UntoldLife/assets/art/pass2/tools/hoe-6.png",
+      "prompt": "Use case: stylized-concept. Pixel art game item icon, 16-bit farming RPG style (Stardew Valley-like), matching a set of farm tool icons. Legendary tier 7, more ornate and powerful than the adamantite purple crystal tier-6 version of the same tool. Use the provided tier-6 image as a SHAPE, ORIENTATION and ITEM IDENTITY reference only; redesign its materials and decorations to the requested unique legendary concept. Replace the purple crystal, do not retain it unless the new description calls for purple. Preserve a comparable overall silhouette and recognizable tool proportions. Crisp deliberate pixel clusters and stepped contours, clean dark outline, soft top-left lighting, softly luminous magical details without overpowering the object. Centered, fully visible with a generous clear transparent margin on all four sides, including all effects and dangling parts. Genuine transparent background, no text, no frame, no background panel, no ground or scenery, no character or hands, no UI, no watermark, no item name written in the picture. One tool only except gloves, which must be exactly one matching left/right pair with four fingers and one thumb per glove. Square intended output 512x512. Keep any aura very subtle and localized close to the object; no giant glow cloud or fog, no ragged spray around the canvas border. Create Hoe of Plenty: a hoe with a living wood handle wrapped in green vines and small flowers, a blade of glowing emerald crystal, tiny golden wheat leaves and green sparkles.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-105e4036-48dc-4678-addb-d23bec3d3f99.png"
+    },
+    {
+      "id": "can-7",
+      "file": "can-7.png",
+      "tool": "can",
+      "tier": 7,
+      "assetId": "legendary-tool-can-7",
+      "name": "Can of Life",
+      "description": "an elegant watering can of white porcelain and gold trim, a glowing aqua water drop emblem, sparkling water pouring from the spout with tiny leaves.",
+      "reference": "D:/UntoldLife/assets/art/pass2/tools/can-6.png",
+      "prompt": "Use case: stylized-concept. Pixel art game item icon, 16-bit farming RPG style (Stardew Valley-like), matching a set of farm tool icons. Legendary tier 7, more ornate and powerful than the adamantite purple crystal tier-6 version of the same tool. Use the provided tier-6 image as a SHAPE, ORIENTATION and ITEM IDENTITY reference only; redesign its materials and decorations to the requested unique legendary concept. Replace the purple crystal, do not retain it unless the new description calls for purple. Preserve a comparable overall silhouette and recognizable tool proportions. Crisp deliberate pixel clusters and stepped contours, clean dark outline, soft top-left lighting, softly luminous magical details without overpowering the object. Centered, fully visible with a generous clear transparent margin on all four sides, including all effects and dangling parts. Genuine transparent background, no text, no frame, no background panel, no ground or scenery, no character or hands, no UI, no watermark, no item name written in the picture. One tool only except gloves, which must be exactly one matching left/right pair with four fingers and one thumb per glove. Square intended output 512x512. Keep any aura very subtle and localized close to the object; no giant glow cloud or fog, no ragged spray around the canvas border. Create Can of Life: an elegant watering can of white porcelain and gold trim, a glowing aqua water drop emblem, sparkling water pouring from the spout with tiny leaves.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-ca38690e-3280-45a0-8e2e-0a933cfa1ece.png"
+    },
+    {
+      "id": "pick-7",
+      "file": "pick-7.png",
+      "tool": "pick",
+      "tier": 7,
+      "assetId": "legendary-tool-pick-7",
+      "name": "Pickaxe of Ruin",
+      "description": "a heavy pickaxe with a jagged black obsidian head cracked with glowing orange lava lines, a dark iron handle, small embers floating.",
+      "reference": "D:/UntoldLife/assets/art/pass2/tools/pick-6.png",
+      "prompt": "Use case: stylized-concept. Pixel art game item icon, 16-bit farming RPG style (Stardew Valley-like), matching a set of farm tool icons. Legendary tier 7, more ornate and powerful than the adamantite purple crystal tier-6 version of the same tool. Use the provided tier-6 image as a SHAPE, ORIENTATION and ITEM IDENTITY reference only; redesign its materials and decorations to the requested unique legendary concept. Replace the purple crystal, do not retain it unless the new description calls for purple. Preserve a comparable overall silhouette and recognizable tool proportions. Crisp deliberate pixel clusters and stepped contours, clean dark outline, soft top-left lighting, softly luminous magical details without overpowering the object. Centered, fully visible with a generous clear transparent margin on all four sides, including all effects and dangling parts. Genuine transparent background, no text, no frame, no background panel, no ground or scenery, no character or hands, no UI, no watermark, no item name written in the picture. One tool only except gloves, which must be exactly one matching left/right pair with four fingers and one thumb per glove. Square intended output 512x512. Keep any aura very subtle and localized close to the object; no giant glow cloud or fog, no ragged spray around the canvas border. Create Pickaxe of Ruin: a heavy pickaxe with a jagged black obsidian head cracked with glowing orange lava lines, a dark iron handle, small embers floating.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-48009b23-e68b-428e-aa2b-fda79244448d.png"
+    },
+    {
+      "id": "sword-7",
+      "file": "sword-7.png",
+      "tool": "sword",
+      "tier": 7,
+      "assetId": "legendary-tool-sword-7",
+      "name": "Storm Sword",
+      "description": "a long sword with a silver-blue blade crackling with small lightning bolts, a storm-cloud grey hilt with a glowing blue gem.",
+      "reference": "D:/UntoldLife/assets/art/pass2/tools/sword-6.png",
+      "prompt": "Use case: stylized-concept. Pixel art game item icon, 16-bit farming RPG style (Stardew Valley-like), matching a set of farm tool icons. Legendary tier 7, more ornate and powerful than the adamantite purple crystal tier-6 version of the same tool. Use the provided tier-6 image as a SHAPE, ORIENTATION and ITEM IDENTITY reference only; redesign its materials and decorations to the requested unique legendary concept. Replace the purple crystal, do not retain it unless the new description calls for purple. Preserve a comparable overall silhouette and recognizable tool proportions. Crisp deliberate pixel clusters and stepped contours, clean dark outline, soft top-left lighting, softly luminous magical details without overpowering the object. Centered, fully visible with a generous clear transparent margin on all four sides, including all effects and dangling parts. Genuine transparent background, no text, no frame, no background panel, no ground or scenery, no character or hands, no UI, no watermark, no item name written in the picture. One tool only except gloves, which must be exactly one matching left/right pair with four fingers and one thumb per glove. Square intended output 512x512. Keep any aura very subtle and localized close to the object; no giant glow cloud or fog, no ragged spray around the canvas border. Create Storm Sword: a long sword with a silver-blue blade crackling with small lightning bolts, a storm-cloud grey hilt with a glowing blue gem.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-76adcde8-44c4-4ff8-901d-baebb14039ed.png"
+    },
+    {
+      "id": "armor-7",
+      "file": "armor-7.png",
+      "tool": "armor",
+      "tier": 7,
+      "assetId": "legendary-tool-armor-7",
+      "name": "Armour of the Eternal Guard",
+      "description": "a white and gold chest armour with a glowing sun emblem in the centre, gold shoulder plates, soft holy light.",
+      "reference": "D:/UntoldLife/assets/art/pass2/tools/armor-6.png",
+      "prompt": "Use case: stylized-concept. Pixel art game item icon, 16-bit farming RPG style (Stardew Valley-like), matching a set of farm tool icons. Legendary tier 7, more ornate and powerful than the adamantite purple crystal tier-6 version of the same tool. Use the provided tier-6 image as a SHAPE, ORIENTATION and ITEM IDENTITY reference only; redesign its materials and decorations to the requested unique legendary concept. Replace the purple crystal, do not retain it unless the new description calls for purple. Preserve a comparable overall silhouette and recognizable tool proportions. Crisp deliberate pixel clusters and stepped contours, clean dark outline, soft top-left lighting, softly luminous magical details without overpowering the object. Centered, fully visible with a generous clear transparent margin on all four sides, including all effects and dangling parts. Genuine transparent background, no text, no frame, no background panel, no ground or scenery, no character or hands, no UI, no watermark, no item name written in the picture. One tool only except gloves, which must be exactly one matching left/right pair with four fingers and one thumb per glove. Square intended output 512x512. Keep any aura very subtle and localized close to the object; no giant glow cloud or fog, no ragged spray around the canvas border. Create Armour of the Eternal Guard: a white and gold chest armour with a glowing sun emblem in the centre, gold shoulder plates, soft holy light.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-8ad9c622-18cc-4b59-80ac-c042b53218f6.png"
+    },
+    {
+      "id": "rod-7",
+      "file": "rod-7.png",
+      "tool": "rod",
+      "tier": 7,
+      "assetId": "legendary-tool-rod-7",
+      "name": "Rod of the Deep",
+      "description": "a fishing rod of dark blue coral with glowing turquoise runes, a pearl reel, and a shining line ending in a tiny glowing lure.",
+      "reference": "D:/UntoldLife/assets/art/pass2/tools/rod-6.png",
+      "prompt": "Use case: stylized-concept. Pixel art game item icon, 16-bit farming RPG style (Stardew Valley-like), matching a set of farm tool icons. Legendary tier 7, more ornate and powerful than the adamantite purple crystal tier-6 version of the same tool. Use the provided tier-6 image as a SHAPE, ORIENTATION and ITEM IDENTITY reference only; redesign its materials and decorations to the requested unique legendary concept. Replace the purple crystal, do not retain it unless the new description calls for purple. Preserve a comparable overall silhouette and recognizable tool proportions. Crisp deliberate pixel clusters and stepped contours, clean dark outline, soft top-left lighting, softly luminous magical details without overpowering the object. Centered, fully visible with a generous clear transparent margin on all four sides, including all effects and dangling parts. Genuine transparent background, no text, no frame, no background panel, no ground or scenery, no character or hands, no UI, no watermark, no item name written in the picture. One tool only except gloves, which must be exactly one matching left/right pair with four fingers and one thumb per glove. Square intended output 512x512. Keep any aura very subtle and localized close to the object; no giant glow cloud or fog, no ragged spray around the canvas border. Create Rod of the Deep: a fishing rod of dark blue coral with glowing turquoise runes, a pearl reel, and a shining line ending in a tiny glowing lure.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-51fcbb0b-421d-4c12-b932-120133060f60.png",
+      "correctionPrompt": "Use case: precise-object-edit. Refine ONLY the fishing line and lure of this legendary pixel-art fishing rod. Keep the dark-blue coral rod with coral growths, turquoise glowing runes, gold fittings, pearl reel, diagonal orientation, size, pixel shading and all rod parts unchanged. Replace ALL of the multiple dangling line branches, oversized hook, oversized flower-like lure and ragged cyan background haze with ONE elegant thin softly shining fishing line: it exits the rod tip, hangs in one gentle curve on the right, and terminates in ONE tiny turquoise glowing lure with a small gold fishing hook. The tiny lure should be smaller than the pearl reel, not a big second object. All line, lure and their very subtle glow must fit comfortably inside the square canvas with clear transparent margin. Outside the actual rod, single line and tiny lure is genuinely transparent, no cyan fog or cloud, no splatter. Maintain crisp 16-bit farming RPG pixel art, clean dark outline and top-left lighting. No text, no UI, no backdrop."
+    },
+    {
+      "id": "glove-7",
+      "file": "glove-7.png",
+      "tool": "glove",
+      "tier": 7,
+      "assetId": "legendary-tool-glove-7",
+      "name": "Gloves of Giants",
+      "description": "a pair of huge stone-and-bronze gauntlet gloves with glowing amber runes on the knuckles, cracked rock texture, small dust particles.",
+      "reference": "D:/UntoldLife/assets/art/work-gloves/glove-6.png",
+      "prompt": "Use case: stylized-concept. Pixel art game item icon, 16-bit farming RPG style (Stardew Valley-like), matching a set of farm tool icons. Legendary tier 7, more ornate and powerful than the adamantite purple crystal tier-6 version of the same tool. Use the provided tier-6 image as a SHAPE, ORIENTATION and ITEM IDENTITY reference only; redesign its materials and decorations to the requested unique legendary concept. Replace the purple crystal, do not retain it unless the new description calls for purple. Preserve a comparable overall silhouette and recognizable tool proportions. Crisp deliberate pixel clusters and stepped contours, clean dark outline, soft top-left lighting, softly luminous magical details without overpowering the object. Centered, fully visible with a generous clear transparent margin on all four sides, including all effects and dangling parts. Genuine transparent background, no text, no frame, no background panel, no ground or scenery, no character or hands, no UI, no watermark, no item name written in the picture. One tool only except gloves, which must be exactly one matching left/right pair with four fingers and one thumb per glove. Square intended output 512x512. Keep any aura very subtle and localized close to the object; no giant glow cloud or fog, no ragged spray around the canvas border. Create Gloves of Giants: a pair of huge stone-and-bronze gauntlet gloves with glowing amber runes on the knuckles, cracked rock texture, small dust particles.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-8a4afa4b-b4f1-4186-90d0-e2efa2cf2aa7.png"
+    },
+    {
+      "id": "crook-7",
+      "file": "crook-7.png",
+      "tool": "crook",
+      "tier": 7,
+      "assetId": "legendary-tool-crook-7",
+      "name": "Crook of the Herd",
+      "description": "a shepherd's crook of pale golden wood with a curled top wrapped in soft white wool, a small bell and a gentle golden glow.",
+      "reference": "D:/UntoldLife/assets/art/shepherd-crooks/crook-6.png",
+      "prompt": "Use case: stylized-concept. Pixel art game item icon, 16-bit farming RPG style (Stardew Valley-like), matching a set of farm tool icons. Legendary tier 7, more ornate and powerful than the adamantite purple crystal tier-6 version of the same tool. Use the provided tier-6 image as a SHAPE, ORIENTATION and ITEM IDENTITY reference only; redesign its materials and decorations to the requested unique legendary concept. Replace the purple crystal, do not retain it unless the new description calls for purple. Preserve a comparable overall silhouette and recognizable tool proportions. Crisp deliberate pixel clusters and stepped contours, clean dark outline, soft top-left lighting, softly luminous magical details without overpowering the object. Centered, fully visible with a generous clear transparent margin on all four sides, including all effects and dangling parts. Genuine transparent background, no text, no frame, no background panel, no ground or scenery, no character or hands, no UI, no watermark, no item name written in the picture. One tool only except gloves, which must be exactly one matching left/right pair with four fingers and one thumb per glove. Square intended output 512x512. Keep any aura very subtle and localized close to the object; no giant glow cloud or fog, no ragged spray around the canvas border. Create Crook of the Herd: a shepherd's crook of pale golden wood with a curled top wrapped in soft white wool, a small bell and a gentle golden glow.",
+      "source": "C:\\Users\\Abdulelah\\.codex\\generated_images\\01a1916b-f25b-7430-831f-cbd8ddb25664\\exec-64aed14b-8ba3-4994-aa3f-03bdf2ba8fe6.png"
+    }
+  ]
+}

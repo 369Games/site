@@ -44,7 +44,7 @@ function artMarkup(key,size,label='',illustrated=false){
   if(!illustrated && UI_PATHS[key]&&!ART[key])return glyph(key,label);
   const tier=key.match(/^(hoe|can|pick|sword|armor|rod)-(\d)$/);
   let nativeTier=false;
-  if(tier){const level=+tier[2],drawnLevel=[6,4,2,0].find(t=>t<=level);const candidate=tier[1]+'-'+drawnLevel;if(ART[candidate]){key=candidate;nativeTier=level===drawnLevel;}else key=tier[1];}
+  if(tier){const level=+tier[2],drawnLevel=level>=7&&ART[tier[1]+'-7']?7:[6,4,2,0].find(t=>t<=level);const candidate=tier[1]+'-'+drawnLevel;if(ART[candidate]){key=candidate;nativeTier=level===drawnLevel;}else key=tier[1];}
   const crop=key.match(/^(.+)-(seed|sprout|leaf)$/);
   let stage='';
   if(crop){stage=crop[2];key=stage==='sprout'?'sprout':crop[1];}

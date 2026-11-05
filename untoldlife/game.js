@@ -1767,6 +1767,24 @@ function updGuild() {
 }
 
 /* ----- الحداد ----- */
+// A cost shown one requirement per line: picture, name, what you have / what it needs, ✔ or what's missing.
+// rows: [[id or 'gold', amount needed], ...]. Any screen that asks for several things can use it.
+function reqList(rows) {
+  const li = ([id, need]) => {
+    const gold = id === 'gold', it = !gold && ITEMS[id];
+    return `<li data-r="${id}" data-n="${need}"><span class="ri">${gold ? '💰' : icon(it)}</span><span class="rn">${gold ? L('ذهب') : it.n}</span><span class="rq"></span><span class="rs"></span></li>`;
+  };
+  return `<div class="reqs-h">${L('المتطلبات')}</div><ul class="reqs">${rows.map(li).join('')}</ul>`;
+}
+// Fills in the have / need numbers; runs on every screen update so they stay current.
+function updReqs() {
+  document.querySelectorAll('.reqs li[data-r]').forEach(el => {
+    const id = el.dataset.r, need = +el.dataset.n, got = id === 'gold' ? S.gold : have(id), ok = got >= need;
+    el.className = ok ? 'ok' : 'no';
+    el.children[2].innerHTML = `<b>${fmt(got)}</b> / ${fmt(need)}`;
+    el.children[3].textContent = ok ? '✔' : L`ينقصك ${fmt(need - got)}`;
+  });
+}
 function viewSmith() {
   let h = L`<div class="panel"><div class="ph"><h2>🔨 ورشة الحداد قاسم</h2><span class="stat">خصم الصداقة ${3 * hearts('smith')}%</span></div>
   <p class="hint">كل تطوير يحتاج ذهباً ومعدناً من المنجم. المعادن مقفلة 🔒 في السوق افتراضياً حتى لا تبيعها بالخطأ.</p><div class="smith-scene" aria-hidden="true">${icon("npc-smith-1",64)}${icon("anvil",64)}${icon("iron",64)}</div><div class="grid">`;
@@ -1779,17 +1797,16 @@ function viewSmith() {
     h += L`<div class="card ${lv ? 'lgcard ' + rar.c : ''}"><div class="top"><span class="big">${top}</span><div class="meta"><b>${lv ? LEG_TOOLS[t.id] : t.n + ' ' + TIER[l]}</b><small>${lv ? L`<span class="lgv ${rar.c}">+${lv}% قوة • ${rar.n}</span>` : L`المستوى ${l} من 6`}</small></div></div>
       <div class="kv nowrow"><span>✅ الحالي</span><span>${t.eff(l, lv ? lf(t.id) : 1)}</span></div>`;
     if (l < 6) {
-      const c = toolCost(l + 1), o = ITEMS[c.ore], ok = S.gold >= c.gold && have(c.ore) >= c.qty;
+      const c = toolCost(l + 1), ok = S.gold >= c.gold && have(c.ore) >= c.qty;
       h += `<div class="tool-compare">${ti(l)}<span aria-hidden="true">${LANG === 'ar' ? '←' : '→'}</span>${ti(l + 1)}</div>`;
       h += L`<div class="kv"><span>⬆️ التالي: ${TIER[l + 1]}</span><span>${t.eff(l + 1)}</span></div>
-        <div class="kv"><span>التكلفة</span><span>${fmt(c.gold)}💰 + ${c.qty} ${icon(o)} (لديك ${fmt(have(c.ore))})</span></div>
+        ${reqList([['gold', c.gold], [c.ore, c.qty]])}
         <div class="row"><button class="btn gold" data-a="upgrade" data-v="${t.id}" ${ok ? '' : 'disabled'}>🔨 طوّر</button></div>`;
     } else {
-      const pay = lgCost(t.id).map(([id, q]) => L`${fmt(q)} ${icon(ITEMS[id])} (لديك ${fmt(have(id))})`).join(' + ');
       h += L`<div class="lgbox"><b>🔥 الصياغة الأسطورية: ${LEG_TOOLS[t.id]}</b>
         <small>${lv ? L('إعادة الصياغة بـ10% من السعر، وتعطي نسبة جديدة مكان القديمة.') : L('تصير أداة أسطورية بقوة زيادة من 5% لين 100% على تأثيرها.')} تنعاد للأدامانتيت مع الجيل الجديد.</small>
         <small class="lgodds"><span class="lgv w">⚪ 5–29% (58%)</span> <span class="lgv b">🔵 30–59% (22%)</span> <span class="lgv p">🟣 60–99% (19.5%)</span> <span class="lgv g">🟡 100% (0.5%)</span></small>
-        <div class="kv"><span>التكلفة</span><span>${pay}</span></div>
+        ${reqList(lgCost(t.id))}
         <div class="row"><button class="btn gold" data-a="forge" data-v="${t.id}" ${lgCanPay(t.id) ? '' : 'disabled'}>${lv ? L('🔥 أعد الصياغة') : L('🔥 صياغة أسطورية')}</button></div></div>`;
     }
     h += '</div>';
@@ -2102,7 +2119,7 @@ const VIEWS = {
     const D = S.dun, g = S.guild;
     return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100)))];
   }],
-  smith: [viewSmith, () => {}, () => [S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
+  smith: [viewSmith, updReqs, () => [S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
   village: [viewVillage, () => { if (typeof wkUpd === 'function') wkUpd(); }, () => [typeof wkSig === 'function' ? wkSig() : 0, dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, S.skills.fish.l, S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],

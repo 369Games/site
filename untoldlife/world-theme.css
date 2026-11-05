@@ -328,3 +328,15 @@ a.chip.kofi-chip{margin-right:auto;background:#29abe0;color:#fff;border:1px soli
 .wk-board li{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dashed var(--line)}
 .wk-board li.me{color:var(--gold);font-weight:700}
 .wk-board li small{color:var(--muted)}
+/* Requirements: one line each (smith upgrades and legendary forging) */
+.reqs-h{margin:10px 0 4px;font-size:12px;font-weight:700;color:var(--muted)}
+.reqs{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:5px}
+.reqs li{display:grid;grid-template-columns:30px minmax(0,1fr) auto;grid-template-areas:"i n q" "i n s";align-items:center;column-gap:8px;padding:6px 10px;border:1px solid var(--line);border-radius:9px;background:var(--soft);font-size:13.5px;line-height:1.5}
+.reqs .ri{grid-area:i;display:flex;justify-content:center;font-size:20px}.reqs .ri .px{width:28px;height:28px;margin:0}
+.reqs .rn{grid-area:n;font-weight:700;overflow-wrap:anywhere}
+.reqs .rq{grid-area:q;direction:ltr;text-align:end;font-variant-numeric:tabular-nums;white-space:nowrap}
+.reqs .rs{grid-area:s;text-align:end;font-size:11.5px;font-weight:700;white-space:nowrap}
+.reqs li.ok{border-color:color-mix(in srgb,var(--good) 45%,var(--line))}.reqs li.ok .rs,.reqs li.ok .rq b{color:var(--good)}
+.reqs li.no{border-color:color-mix(in srgb,var(--red) 45%,var(--line))}.reqs li.no .rs,.reqs li.no .rq b{color:var(--red)}
+@media(max-width:560px){.reqs li{font-size:12.5px;padding:5px 8px}}
+[data-theme=dark] .reqs li.no .rs,[data-theme=dark] .reqs li.no .rq b{color:#ef8a76}

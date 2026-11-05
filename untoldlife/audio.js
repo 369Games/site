@@ -320,7 +320,7 @@ document.addEventListener('click', e => {
   if (N.wet > B.wet) return sfx('water');
   if (a === 'dig') return sfx(N.blocks > B.blocks ? 'break' : 'dig');
   if (a === 'cast') return sfx(N.fish > B.fish ? 'catch' : 'cast');
-  if (['sell1', 'sellAll', 'shipAll'].includes(a)) return sfx(N.gold > B.gold ? 'coin' : 'error');
+  if (['sell1', 'sellN', 'sellAll', 'shipAll'].includes(a)) return sfx(N.gold > B.gold ? 'coin' : 'error');
   if (a === 'upgrade' && N.gold < B.gold) return sfx('anvil');
   if (a === 'gift') return sfx('gift');
   if (a === 'pet') return sfx('pet');

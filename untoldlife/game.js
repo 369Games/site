@@ -374,6 +374,7 @@ function newState() {
     tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0, crook: 0, glove: 0 }, tlg: {},
     lake: { prog: 0, fishers: 0, last: null, spot: 'lake', bait: 0, autoBait: false },
     hero: { lvl: 1, xp: 0, hp: 60, xc: 1 },
+    wk: null, // the weekly challenge and village goal (weekly.js)
     wv: 1,
     dun: { active: false, floor: 1, max: 1, kills: 0, enemy: null, auto: true, autoEat: true, resting: false, ht: 0, et: 0, retry: 0, eatCd: 0 },
     guild: { gp: 0, board: [], active: [], boardT: 0, qid: 0, sk: {}, refCd: 0 },
@@ -404,12 +405,14 @@ function bless() { return 1 + 0.05 * P('q_bless'); }
 function achMult() { return 1 + 0.01 * Object.keys(S.leg.ach).length; }
 // Tool heirlooms also give +1% gold per level, so they stay worth taking next to the «Tool legacy» perk.
 function heirToolGold() { return ['sword', 'armor', 'hoe', 'can', 'pick', 'rod'].reduce((a, k) => a + H(k), 0) * 0.01; }
-function goldMult() { return (1 + 0.1 * P('t_price')) * (1 + 0.05 * H('coin') + heirToolGold()) * (1 + 0.1 * CC('noworkers')) * achMult() * bless() * (inCh('poverty') ? 0.5 : 1); }
+// Weekly rewards (weekly.js): each lasts 7 days from the moment it's earned. buf = weekly challenge, vb = village goal.
+function wkOn(k) { return !!(S.wk && S.wk[k] > Date.now()); }
+function goldMult() { return (wkOn('buf') ? 1.1 : 1) * (1 + 0.1 * P('t_price')) * (1 + 0.05 * H('coin') + heirToolGold()) * (1 + 0.1 * CC('noworkers')) * achMult() * bless() * (inCh('poverty') ? 0.5 : 1); }
 /* Production speeds use two buckets. Inside a bucket the bonuses add up; the two buckets multiply.
    - this generation: tools, skill levels, villagers (starts over every generation)
    - the family: legacy perks, challenge rewards, the valley's blessing, marriage
    Penalties (an active challenge) multiply on top. Each list is [label, bonus] with bonus 0.3 = +30%. */
-function familyProd() { return [[L('💍 الزواج'), S.spouse ? 0.1 : 0], [L('🌈 بركة الوادي'), 0.05 * P('q_bless')], [L('🐌 مكافأة تحدي الزمن البطيء'), 0.1 * CC('slow')]]; }
+function familyProd() { return [[L('💍 الزواج'), S.spouse ? 0.1 : 0], [L('🌈 بركة الوادي'), 0.05 * P('q_bless')], [L('🐌 مكافأة تحدي الزمن البطيء'), 0.1 * CC('slow')], [L('🏘️ هدف القرية الأسبوعي'), wkOn('vb') ? 0.1 : 0]]; }
 function speedSrc(kind) {
   const pen = [[L('⚠️ تحدي الزمن البطيء (نشط)'), inCh('slow') ? 0.5 : 1]];
   if (kind === 'grow') return { gen: [[tlab('hoe', '🌾', L`🌾 المعزقة ${TIER[S.tools.hoe]}`), 0.2 * S.tools.hoe * lf('hoe')], [L`📈 مستوى الزراعة ${S.skills.farm.l}`, 0.02 * (S.skills.farm.l - 1)], [L`👩‍🌾 نورة (${hearts('noura')} قلوب)`, 0.03 * hearts('noura')]],
@@ -423,7 +426,7 @@ function speedSrc(kind) {
 }
 function bucket(list) { return list.reduce((a, [, b]) => a + b, 1); }
 function speedMult(kind) { const s = speedSrc(kind); return bucket(s.gen) * bucket(s.fam) * s.pen.reduce((a, [, f]) => a * f, 1); }
-function xpMult() { return (1 + 0.1 * H('diary')) * achMult() * bless(); }
+function xpMult() { return (wkOn('buf') ? 1.1 : 1) * (1 + 0.1 * H('diary')) * achMult() * bless(); }
 function warMult() { return (1 + 0.15 * P('w_power')) * (1 + 0.1 * CC('warrior')) * bless(); }
 function starMult() { return (1 + 0.1 * P('t_stars')) * (1 + 0.05 * H('amulet')) * (1 + 0.1 * CC('poverty')) * bless(); }
 function offlineCap() { return (12 + 6 * P('t_offline')) * 3600; }
@@ -1105,7 +1108,7 @@ function doRetire() {
   const heir = RS.heir ? HEIRLOOMS.find(x => x.id === RS.heir) : null;
   if (heir) LG.heir[heir.id] = H(heir.id) + 1;
   LG.gen++;
-  const keep = { leg: LG, stats: S.stats, locked: S.locked }, oldTools = { ...S.tools };
+  const keep = { leg: LG, stats: S.stats, locked: S.locked, wk: S.wk }, oldTools = { ...S.tools };
   const nm = (RS.name || '').trim().slice(0, 24) || childName();
   S = newState(); Object.assign(S, keep);
   for (const o of [...ORES.map(x => x.id), 'gem']) S.locked[o] = 1; // ores start locked again every generation
@@ -1250,6 +1253,8 @@ const A = {
     toast(L`✨ ${LEG_TOOLS[v]}: +${r}% (${k.n})`);
   },
   sell1: v => { sellItem(v, 1); },
+  // Sell the amount typed next to the item (more than you have sells everything).
+  sellN: v => { const n = Math.floor(+(MK_Q[v] || 1)); if (!(n > 0)) return toast(L('❌ اكتب كمية صحيحة')); const g = sellItem(v, n); if (g) toast(`+${fmt(g)}💰`); },
   sellAll: v => { const g = sellItem(v, have(v)); if (g) toast(`+${fmt(g)}💰`); },
   shipAll: () => { const g = shipAll(false); if (!g) toast(L('لا يوجد ما يُباع (أو كله مقفل)')); },
   lock: v => { if (S.locked[v]) delete S.locked[v]; else S.locked[v] = 1; },
@@ -1424,7 +1429,7 @@ document.addEventListener('click', e => {
   fn(b.dataset.v, b);
   if (['dig','cast'].includes(b.dataset.a)) { burstVisual(b); floatVisual(b, b.dataset.a === 'cast' ? icon('water',24) : icon('copper',24)); }
   if (S.stats.harvests > harvestsBefore) harvested.forEach(c=>floatVisual(b, '+1 ' + icon(c,24)));
-  if (['sell1','sellAll','shipAll'].includes(b.dataset.a) && S.gold > earnedBefore) { floatVisual($('hGold'), '+' + fmt(S.gold-earnedBefore) + ' ' + icon('coin',24)); burstVisual($('hGold')); }
+  if (['sell1','sellN','sellAll','shipAll'].includes(b.dataset.a) && S.gold > earnedBefore) { floatVisual($('hGold'), '+' + fmt(S.gold-earnedBefore) + ' ' + icon('coin',24)); burstVisual($('hGold')); }
   render(true);
 });
 
@@ -1806,12 +1811,19 @@ function viewMarket() {
       const it = ITEMS[id];
       h += L`<div class="it"><button class="lock" data-a="lock" data-v="${id}" title="قفل/فتح">${S.locked[id] ? '🔒' : '🔓'}</button><span class="e">${icon(it)}</span>
         <div class="nm"><b>${it.n}</b> × <span id="inv_${id}">${fmt(have(id))}</span><small>${fmt(sellPrice(id))}💰 للواحدة</small></div>
-        <button class="btn ghost sm" data-a="sell1" data-v="${id}" ${have(id) ? '' : 'disabled'}>بيع 1</button><button class="btn sm gold" data-a="sellAll" data-v="${id}" ${have(id) ? '' : 'disabled'}>الكل</button></div>`;
+        <input class="mk-q" type="number" min="1" step="1" inputmode="numeric" data-q="${id}" value="${esc(MK_Q[id] || 1)}" aria-label="الكمية"><button class="btn ghost sm" data-a="sellN" data-v="${id}" ${have(id) ? '' : 'disabled'}>بيع</button><button class="btn sm gold" data-a="sellAll" data-v="${id}" ${have(id) ? '' : 'disabled'}>الكل</button></div>`;
     }
     h += '</div>';
   }
   return h + '</div>';
 }
+// The amount typed in each market row, kept while the market redraws.
+const MK_Q = {};
+document.addEventListener('input', e => { const q = e.target.dataset && e.target.dataset.q; if (q) MK_Q[q] = e.target.value; });
+document.addEventListener('keydown', e => {
+  const q = e.key === 'Enter' && e.target.dataset && e.target.dataset.q;
+  if (q) { const b = document.querySelector(`[data-a=sellN][data-v="${q}"]`); if (b && !b.disabled) b.click(); }
+});
 function updMarket() {
   let total = 0;
   for (const id in S.inv) {
@@ -1823,7 +1835,7 @@ function updMarket() {
 
 /* ----- القرية ----- */
 function viewVillage() {
-  let h = L`<div class="panel"><div class="ph"><h2>🏘️ أهل وادي الصدى</h2></div>
+  let h = (typeof weeklyPanel === 'function' ? weeklyPanel() : '') + L`<div class="panel"><div class="ph"><h2>🏘️ أهل وادي الصدى</h2></div>
   <p class="hint">أهدِ كل شخص ما يحبه مرة واحدة يومياً. كل قلبين تقريباً يمنحك مكافأة دائمة (حتى 10 قلوب). اللي يحبونه يتغير كل موسم، ولو ما أهديت أحد لمدة نص موسم يزعل ويقل حبه (الوقت اللي تكون فيه برا اللعبة ما ينحسب).</p>
   ${!S.gender ? L`<div class="zonebox"><b>🧑 حدد شخصيتك</b> <small class="hint">عشان يظهر لك خيار الزواج من أهل القرية المناسبين</small>${genderPick('setGender', null)}</div>` : ''}<div class="grid">`;
   for (const np of NPCS) {
@@ -2090,7 +2102,7 @@ const VIEWS = {
   }],
   smith: [viewSmith, () => {}, () => [S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
-  village: [viewVillage, () => {}, () => [dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
+  village: [viewVillage, () => { if (typeof wkUpd === 'function') wkUpd(); }, () => [typeof wkSig === 'function' ? wkSig() : 0, dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, S.skills.fish.l, S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],
   legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length, dunGoal()]; }],
   settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0]],

@@ -310,3 +310,20 @@ body.has-ad{padding-bottom:96px}body.has-ad #toast{bottom:110px}
 @media(max-width:600px){#adbar{height:60px}body.has-ad{padding-bottom:66px}body.has-ad #toast{bottom:76px}}
 /* Ko-fi support button */
 .btn.kofi{background:#29abe0;color:#fff;border-color:#1b8fbd}
+
+/* Market: the amount to sell, typed next to each item */
+.it .mk-q{width:64px;flex:none;padding:5px 6px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:inherit;font:inherit;font-size:13px;text-align:center;min-height:33px}
+.it .mk-q::-webkit-inner-spin-button{opacity:.6}
+@media(max-width:600px){.it .mk-q{width:50px;font-size:12px;padding:4px}}
+
+/* Weekly panel (weekly.js): the challenge, the village goal and the leaderboard */
+.wk .wk-box{display:flex;flex-direction:column;gap:6px;padding:14px;border:1px solid var(--line);border-radius:11px;background:var(--soft);margin-bottom:12px}
+.wk .wk-box .bar{height:10px;border-radius:6px;background:#0003;overflow:hidden}
+.wk .wk-box .bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .4s}
+.wk .wk-box .bar.done i{background:var(--green)}
+.wk-boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px;margin-bottom:8px}
+.wk-board{padding:12px;border:1px solid var(--line);border-radius:11px;background:var(--paper2)}
+.wk-board ol{margin:8px 0 0;padding:0 18px 0 0;font-size:13px}
+.wk-board li{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dashed var(--line)}
+.wk-board li.me{color:var(--gold);font-weight:700}
+.wk-board li small{color:var(--muted)}

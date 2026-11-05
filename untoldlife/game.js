@@ -322,12 +322,14 @@ const GIFT_GRACE = 4;
 function seasonCrops() { return CROPS.filter(c => c.season === S.season).map(c => c.id); }
 function giftPool(np) {
   const ores = [...ORES.map(o => o.id), 'gem'], loot = MONSTER_MATS.map(m => m.id), farm = ['egg', 'milk', 'wool', 'cheese', 'honey', 'meat', 'hashi'];
+  // With farming and animals banned (Warrior / Underground challenges), the villagers who want crops or animal products take fish.
+  if (noFarm() && ['noura', 'leila', 'mayor', 'salma'].includes(np.id)) return FISH.filter(f => !f.king).map(f => f.id);
   return { noura: seasonCrops(), leila: [...seasonCrops(), 'egg', 'milk'], mayor: [...farm, ...seasonCrops()], smith: ores, raad: loot, salma: farm }[np.id] || seasonCrops();
 }
 function giftRng(seed) { let h = 2166136261; for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0) / 4294967296); }
 function giftsOf(np) {
   const st = S.npc[np.id] || (S.npc[np.id] = { pts: 0, gd: 0 }), key = S.year * 4 + S.season;
-  if (st.gk !== key || !ITEMS[st.gl] || !ITEMS[st.gm]) {
+  if (st.gk !== key || !ITEMS[st.gl] || !ITEMS[st.gm] || !giftPool(np).includes(st.gl)) {
     const all = giftPool(np).filter(id => ITEMS[id]), seen = all.filter(id => S.seen[id]);
     const pool = seen.length >= 2 ? seen : all.slice(0, 2), r = giftRng(np.id + ':' + key);
     const a = pool[Math.floor(r() * pool.length)]; let b = pool[Math.floor(r() * pool.length)];

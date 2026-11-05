@@ -30,11 +30,12 @@ const WK_TASKS = [
   { id: 'gold', st: 'earned', n: 0, e: '💰', t: n => L`اكسب ${fmt(n)} ذهب` }, // half of this generation's retire goal
 ];
 const WK_VILLAGE = [
-  { st: 'products', n: 30000, e: '🥚', t: L('منتجات الحيوانات') },
-  { st: 'harvests', n: 30000, e: '🌾', t: L('المحاصيل') },
-  { st: 'fish', n: 8000, e: '🐟', t: L('السمك') },
-  { st: 'blocks', n: 15000, e: '🪨', t: L('صخور المنجم') },
-  { st: 'kills', n: 8000, e: '👹', t: L('وحوش الزنزانة') },
+  // Sized from the first hour of 1.11: the village gathered ~6,000 fish, so a week's goal is about ten times the first guess.
+  { st: 'products', n: 300000, e: '🥚', t: L('منتجات الحيوانات') },
+  { st: 'harvests', n: 300000, e: '🌾', t: L('المحاصيل') },
+  { st: 'fish', n: 80000, e: '🐟', t: L('السمك') },
+  { st: 'blocks', n: 150000, e: '🪨', t: L('صخور المنجم') },
+  { st: 'kills', n: 80000, e: '👹', t: L('وحوش الزنزانة') },
 ];
 function wkTask(w = S.wk.id) { return WK_TASKS[w % WK_TASKS.length]; }
 function wkVillage(w = S.wk.id) {
@@ -69,7 +70,7 @@ function wkCheck() {
 }
 
 /* ---- Firestore: the village goal and the leaderboard ---- */
-const WK = { sentAt: 0, sentWk: -1, sent: null, busy: false, pullAt: 0, pulling: false, vn: null, top: null, err: '' };
+const WK = { ver: 0, sentAt: 0, sentWk: -1, sent: null, busy: false, pullAt: 0, pulling: false, vn: null, top: null, err: '' };
 function wkCloud() { return typeof CLOUD !== 'undefined' && CLOUD.on && CLOUD.ready && CLOUD.err !== 'load'; }
 function wkSignedIn() { return wkCloud() && !!CLOUD.user; }
 function wkAllowed() { return wkSignedIn() && S && S.started && S.wk && !saveBlocked && !S.leg.mod && S.wk.id === wkNow(); }
@@ -118,11 +119,11 @@ async function wkPull() {
     WK.top = top; WK.err = '';
     if (WK.sentWk !== S.wk.id) { const s = await me.get(); WK.sent = s.exists ? s.data() : null; WK.sentWk = S.wk.id; }
   } catch (e) { WK.err = (e && e.code) || 'x'; console.warn('weekly', WK.err); }
-  WK.pulling = false; wkCheck();
+  WK.pulling = false; WK.ver++; wkCheck(); // ver redraws the panel once the lists have arrived
 }
 
 /* ---- the panel at the top of the village tab ---- */
-function wkSig() { return [S.wk && S.wk.id, S.wk && S.wk.done, wkOn('buf'), wkOn('vb'), wkSignedIn(), WK.vn, WK.pullAt, WK.err, !!(S.leg && S.leg.mod)]; }
+function wkSig() { return [S.wk && S.wk.id, S.wk && S.wk.done, wkOn('buf'), wkOn('vb'), wkSignedIn(), WK.ver, WK.err, !!(S.leg && S.leg.mod)]; }
 function wkBar(id, cls = '') { return `<div class="bar ${cls}"><i id="${id}"></i></div>`; }
 function wkBoard(title, k, unit) {
   const rows = (WK.top && WK.top[k]) || [];

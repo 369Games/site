@@ -346,3 +346,4 @@ a.chip.kofi-chip{margin-right:auto;background:#29abe0;color:#fff;border:1px soli
 .wk .vg .bar{height:10px;border-radius:6px;background:#0003;overflow:hidden}
 .wk .vg-tiers{font-weight:700;color:var(--warn)}
 @media(max-width:900px){.wk .vgs{grid-template-columns:minmax(0,1fr)}}
+.note li .rich-icon,.note li img.px{width:22px;height:22px;vertical-align:-5px;margin-inline-end:4px}

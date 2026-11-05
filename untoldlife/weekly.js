@@ -35,11 +35,12 @@ const WK_TASKS = [
   { id: 'quest', st: 'quests', n: 12, e: '📜', t: n => L`خلّص ${fmt(n)} مهمة من النقابة` },
   { id: 'gold', st: 'earned', n: 0, e: '💰', t: n => L`اكسب ${fmt(n)} ذهب` }, // half of this generation's retire goal
 ];
-// The three village goals. hr is the Riyadh hour each one starts over; the same hours are in tools/firestore.rules.
+// The three village goals. hr is the Riyadh hour (UTC+3) each one starts over: 06:00, 12:00 and 18:00 UTC.
+// The same hours are in tools/firestore.rules.
 const VG = [
-  { k: 'h', st: 'harvests', hr: 9, n: 300000, e: '🌾', b: 'vh', t: L('المحاصيل'), when: L('🕘 يتجدد كل يوم 9 الصبح'), area: L('سرعة نمو المحاصيل') },
-  { k: 'm', st: 'blocks', hr: 15, n: 150000, e: '🪨', b: 'vm', t: L('صخور المنجم'), when: L('🕒 يتجدد كل يوم 3 العصر'), area: L('سرعة التعدين') },
-  { k: 'f', st: 'fish', hr: 21, n: 80000, e: '🐟', b: 'vf', t: L('السمك'), when: L('🕘 يتجدد كل يوم 9 الليل'), area: L('سرعة الصيد') },
+  { k: 'h', st: 'harvests', hr: 9, n: 300000, e: '🌾', b: 'vh', t: L('المحاصيل'), when: L('🕘 يتجدد كل يوم 06:00 UTC'), area: L('سرعة نمو المحاصيل') },
+  { k: 'm', st: 'blocks', hr: 15, n: 150000, e: '🪨', b: 'vm', t: L('صخور المنجم'), when: L('🕒 يتجدد كل يوم 12:00 UTC'), area: L('سرعة التعدين') },
+  { k: 'f', st: 'fish', hr: 21, n: 80000, e: '🐟', b: 'vf', t: L('السمك'), when: L('🕘 يتجدد كل يوم 18:00 UTC'), area: L('سرعة الصيد') },
 ];
 const VG_TIERS = [0.1, 0.075, 0.05], VG_ALL = 0.02; // places 1-3, then everyone else who helped
 function vgPrize(rank) { return VG_TIERS[rank - 1] || VG_ALL; }
@@ -91,9 +92,8 @@ function wkCheck() {
     S.wk.gx[g.k] = r;
     const p = vgPrize(rank), cur = wkOn(g.b) ? S.wk[g.b + 'p'] || 0.1 : 0;
     if (p >= cur) { S.wk[g.b] = Date.now() + WK_MS; S.wk[g.b + 'p'] = p; } // a weaker prize never cuts a stronger one short
-    const medal = ['🥇', '🥈', '🥉'][rank - 1] || '🏅';
-    log(L`🏘️ القرية حققت هدف ${g.e} ${g.t}! ${medal} مركزك ${rank}: +${p * 100}% ${g.area} لمدة 7 أيام`, 'golden');
-    toast(L`🏘️ هدف ${g.t}: ${medal} مركزك ${rank}`);
+    log(L`🏆 القرية حققت هدف ${g.t}! مركزك ${rank}: +${p * 100}% ${g.area} لمدة 7 أيام`, 'golden'); // no medal emoji: 🥇🥈🥉 draw as ores
+    toast(L`🏆 هدف ${g.t}: مركزك ${rank}`);
   }
 }
 
@@ -195,8 +195,8 @@ function weeklyPanel() {
   if (!wkCloud()) return h + '</div>';
   if (!wkSignedIn()) return h + L`<div class="wk-box"><b>🏘️ أهداف القرية والمتصدرين</b><small class="hint">كل اللاعبين يجمعون مع بعض، ولوحة ترتيب أسبوعية. اربط حسابك عشان تشارك.</small><div class="row"><button class="btn gold sm" data-a="cloudChip">☁️ اربط حسابك</button></div></div></div>`;
   if (S.leg.mod) return h + L('<div class="wk-box"><small class="hint">🧪 المزارع المعدّلة ما تشارك في أهداف القرية ولا المتصدرين.</small></div></div>');
-  h += L`<div class="wk-box"><b>🏘️ أهداف القرية اليومية</b><small class="hint">كل اللاعبين يجمعون مع بعض، وكل هدف يبدأ من جديد في وقته بتوقيت الرياض. إذا اكتمل الهدف، الجوائز تتوزع لما ينتهي وقته حسب مساهمتك:</small>
-    <small class="vg-tiers">🥇 الأول +10% • 🥈 الثاني +7.5% • 🥉 الثالث +5% • 🏅 كل من ساهم +2% (لمدة 7 أيام)</small><div class="vgs">`;
+  h += L`<div class="wk-box"><b>🏘️ أهداف القرية اليومية</b><small class="hint">كل اللاعبين يجمعون مع بعض، وكل هدف يبدأ من جديد في وقته. إذا اكتمل الهدف، الجوائز تتوزع لما ينتهي وقته حسب مساهمتك:</small>
+    <small class="vg-tiers">🏆 الأول +10% • الثاني +7.5% • الثالث +5% • كل من ساهم +2% (لمدة 7 أيام)</small><div class="vgs">`;
   for (const g of VG) {
     const d = vgData(g), done = d && d.n >= g.n, on = wkOn(g.b);
     h += `<div class="vg"><b>${g.e} ${g.t}: ${fmt(g.n)}</b><small class="hint">${g.when} <span id="wk_vl_${g.k}"></span></small>
@@ -220,8 +220,9 @@ function wkUpd() {
     $('wk_vl_' + g.k).textContent = L`(باقي ${ftime(vgLeft(g))})`;
     if (!d) { $('wk_vt_' + g.k).textContent = L('جاري التحميل…'); $('wk_vr_' + g.k).textContent = ''; continue; }
     const mine = d.l[uid] || 0, rank = vgRank(d.l, uid), n = Object.keys(d.l).length;
-    $('wk_vt_' + g.k).textContent = L`${'⁦' + fmt(d.n) + ' / ' + fmt(g.n) + '⁩'} • مساهمتك: ${fmt(mine)}`; // u2066..u2069 keeps "total / goal" in order in Arabic
-    $('wk_vr_' + g.k).textContent = rank ? L`${['🥇', '🥈', '🥉'][rank - 1] || '🏅'} مركزك ${rank} من ${n} مساهم` : L('🏅 ساهم عشان تدخل الترتيب');
+    // The numbers sit in their own left-to-right span so "total / goal" doesn't flip in Arabic.
+    $('wk_vt_' + g.k).innerHTML = L`${`<span dir="ltr">${fmt(d.n)} / ${fmt(g.n)}</span>`} • مساهمتك: ${fmt(mine)}`;
+    $('wk_vr_' + g.k).textContent = rank ? L`🏆 مركزك ${rank} من ${n} مساهم` : L('🏅 ساهم عشان تدخل الترتيب');
   }
 }
 

@@ -1,13 +1,15 @@
 'use strict';
-/* The week: one challenge for every player, a goal the whole village fills together, and a leaderboard.
+/* The week: one challenge for every player, a daily goal the whole village fills together, and a leaderboard.
    - Weeks start on Sunday at 00:00 Riyadh time. Every player gets the same challenge and village goal, worked
      out from the week number, so the challenge needs no server.
    - Progress is the change in the lifetime counters (S.stats) since the week started.
    - Weekly challenge reward: +10% gold and XP for 7 days. Village goal reward: +10% production for 7 days.
+   - The village goal starts over every day at 00:00 Riyadh time (what to collect stays the same all week).
    - The village goal and the leaderboard use Firestore, only for signed-in players, and never for a save marked
      as edited from outside the game. Firestore layout:
-       weekly/{week}         = { n }   the village total
-       weekly/{week}/p/{uid} = { name, gen, gold, fish, floor, vil, ts }   one player's week
+       village/{day}         = { n }   today's village total
+       weekly/{week}/p/{uid} = { name, gen, gold, fish, floor, vil, ts }   one player's week (vil keeps growing all week;
+                                                                          what it grows by is added to the day it's sent)
    - Sending is slow on purpose: at most once every 5 minutes from this page, and the database rules
      (tools/firestore.rules) refuse a player's write less than 2 minutes after their last one, cap how fast the
      numbers can grow, and only let the village total grow by exactly what that player's own row grew.
@@ -19,6 +21,9 @@ const WK_RATE = 45; // village points a second this page may send (the rules all
 function wkNow() { return Math.floor((Date.now() + WK_OFFSET) / WK_MS); }
 function wkStart(w) { return w * WK_MS - WK_OFFSET; }
 function wkLeft() { return Math.max(0, wkStart(S.wk.id + 1) - Date.now()) / 1000; }
+// The village goal's day, also from Riyadh midnight.
+function wkDay() { return Math.floor((Date.now() + 3 * 3600000) / 86400000); }
+function wkDayLeft() { return Math.max(0, (wkDay() + 1) * 86400000 - 3 * 3600000 - Date.now()) / 1000; }
 
 const WK_TASKS = [
   { id: 'harv', st: 'harvests', n: 1500, e: '🌾', t: n => L`احصد ${fmt(n)} محصول` },
@@ -62,22 +67,22 @@ function wkCheck() {
     toast(L('📅 أنجزت تحدي الأسبوع!'));
   }
   const V = wkVillage();
-  if (WK.vn != null && WK.vn >= V.n && S.wk.vc !== S.wk.id && WK.sent && WK.sent.vil > 0) {
-    S.wk.vc = S.wk.id; S.wk.vb = Date.now() + WK_MS;
-    log(L('🏘️ القرية حققت هدف الأسبوع! +10% سرعة إنتاج لمدة 7 أيام لكل اللي ساهموا'), 'golden');
+  if (WK.vn != null && WK.day === wkDay() && WK.vn >= V.n && S.wk.vc !== WK.day && S.wk.gd === WK.day) {
+    S.wk.vc = WK.day; S.wk.vb = Date.now() + WK_MS;
+    log(L('🏘️ القرية حققت هدف اليوم! +10% سرعة إنتاج لمدة 7 أيام لكل اللي ساهموا'), 'golden');
     toast(L('🏘️ القرية حققت الهدف!'));
   }
 }
 
 /* ---- Firestore: the village goal and the leaderboard ---- */
-const WK = { ver: 0, sentAt: 0, sentWk: -1, sent: null, busy: false, pullAt: 0, pulling: false, vn: null, top: null, err: '' };
+const WK = { ver: 0, day: -1, sentAt: 0, sentWk: -1, sent: null, busy: false, pullAt: 0, pulling: false, vn: null, top: null, err: '' };
 function wkCloud() { return typeof CLOUD !== 'undefined' && CLOUD.on && CLOUD.ready && CLOUD.err !== 'load'; }
 function wkSignedIn() { return wkCloud() && !!CLOUD.user; }
 function wkAllowed() { return wkSignedIn() && S && S.started && S.wk && !saveBlocked && !S.leg.mod && S.wk.id === wkNow(); }
 async function wkRefs() {
   await cloudDoc(); // loads the database library
-  const v = CLOUD.db.collection('weekly').doc(String(S.wk.id));
-  return { v, me: v.collection('p').doc(CLOUD.user.uid) };
+  const w = CLOUD.db.collection('weekly').doc(String(S.wk.id));
+  return { w, day: CLOUD.db.collection('village').doc(String(wkDay())), me: w.collection('p').doc(CLOUD.user.uid) };
 }
 function wkVals() {
   const V = wkVillage();
@@ -87,7 +92,7 @@ async function wkPush() {
   if (!wkAllowed() || WK.busy || Date.now() - WK.sentAt < WK_PUSH_MS) return;
   WK.busy = true; WK.sentAt = Date.now(); // the wait counts from every try, so a failing send never repeats quickly
   try {
-    const { v, me } = await wkRefs();
+    const { day, me } = await wkRefs(), d = wkDay();
     if (WK.sentWk !== S.wk.id) { const s = await me.get(); WK.sent = s.exists ? s.data() : null; WK.sentWk = S.wk.id; }
     const old = WK.sent || { gold: 0, fish: 0, floor: 0, vil: 0 }, cur = wkVals();
     // Never more than the rules allow since the last send (or since the week began).
@@ -98,10 +103,11 @@ async function wkPush() {
     if (WK.sent && ['gold', 'fish', 'floor', 'vil', 'gen', 'name'].every(k => row[k] === old[k])) { WK.busy = false; return; }
     const b = CLOUD.db.batch(), add = vil - (old.vil || 0);
     b.set(me, { ...row, ts: firebase.firestore.FieldValue.serverTimestamp() });
-    if (add > 0) b.set(v, { n: firebase.firestore.FieldValue.increment(add) }, { merge: true });
+    if (add > 0) b.set(day, { n: firebase.firestore.FieldValue.increment(add) }, { merge: true });
     await b.commit();
     WK.sent = { ...row, ts: firebase.firestore.Timestamp.now() }; WK.err = '';
-    if (add > 0 && WK.vn != null) WK.vn += add;
+    if (add > 0) { S.wk.gd = d; // helped today: gets the reward if the village makes it
+      if (WK.vn != null && WK.day === d) WK.vn += add; }
   } catch (e) { WK.err = (e && e.code) || 'x'; WK.sentWk = -1; console.warn('weekly', WK.err); }
   WK.busy = false;
 }
@@ -109,11 +115,11 @@ async function wkPull() {
   if (!wkSignedIn() || !S.wk || WK.pulling || Date.now() - WK.pullAt < WK_PULL_MS) return;
   WK.pulling = true; WK.pullAt = Date.now();
   try {
-    const { v, me } = await wkRefs(), uid = CLOUD.user.uid;
-    const snap = await v.get(); WK.vn = snap.exists ? (snap.data().n || 0) : 0;
+    const { w, day, me } = await wkRefs(), uid = CLOUD.user.uid, d = wkDay();
+    const snap = await day.get(); WK.vn = snap.exists ? (snap.data().n || 0) : 0; WK.day = d;
     const top = {};
     for (const k of ['gold', 'floor', 'fish']) {
-      const q = await v.collection('p').orderBy(k, 'desc').limit(10).get();
+      const q = await w.collection('p').orderBy(k, 'desc').limit(10).get();
       top[k] = q.docs.map(d => ({ name: d.data().name, gen: d.data().gen, v: d.data()[k], me: d.id === uid })).filter(r => r.v > 0);
     }
     WK.top = top; WK.err = '';
@@ -140,7 +146,7 @@ function weeklyPanel() {
   if (!wkSignedIn()) return h + L`<div class="wk-box"><b>🏘️ هدف القرية والمتصدرين</b><small class="hint">كل اللاعبين يجمعون مع بعض، ولوحة ترتيب أسبوعية. اربط حسابك عشان تشارك.</small><div class="row"><button class="btn gold sm" data-a="cloudChip">☁️ اربط حسابك</button></div></div></div>`;
   if (S.leg.mod) return h + L('<div class="wk-box"><small class="hint">🧪 المزارع المعدّلة ما تشارك في هدف القرية ولا المتصدرين.</small></div></div>');
   const vr = wkOn('vb') ? L`✅ تحقق! المكافأة شغالة، باقي ${ftime((S.wk.vb - Date.now()) / 1000)}` : L('🎁 إذا اكتمل: +10% سرعة إنتاج لمدة 7 أيام لكل اللي ساهموا');
-  h += L`<div class="wk-box"><b>🏘️ هدف القرية: ${fmt(V.n)} من ${V.e} ${V.t}</b><small class="hint">كل اللاعبين يجمعون مع بعض. اللي تجمعه أنت ينضاف تلقائياً.</small>
+  h += L`<div class="wk-box"><b>🏘️ هدف القرية اليوم: ${fmt(V.n)} من ${V.e} ${V.t}</b><small class="hint">كل اللاعبين يجمعون مع بعض، والهدف يبدأ من جديد كل يوم (باقي ${ftime(wkDayLeft())}). اللي تجمعه أنت ينضاف تلقائياً.</small>
     ${wkBar('wk_vb', WK.vn >= V.n ? 'done' : '')}<small id="wk_vt"></small><small>${vr}</small></div>
     <div class="wk-boards">${wkBoard(L('💰 أكثر ذهب'), 'gold', fmt)}${wkBoard(L('⚔️ أعمق طابق'), 'floor', v => fmt(v))}${wkBoard(L('🎣 أكثر صيد'), 'fish', fmt)}</div>
     <small class="hint">${WK.err ? L('⚠️ ما قدرنا نحدّث القائمة الحين، بنحاول بعد شوي.') : L('تتحدث كل دقيقتين تقريباً. أرقامك تنرسل كل 5 دقايق.')}</small>`;
@@ -154,14 +160,16 @@ function wkUpd() {
   if (vb) {
     const V = wkVillage(), n = WK.vn || 0, mine = Math.max(wkVals().vil, (WK.sent && WK.sent.vil) || 0);
     vb.style.width = Math.min(100, n / V.n * 100) + '%';
-    $('wk_vt').textContent = WK.vn == null ? L('جاري التحميل…') : L`${fmt(n)} / ${fmt(V.n)} • مساهمتك: ${fmt(mine)}`;
+    $('wk_vt').textContent = WK.vn == null ? L('جاري التحميل…') : L`${fmt(n)} / ${fmt(V.n)} • مساهمتك هالأسبوع: ${fmt(mine)}`;
   }
 }
 
 /* ---- timers ---- */
 function wkTick() {
   if (!S || !S.started) return;
-  wkRoll(); wkCheck();
+  wkRoll();
+  if (WK.day !== -1 && WK.day !== wkDay()) { WK.vn = null; WK.day = -1; WK.pullAt = 0; WK.ver++; } // a new day: the village starts again
+  wkCheck();
   if (document.hidden) return;
   wkPush();
   if (typeof tab !== 'undefined' && tab === 'village') wkPull();

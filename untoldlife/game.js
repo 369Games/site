@@ -2209,6 +2209,9 @@ function sitePanel() {
 function initSiteLinks() {
   const fb = $('fbBtn');
   if (fb) { fb.textContent = L('💬 ملاحظاتك'); fb.classList.remove('hidden'); }
+  // Ko-fi support button in the top bar, next to the theme and language buttons.
+  const kf = $('kofiBtn'), name = siteConfig().kofi || '';
+  if (kf && /^\w+$/.test(name)) { kf.href = 'https://ko-fi.com/' + name; kf.textContent = L('☕ ادعمنا'); kf.classList.remove('hidden'); }
 }
 initSiteLinks();
 // Language names always show in their own language (see LANGS in i18n.js).

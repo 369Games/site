@@ -293,7 +293,9 @@ const SFX = {
   bad: () => { blip('triangle', 220, 0.3, 0.08); later(0.12, () => blip('triangle', 196, 0.4, 0.08)); },
   error: () => blip('square', 160, 0.12, 0.04),
 };
-function later(s, fn) { setTimeout(fn, s * 1000); }
+// While the page is hidden the sound is paused, so new sounds would queue up and all play at once on return. Skip them.
+const auLive = () => AU.ctx && AU.ctx.state === 'running' && !document.hidden && !AU.set.muted;
+function later(s, fn) { setTimeout(() => { if (auLive()) fn(); }, s * 1000); }
 function blip(type, freq, dur, vol) {
   const ctx = AU.ctx, t = ctx.currentTime, g = ctx.createGain(); g.connect(AU.sfx);
   env(g, t, 0.005, vol, dur * 0.6, 0.3, dur * 0.5, t + dur * 0.6);
@@ -311,7 +313,7 @@ function swish(dur, freq, vol) {
   s.start(t); s.stop(t + dur + 0.1);
 }
 function sfx(name) {
-  if (!AU.ctx || AU.set.muted || !SFX[name]) return;
+  if (!auLive() || !SFX[name]) return;
   const now = performance.now(); if (now - (AU.last[name] || 0) < 90) return;
   AU.last[name] = now;
   try { SFX[name](); } catch (e) {}

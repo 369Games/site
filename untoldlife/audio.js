@@ -15,7 +15,7 @@ function auSave() { try { localStorage.setItem(AUDIO_KEY, JSON.stringify(AU.set)
 
 /* ---------- engine ---------- */
 function auInit() {
-  if (AU.ctx) { if (AU.ctx.state === 'suspended') AU.ctx.resume(); return; }
+  if (AU.ctx) { if (AU.ctx.state !== 'running' && !AU.set.muted && !document.hidden) AU.ctx.resume(); if (AU.file) auFilePlay(AU.file); return; }
   const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
   const ctx = AU.ctx = new C();
   const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
@@ -40,8 +40,23 @@ function auApplyVolumes() {
   AU.master.gain.setTargetAtTime(m, t, 0.05);
   AU.music.gain.setTargetAtTime(AU.set.music * 0.5, t, 0.1);
   AU.sfx.gain.setTargetAtTime(AU.set.sfx * 0.6, t, 0.05);
-  if (AU.file) AU.file.volume = AU.set.muted ? 0 : AU.set.music * 0.6;
+  if (AU.file) { AU.file.volume = AU.set.muted ? 0 : AU.set.music * 0.6; auFilePlay(AU.file); }
 }
+// iPhones ignore .volume on <audio>, so muting has to pause the track, not just turn it down.
+// Sound also stops while the page is hidden (other app, locked screen) and comes back on return.
+const auFileOn = () => !AU.set.muted && AU.set.music > 0 && !document.hidden;
+function auFilePlay(a) { if (auFileOn()) { if (a.paused) a.play().catch(() => {}); } else if (!a.paused) a.pause(); }
+function auVisible() {
+  if (!AU.ctx) return;
+  if (document.hidden) AU.ctx.suspend().catch(() => {});
+  else if (!AU.set.muted) AU.ctx.resume().catch(() => {});
+  if (AU.file) auFilePlay(AU.file);
+}
+document.addEventListener('visibilitychange', auVisible);
+window.addEventListener('pagehide', () => { if (AU.file) AU.file.pause(); if (AU.ctx) AU.ctx.suspend().catch(() => {}); });
+window.addEventListener('pageshow', auVisible);
+// Follow the iPhone silent switch, and don't stop the player's own music app.
+try { if (navigator.audioSession) navigator.audioSession.type = 'ambient'; } catch (e) {}
 // Browsers only allow sound after the player interacts with the page.
 ['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, auInit, { capture: true, passive: true }));
 
@@ -239,7 +254,7 @@ function auSwitch(id) {
     AU.files = AU.files || {};
     const a = AU.files[id] || (AU.files[id] = new Audio(src));
     a.loop = true; a.volume = 0; AU.file = a; AU.song = null;
-    a.play().catch(() => {});
+    auFilePlay(a);
     let v = 0; const target = () => AU.set.muted ? 0 : AU.set.music * 0.6;
     const f = setInterval(() => { if (AU.file !== a) return clearInterval(f); v = Math.min(target(), v + 0.03); a.volume = v; if (v >= target()) clearInterval(f); }, 80);
     a.onerror = () => { if (AU.file === a) { AU.file = null; auStartSong(id, t); } };
@@ -363,6 +378,7 @@ document.addEventListener('input', e => {
 document.addEventListener('change', e => { if (e.target.id === 'auSfx') sfx('coin'); });
 A.muteToggle = () => {
   AU.set.muted = !AU.set.muted; auSave(); auApplyVolumes(); auUpdateButton();
+  if (AU.ctx && !AU.set.muted && !document.hidden) AU.ctx.resume().catch(() => {});
   if (typeof lastSig !== 'undefined') lastSig = '';
 };
 auUpdateButton();

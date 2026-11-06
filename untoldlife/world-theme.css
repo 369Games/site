@@ -359,6 +359,8 @@ a.chip.kofi-chip{margin-right:auto;background:#29abe0;color:#fff;border:1px soli
 [data-theme=dark] .reqs li.no .rs,[data-theme=dark] .reqs li.no .rq b{color:#ef8a76}
 /* Three village goals side by side (one column on phones) */
 .wk .vgs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:4px}
+.wk .vg-prev{color:var(--muted);border-top:1px dashed var(--line);padding-top:4px}
+.wk .vg-prev:empty{display:none}
 .wk .vg{display:flex;flex-direction:column;gap:5px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#0000000d}
 .wk .vg .bar{height:10px;border-radius:6px;background:#0003;overflow:hidden}
 .wk .vg-tiers{font-weight:700;color:var(--warn)}

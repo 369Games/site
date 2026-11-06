@@ -238,7 +238,7 @@ function weeklyPanel() {
   for (const g of VG) {
     const d = vgData(g), done = d && d.n >= g.n, on = wkOn(g.b);
     h += `<div class="vg"><b>${g.e} ${g.t}: ${fmt(g.n)}</b><small class="hint">${g.when} <span id="wk_vl_${g.k}"></span></small>
-      ${wkBar('wk_vb_' + g.k, done ? 'done' : '')}<small id="wk_vt_${g.k}"></small><small id="wk_vr_${g.k}"></small>
+      ${wkBar('wk_vb_' + g.k, done ? 'done' : '')}<small id="wk_vt_${g.k}"></small><small id="wk_vr_${g.k}"></small><small id="wk_vp_${g.k}" class="vg-prev"></small>
       ${on ? `<small>${L`✅ جائزتك شغالة: +${(S.wk[g.b + 'p'] || 0.1) * 100}% ${g.area}، باقي ${ftime((S.wk[g.b] - Date.now()) / 1000)}`}</small>` : ''}</div>`;
   }
   h += `</div></div>
@@ -261,6 +261,11 @@ function wkUpd() {
     // The numbers sit in their own left-to-right span so "total / goal" doesn't flip in Arabic.
     $('wk_vt_' + g.k).innerHTML = L`${`<span dir="ltr">${fmt(d.n)} / ${fmt(g.n)}</span>`} • مساهمتك: ${fmt(mine)}`;
     $('wk_vr_' + g.k).textContent = rank ? L`🏆 مركزك ${rank} من ${n} مساهم` : L('🏅 ساهم عشان تدخل الترتيب');
+    // The round before: where this player finished and what it paid, so the prize can always be checked.
+    const pd = vgData(g, vgRound(g) - 1), pr = pd ? vgRank(pd.l, uid) : 0, pn = pd ? Object.keys(pd.l).length : 0;
+    $('wk_vp_' + g.k).textContent = !pd ? '' : !pr ? L('📋 الجولة الماضية: ما ساهمت')
+      : pd.n < g.n ? L`📋 الجولة الماضية: مركزك ${pr} من ${pn}، والهدف ما اكتمل`
+      : L`📋 الجولة الماضية: مركزك ${pr} من ${pn} ← جائزة +${vgPrize(pr) * 100}%`;
   }
 }
 

@@ -264,7 +264,7 @@ const PERKS = [
   { id: 'f_seeds', ks: 1, b: 'farm', n: L('بذور خالدة'), e: '♾️', max: 1, cost: 25, mult: 1, eff: () => L('الزراعة ما تكلف بذور أبداً') },
   { id: 'r_twin', ks: 1, b: 'ranch', n: L('مربّي خبير'), e: '🧬', max: 1, cost: 25, mult: 1, eff: () => L('لو فشل التهجين ما تخسر حيواناتك') },
   { id: 'm_tnt', ks: 1, b: 'mine', n: L('ديناميت'), e: '🧨', max: 1, cost: 25, mult: 1, eff: () => L('كل طابق تكمله في المنجم ينزلك طابقين') },
-  { id: 'w_ally', ks: 1, b: 'war', n: L('رفيق المعارك'), e: '🛡️', max: 1, cost: 25, mult: 1, eff: () => L('رفيق يقاتل معك بنصف قوتك، وينقذك من السقوط مرة كل 5 دقائق') },
+  { id: 'w_ally', ks: 1, b: 'war', n: L('رفيق المعارك'), e: '🛡️', max: 1, cost: 25, mult: 1, eff: () => L('رفيق يقاتل معك بنصف قوتك، وينقذك من السقوط مرة كل 5 دقائق، ويقبل مهمات الصيد بدالك') },
   { id: 't_deal', ks: 1, b: 'trade', n: L('تاجر الموسم'), e: '🧺', max: 1, cost: 25, mult: 1, eff: () => L('كل موسم يجيك تاجر يشتري محصول من محاصيل الموسم بـ ×3 السعر') },
   { id: 'q_tools', ks: 1, b: 'family', n: L('إرث الأدوات'), e: '🧰', max: 1, cost: 25, mult: 1, start: 1, eff: () => L('أدواتك تنتقل للجيل الجديد بدرجة أقل بدل ما ترجع للصفر') },
 ];
@@ -852,6 +852,7 @@ function genQuest() {
     xp: Math.round(req * dur / 90), exp: 480,
   };
 }
+const ALLY_MIN = 0.75;
 function fillBoard() { while (S.guild.board.length < 4) S.guild.board.push(genQuest()); }
 function tickGuild(dt) {
   const g = S.guild;
@@ -867,6 +868,15 @@ function tickGuild(dt) {
     }
   }
   for (const q of [...g.board]) { q.exp = (q.exp ?? 480) - dt; if (q.exp <= 0) g.board.splice(g.board.indexOf(q), 1); }
+  // «Battle companion» perk: the companion takes hunting quests from the board when a slot is free, the surest first.
+  // Only ones with at least ALLY_MIN chance, so none are wasted. Deliveries stay with the player (they use the storage).
+  if (P('w_ally')) while (g.active.length < questSlots()) {
+    const q = g.board.filter(x => x.type !== 'deliver' && chanceOf(x) >= ALLY_MIN).sort((a, b) => chanceOf(b) - chanceOf(a))[0];
+    if (!q) break;
+    g.board.splice(g.board.indexOf(q), 1); g.boardT = 0;
+    g.active.push({ ...q, dur: qDur(q), t: 0, chance: chanceOf(q) });
+    if (!offline) log(L`🛡️ رفيقك قبل مهمة «${Lx(q.n)}»`);
+  }
   if (g.refCd > 0) g.refCd = Math.max(0, g.refCd - dt);
   if (g.board.length < 4) { g.boardT += dt; if (g.boardT >= 40) { g.boardT = 0; g.board.push(genQuest()); } }
 }
@@ -1676,6 +1686,7 @@ function viewGuild() {
   <div class="panel"><div class="ph"><h2>📜 نقابة المرتزقة</h2><span class="rank">${RANKS[r][0]}</span></div>
     <div class="kv"><span>نقاط النقابة</span><span id="g_gpt"></span></div><div class="bar gp"><i id="g_gp"></i></div>
     <p class="hint">مهمات الصيد تعمل في الخلفية ونسبة نجاحها تعتمد على قوتك (⚡ <b id="g_pow"></b>). مهمات التوصيل تسلمها فوراً من مخزونك. الخانات: ${g.active.length}/${questSlots()}</p>
+    ${P('w_ally') ? L`<p class="hint">🛡️ رفيقك يقبل مهمات الصيد لحاله لما تفضى خانة (اللي نجاحها ${ALLY_MIN * 100}% أو أكثر).</p>` : ''}
     <h3>المهمات الجارية</h3>`;
   if (!g.active.length) h += L('<p class="hint">لا توجد مهمات جارية.</p>');
   g.active.forEach(q => {

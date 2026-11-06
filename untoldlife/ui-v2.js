@@ -53,7 +53,7 @@ function artMarkup(key,size,label='',illustrated=false){
   const asset=ART[key];if(!asset)return '';
   const file=ART_CUTOUTS[`${asset.sheet}:${asset.index}`];
   if(!file)return '';
-  const classes=['px','rich-icon','isolated-icon',asset.sheet==='portraits'||key.startsWith('npc-')?'portrait-art':'',asset.tint?'golden-art':'',asset.sheet==='seasons'?'season-art':'',asset.sheet==='legacy'?(asset.index===0?'legacy-crown-art':'legacy-tree-art'):'',tier?(nativeTier?'tool-native':'tier-'+tier[2]):'',stage?'stage-'+stage:'',medal?'medal-motif':'',['chicken','cow','sheep','bee'].includes(key)?'animal-art':''].filter(Boolean).join(' ');
+  const classes=['px','rich-icon','isolated-icon',asset.sheet==='portraits'||key.startsWith('npc-')?'portrait-art':'',asset.tint?'golden-art':'',asset.silver?'silver-art':'',asset.sheet==='seasons'?'season-art':'',asset.sheet==='legacy'?(asset.index===0?'legacy-crown-art':'legacy-tree-art'):'',tier?(nativeTier?'tool-native':'tier-'+tier[2]):'',stage?'stage-'+stage:'',medal?'medal-motif':'',['chicken','cow','sheep','bee'].includes(key)?'animal-art':''].filter(Boolean).join(' ');
   const safe=String(label).replace(/[&<>"']/g,'');
   const img=`<img class="${classes}" src="assets/${file}" ${imageTagAttributes('assets/'+file,logicalKey)} data-fallback-emoji="${fallbackEmojiForKey(logicalKey)}" width="${size}" height="${size}" alt="${safe}" draggable="false" style="--icon-size:${size}px">`;
   return medal?`<span class="achievement-medal metal-${medal.metal}" data-medal-category="${medal.category}" data-medal-metal="${medal.metal}" style="--medal-size:${size}px">${img}</span>`:img;

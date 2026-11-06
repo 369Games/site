@@ -63,7 +63,7 @@ const ANIMALS = [
   { id: 'cow', n: L('بقرة'), e: '🐄', cost: 1500, prod: 'milk', time: 60, lvl: 3 },
   { id: 'sheep', n: L('خروف'), e: '🐑', cost: 4500, prod: 'wool', time: 120, lvl: 5 },
   { id: 'goat', n: L('ماعز'), e: '🐐', cost: 10000, prod: 'cheese', time: 150, lvl: 6 },
-  { id: 'bee', n: L('خلية نحل'), e: '🐝', cost: 20000, prod: 'honey', time: 240, lvl: 8 },
+  { id: 'bee', n: L('خلية نحل'), e: '🐝', cost: 20000, prod: 'honey', time: 240, lvl: 8, gn: { n0: L('عادية'), p: L('ممتازة'), g: L('ملكية') } },
   { id: 'turkey', n: L('ديك رومي'), e: '🦃', cost: 60000, prod: 'meat', time: 300, lvl: 10 },
   // The priciest animal; like the others, each one costs 25% more than the last. Its grades have their own names.
   { id: 'camel', n: L('ناقة'), e: '🐪', cost: 500000, prod: 'hashi', time: 600, lvl: 12, gn: { n0: L('مجهم'), p: L('وضحى'), g: L('شقحاء') } },
@@ -72,11 +72,13 @@ function gName(a, to) { return (a.gn && a.gn[to]) || (to === 'n0' ? L('عادي'
 [['egg', L('بيض'), '🥚', 25], ['milk', L('حليب'), '🥛', 120], ['wool', L('صوف'), '🧶', 350], ['cheese', L('جبن'), '🧀', 700], ['honey', L('عسل'), '🍯', 1500], ['meat', L('فخذ ديك رومي'), '🍗', 4000], ['hashi', L('لحم حاشي'), '🍖', 60000]]
   .forEach(([id, n, e, price]) => addItem(id, { n, e, price, cat: 'animal' }));
 // Golden animals give golden products worth 5x the base price.
-[['egg_g', L('بيضة ذهبية'), 125], ['milk_g', L('حليب ذهبي'), 600], ['wool_g', L('صوف ذهبي'), 1750], ['cheese_g', L('جبن ذهبي'), 3500], ['meat_g', L('فخذ ديك رومي ذهبي'), 20000], ['hashi_g', L('لحم حاشي ذهبي'), 300000]]
+[['egg_g', L('بيضة ذهبية'), 125], ['milk_g', L('حليب ذهبي'), 600], ['wool_g', L('صوف ذهبي'), 1750], ['cheese_g', L('جبن ذهبي'), 3500], ['honey_g', L('عسل ملكي'), 7500], ['meat_g', L('فخذ ديك رومي ذهبي'), 20000], ['hashi_g', L('لحم حاشي ذهبي'), 300000]]
   .forEach(([id, n, price]) => addItem(id, { n, e: '🌟', price, cat: 'animal', golden: true }));
 // Until dedicated art exists, golden products reuse the base art with a gold tint.
-if (typeof ART !== 'undefined') ['egg', 'milk', 'wool', 'cheese', 'meat', 'hashi'].forEach(b => { if (!ART[b + '_g'] && ART[b]) ART[b + '_g'] = { ...ART[b], tint: true }; });
-const BREEDABLE = ['chicken', 'cow', 'sheep', 'goat', 'turkey', 'camel'];
+if (typeof ART !== 'undefined') ['egg', 'milk', 'wool', 'cheese', 'honey', 'meat', 'hashi'].forEach(b => { if (!ART[b + '_g'] && ART[b]) ART[b + '_g'] = { ...ART[b], tint: true }; });
+// Bee hives have no grade art yet: the premium hive gets a silver shine, the royal hive the gold tint.
+if (typeof ART !== 'undefined' && ART.bee) { ART['bee-p'] = ART['bee-p'] || { ...ART.bee, silver: true }; ART['bee-g'] = ART['bee-g'] || { ...ART.bee, tint: true }; }
+const BREEDABLE = ['chicken', 'cow', 'sheep', 'goat', 'bee', 'turkey', 'camel'];
 const GRADE_SVG = {
   p: '<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>',
   g: '<svg viewBox="0 0 24 24"><path d="M3 18.5h18l-1.6-10-4.6 4.2L12 5l-2.8 7.7-4.6-4.2zM3.5 20.2h17v1.8h-17z"/></svg>',

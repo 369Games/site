@@ -102,6 +102,7 @@ img.isolated-icon{background-image:none!important;clip-path:none!important;objec
 .plot.empty .pe .ui-icon{opacity:.45}
 /* Animal grades and golden products (tint until dedicated golden art exists). */
 img.golden-art{filter:sepia(1) saturate(2.8) hue-rotate(-12deg) brightness(1.08) drop-shadow(0 0 5px #ffd76aaa)!important}
+img.silver-art{filter:saturate(.55) brightness(1.12) contrast(1.05) drop-shadow(0 0 4px #d8e4f0cc)!important}
 .card.breeding{border-color:var(--selring);background:var(--selbg)}
 /* Grade tiles: three equal tiles, silver frame for premium, gold frame for golden. */
 .grades{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}

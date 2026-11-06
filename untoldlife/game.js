@@ -754,7 +754,11 @@ function eat() {
 function enemyLoot(f, boss) {
   return { gold: Math.round((3 + 2 * f + 0.15 * f * f) * (boss ? 5 : 1) * goldMult()), xp: (4 + 1.5 * f + 0.1 * f * f) * (boss ? 4 : 1) };
 }
-function dropCh(l = gsk('loot')) { return 0.35 + 0.08 * l; }
+// Material chance; mastery adds to it with no limit. Above 100% every monster drops, and the rest raises the chance
+// of one extra material (on top of the 50% from loot level 5).
+function dropRaw(l = gsk('loot'), m = gsk('mast')) { return 0.35 + 0.08 * l + MAST_STEP * m; }
+function dropCh(l, m) { return Math.min(1, dropRaw(l, m)); }
+function extraCh(l = gsk('loot'), m = gsk('mast')) { return Math.min(1, (l >= 5 ? 0.5 : 0) + Math.max(0, dropRaw(l, m) - 1)); }
 function killEnemy() {
   const D = S.dun, e = D.enemy, f = D.floor;
   const lt = enemyLoot(f, e.boss);
@@ -764,7 +768,7 @@ function killEnemy() {
   S.stats.kills++;
   const mats = MONSTER_MATS.filter(m => m.f <= f);
   const mat = Math.random() < 0.7 ? mats[mats.length - 1] : pick(mats);
-  if (e.boss || Math.random() < dropCh()) give(mat.id, (e.boss ? 3 : 1) + (gsk('loot') >= 5 && Math.random() < 0.5 ? 1 : 0));
+  if (e.boss || Math.random() < dropCh()) give(mat.id, (e.boss ? 3 : 1) + (Math.random() < extraCh() ? 1 : 0));
   if (e.boss && Math.random() < 0.25) give('gem');
   if (e.boss) log(L`🏆 هزمت الزعيم ${e.e} ${e.n}!`, 'good');
   if (e.boss && f > (S.guild.bossTop || 0)) {
@@ -825,13 +829,18 @@ function floorCap() { return Math.max(RANK_FLOOR[rankIdx()], (S.gen.dun0 || 1) +
    Points: 1 for every 2 combat levels + 2 for every guild rank. Level n of a skill costs n points. */
 const MSK = [
   { id: 'pow', e: '⚔️', n: L('القوة'), d: l => L`+${10 * l}% هجوم ودفاع` },
-  { id: 'loot', e: '💰', n: L('الغنائم'), d: l => L`فرصة المواد ${Math.round(dropCh(l) * 100)}%` + (l >= 5 ? L(' • نص المرات مادة زيادة') : '') },
+  { id: 'loot', e: '💰', n: L('الغنائم'), d: l => L`فرصة المواد ${Math.round(dropCh(l, 0) * 100)}%` + (l >= 5 ? L(' • نص المرات مادة زيادة') : '') },
   { id: 'eat', e: '🍽️', n: L('الأكل السريع'), d: l => L`الانتظار بين الأكلات ${EAT_CD[l]}ث • تغيير المهمات ${REF_CD[l]}ث` },
   { id: 'quest', e: '📜', n: L('المهام'), d: l => L`مهام الصيد أسرع ${10 * l}% • +${20 * l}% نقاط النقابة` + (l >= 3 ? L(' • +1 خانة مهمة') : '') },
 ];
 function gsk(id) { return (S.guild.sk || {})[id] || 0; }
-function mskPow() { return 1 + 0.1 * gsk('pow'); }
-function mskPts() { return Math.floor(S.hero.lvl / 2) + 2 * rankIdx() - MSK.reduce((a, k) => a + gsk(k.id) * (gsk(k.id) + 1) / 2, 0); }
+/* Mastery: opens once every skill above is at level 5. Each level costs MAST_COST points, with no top level,
+   and adds MAST_STEP to attack, defence and the material chance. */
+const MAST_COST = 2, MAST_STEP = 0.002;
+function mastOpen() { return MSK.every(k => gsk(k.id) >= 5); }
+function mskPow() { return 1 + 0.1 * gsk('pow') + MAST_STEP * gsk('mast'); }
+function mskPts() { return Math.floor(S.hero.lvl / 2) + 2 * rankIdx() - MSK.reduce((a, k) => a + gsk(k.id) * (gsk(k.id) + 1) / 2, 0) - MAST_COST * gsk('mast'); }
+function pctTxt(v) { return Math.round(v * 1000) / 10 + '%'; } // 0.046 -> "4.6%"
 // Guild points a hunt gives per 90 seconds at each rank (F..S); the quest skill adds +20% a level (×2 at level 5).
 const QUEST_GP = [6, 10, 16, 26, 40, 60, 80];
 function qGp(q) { return Math.round((q.type === 'deliver' ? Math.max(20, q.gp) : q.gp) * (1 + 0.2 * gsk('quest'))); }
@@ -1235,6 +1244,13 @@ const A = {
     const k = MSK.find(x => x.id === v), l = gsk(v); if (!k || l >= 5 || mskPts() < l + 1) return;
     (S.guild.sk || (S.guild.sk = {}))[v] = l + 1;
     log(L`🌟 طوّرت مهارة ${k.e} ${k.n} للمستوى ${l + 1}`, 'good');
+  },
+  // Mastery: one level, or every level the points allow (v = 'all').
+  mastUp: v => {
+    if (!mastOpen()) return;
+    const n = v === 'all' ? Math.floor(mskPts() / MAST_COST) : mskPts() >= MAST_COST ? 1 : 0; if (n <= 0) return;
+    const sk = S.guild.sk || (S.guild.sk = {}); sk.mast = (sk.mast || 0) + n;
+    log(L`🌟 إتقان المرتزق صار مستوى ${sk.mast}: +${pctTxt(MAST_STEP * sk.mast)} هجوم ودفاع وفرصة المواد`, 'good');
   },
   quest: v => {
     const g = S.guild, i = g.board.findIndex(q => q.id === +v); if (i < 0) return;
@@ -1716,6 +1732,14 @@ function viewGuild() {
     const l = gsk(k.id), dots = [0, 1, 2, 3, 4].map(i => i < l ? '●' : '○').join('');
     h += L`<div class="quest"><div class="qi"><b>${k.e} ${k.n} <small>${dots}</small></b><small>${l ? k.d(l) : L('لسا ما طوّرتها')}${l < 5 ? L` ← ${k.d(l + 1)}` : ''}</small></div>
       ${l < 5 ? L`<button class="btn sm" data-a="mskUp" data-v="${k.id}" ${pts < l + 1 ? 'disabled' : ''}>طوّر (${l + 1} نقاط)</button>` : L('<span class="chance hi">الأعلى</span>')}</div>`;
+  }
+  if (mastOpen()) {
+    const m = gsk('mast'), can = Math.floor(pts / MAST_COST), raw = dropRaw();
+    const drop = L`فرصة المواد ${pctTxt(Math.min(1, raw))}` + (raw > 1 ? L` • مادة زيادة ${pctTxt(extraCh())}` : '');
+    h += L`<div class="quest mast"><div class="qi"><b>🌟 إتقان المرتزق <small>مستوى ${m}</small></b>
+      <small>بدون حد: كل مستوى بـ ${MAST_COST} نقاط ويعطي +${pctTxt(MAST_STEP)} هجوم ودفاع وفرصة المواد.</small>
+      <small>الحين: +${pctTxt(MAST_STEP * m)} هجوم ودفاع • ${drop}</small></div>
+      <div class="row"><button class="btn sm" data-a="mastUp" ${can ? '' : 'disabled'}>طوّر (${MAST_COST} نقاط)</button>${can > 1 ? L`<button class="btn ghost sm" data-a="mastUp" data-v="all">طوّر ×${can}</button>` : ''}</div></div>`;
   }
   h += `</div></div></div>`;
   return h;
@@ -2487,6 +2511,11 @@ function frame() {
 S = load() || newState();
 const loadedLast = S.last || 0; // when this device last saved (cloud.js compares it with the cloud copy)
 markMod(loadMod);
+// Away from the keyboard: no click, tap, key or scroll for a while. Cloud and leaderboard traffic slows down then
+// (Firebase's free plan has a daily read and write limit for everyone together).
+let lastInput = Date.now();
+['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { lastInput = Date.now(); }, { capture: true, passive: true }));
+function playerIdle(ms = 300000) { return Date.now() - lastInput > ms; }
 // Only one tab saves. The tab opened or shown last takes over; an older tab stops saving and reloads when used again,
 // so it can't write its older progress over the newer one.
 const TAB_ID = Math.random().toString(36).slice(2), OWNER_KEY = 'untoldlife_tab';

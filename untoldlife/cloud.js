@@ -5,7 +5,8 @@
    Runs only on the published site, when SITE_CONFIG.firebase is set (tools/site/config.json). Locally nothing loads.
    Cloud document: players/{uid}/saves/untoldlife = { game, save (protected UL2 string), name, gen, play, t, ts }.
    Upload limits (Firebase's free plan allows 20,000 writes a day for everyone together):
-   - automatic upload every 3 minutes while the game is on screen, and when the page is hidden, shown again or closed;
+   - automatic upload every 3 minutes while the game is on screen (10 when the player is away from the keyboard),
+     and when the page is hidden, shown again or closed;
    - never two uploads from this device less than 25 seconds apart; the «Upload now» button once a minute;
    - the database rules (tools/firestore.rules) refuse any write less than 20 seconds after the last one,
      using the server's clock (ts), so a script that skips the game can't flood it either. */
@@ -263,7 +264,9 @@ A.cloudChip = () => {
 
 // Sync while playing, and when the page is hidden or closed.
 // A hidden tab doesn't upload every 3 minutes: the save goes up when it's hidden, and again when the player comes back.
-setInterval(() => { if (!document.hidden) cloudUpload(); }, SYNC_MS);
+// Away from the keyboard (game.js playerIdle): every 10 minutes instead of 3. Leaving the page still uploads at once.
+const SYNC_IDLE_MS = 600000;
+setInterval(() => { if (!document.hidden && !(playerIdle() && Date.now() - CLOUD.sentAt < SYNC_IDLE_MS)) cloudUpload(); }, SYNC_MS);
 document.addEventListener('visibilitychange', () => document.hidden ? cloudUpload() : cloudCheck());
 window.addEventListener('pagehide', () => cloudUpload());
 // One gentle suggestion to link an account, after the first retirement or an hour of play.

@@ -20,7 +20,9 @@
      when a round has started since we last saw it (about three times a day). */
 const WK_MS = 7 * 86400000;
 const WK_OFFSET = 3 * 3600000 - 3 * 86400000; // Riyadh time (+3h), and weeks start on Sunday (epoch day 0 was a Thursday)
-const WK_PUSH_MS = 5 * 60000, WK_PULL_MS = 2 * 60000;
+const WK_PUSH_MS = 5 * 60000, WK_PULL_MS = 2 * 60000, WK_PUSH_IDLE_MS = 15 * 60000;
+// A player who hasn't touched the game for 5 minutes gets no leaderboard refresh (it comes back on their next tap),
+// and their numbers go up every 15 minutes instead of 5. This keeps reads and writes inside Firebase's free daily limit.
 const WK_RATE = 45; // points a second this page may send for each goal (the rules allow 50), so a long offline stretch goes up over several sends
 function wkNow() { return Math.floor((Date.now() + WK_OFFSET) / WK_MS); }
 function wkStart(w) { return w * WK_MS - WK_OFFSET; }
@@ -122,7 +124,7 @@ function wkVals() {
 }
 const WK_KEYS = ['gold', 'fish', 'floor', 'gen', 'name', ...VG.map(g => 'g' + g.k)];
 async function wkPush() {
-  if (!wkAllowed() || WK.busy || Date.now() - WK.sentAt < WK_PUSH_MS) return;
+  if (!wkAllowed() || WK.busy || Date.now() - WK.sentAt < (playerIdle() && !document.hidden ? WK_PUSH_IDLE_MS : WK_PUSH_MS)) return;
   WK.busy = true; WK.sentAt = Date.now(); // the wait counts from every try, so a failing send never repeats quickly
   try {
     const { goals, me } = await wkRefs(), uid = CLOUD.user.uid, F = firebase.firestore.FieldValue;
@@ -170,7 +172,7 @@ async function wkPush() {
   WK.busy = false;
 }
 async function wkPull() {
-  if (!wkSignedIn() || !S.wk || WK.pulling || Date.now() - WK.pullAt < WK_PULL_MS) return;
+  if (!wkSignedIn() || !S.wk || WK.pulling || Date.now() - WK.pullAt < WK_PULL_MS || (WK.pullAt && playerIdle())) return;
   WK.pulling = true; WK.pullAt = Date.now();
   try {
     const { w, goals, me } = await wkRefs(), uid = CLOUD.user.uid;

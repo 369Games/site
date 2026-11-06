@@ -328,6 +328,15 @@ a.chip.kofi-chip{margin-right:auto;background:#29abe0;color:#fff;border:1px soli
 .wk-board li{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dashed var(--line)}
 .wk-board li.me{color:var(--gold);font-weight:700}
 .wk-board li small{color:var(--muted)}
+/* developer mode: ban buttons and the banned list */
+.wk-ban{border:0;background:none;cursor:pointer;padding:0 2px;margin-inline-end:4px;font-size:13px;opacity:.7}
+.wk-ban:hover{opacity:1}
+.wk-uid{font-family:monospace;font-size:11px;color:var(--muted);margin-inline-end:6px;user-select:all}
+.wk-board li .wk-uid{display:block;margin:1px 0 0;font-size:10px;overflow-wrap:anywhere}
+.wk-mod{border-color:#b0603f}
+.wk-mod li .wk-uid{display:block;overflow-wrap:anywhere}
+.wk-mod ol{margin:8px 0 0;padding:0 18px 0 0;font-size:13px}
+.wk-mod li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line)}
 /* Requirements: one line each (smith upgrades and legendary forging) */
 .reqs-h{margin:10px 0 4px;font-size:12px;font-weight:700;color:var(--muted)}
 .reqs{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:5px}

@@ -98,10 +98,18 @@ function wkCheck() {
 }
 
 /* ---- Firestore: the village goals and the leaderboard ---- */
-const WK = { ver: 0, sentAt: 0, sentWk: -1, sent: null, busy: false, pullAt: 0, pulling: false, g: null, top: null, err: '', rk: '' }; // g: the goals document as last seen
+const WK = { ver: 0, sentAt: 0, sentWk: -1, sent: null, busy: false, pullAt: 0, pulling: false, g: null, top: null, err: '', rk: '',
+  mod: { admins: {}, ban: {} }, modAt: 0 }; // g: the goals document as last seen
+/* Moderation: mod/v = { admins: { uid: true }, ban: { uid: name } }.
+   The developer makes this document once in the Firebase console and puts their own uid in admins.
+   After that, the developer bans or lets back a player from the leaderboard in the game (developer mode).
+   A banned player is hidden from the boards, and the database rules refuse their numbers. */
+const WK_MOD_MS = 600000; // players read the ban list every 10 minutes; the developer on every refresh
+function wkAdmin() { return wkSignedIn() && !!WK.mod.admins[CLOUD.user.uid]; }
+function wkBanned(uid) { return !!WK.mod.ban[uid]; }
 function wkCloud() { return typeof CLOUD !== 'undefined' && CLOUD.on && CLOUD.ready && CLOUD.err !== 'load'; }
 function wkSignedIn() { return wkCloud() && !!CLOUD.user; }
-function wkAllowed() { return wkSignedIn() && S && S.started && S.wk && !saveBlocked && !S.leg.mod && S.wk.id === wkNow(); }
+function wkAllowed() { return wkSignedIn() && S && S.started && S.wk && !saveBlocked && !S.leg.mod && S.wk.id === wkNow() && !wkBanned(CLOUD.user.uid); }
 async function wkRefs() {
   await cloudDoc(); // loads the database library
   const w = CLOUD.db.collection('weekly').doc(String(S.wk.id));
@@ -123,7 +131,7 @@ async function wkPush() {
     // Never more than the rules allow since the last send (or since the week began).
     const since = (Date.now() - (old.ts && old.ts.toMillis ? old.ts.toMillis() : wkStart(S.wk.id))) / 1000;
     const lim = Math.floor(WK_RATE * Math.max(0, since - 5));
-    const row = { name: String(S.name || '').replace(/[<>&"'`]/g, '').slice(0, 24) || '…', gen: S.leg.gen,
+    const row = { name: (!badName(S.name) && String(S.name || '').replace(/[<>&"'`]/g, '').slice(0, 24)) || '…', gen: S.leg.gen,
       gold: Math.max(cur.gold, was('gold')), fish: Math.max(cur.fish, was('fish')), floor: Math.max(cur.floor, was('floor')) };
     const add = {}, round = {};
     for (const g of VG) { const k = 'g' + g.k; row[k] = Math.min(Math.max(cur[k], was(k)), was(k) + lim); add[g.k] = row[k] - was(k); round[g.k] = vgRound(g); }
@@ -167,10 +175,14 @@ async function wkPull() {
   try {
     const { w, goals, me } = await wkRefs(), uid = CLOUD.user.uid;
     const snap = await goals.get(); WK.g = snap.exists ? snap.data() : {};
-    const top = {};
+    if (wkAdmin() || Date.now() - WK.modAt > WK_MOD_MS) {
+      const m = await CLOUD.db.collection('mod').doc('v').get(), d = m.exists ? m.data() : {};
+      WK.mod = { admins: d.admins || {}, ban: d.ban || {} }; WK.modAt = Date.now();
+    }
+    const top = {}, extra = Math.min(20, Object.keys(WK.mod.ban).length); // read a few more, so 10 are left after the banned
     for (const k of ['gold', 'floor', 'fish']) {
-      const q = await w.collection('p').orderBy(k, 'desc').limit(10).get();
-      top[k] = q.docs.map(d => ({ name: d.data().name, gen: d.data().gen, v: d.data()[k], me: d.id === uid })).filter(r => r.v > 0);
+      const q = await w.collection('p').orderBy(k, 'desc').limit(10 + extra).get();
+      top[k] = q.docs.filter(d => !wkBanned(d.id)).map(d => ({ id: d.id, name: d.data().name, gen: d.data().gen, v: d.data()[k], me: d.id === uid })).filter(r => r.v > 0).slice(0, 10);
     }
     WK.top = top; WK.err = '';
     if (WK.sentWk !== S.wk.id) { const s = await me.get(); WK.sent = s.exists ? s.data() : null; WK.sentWk = S.wk.id; }
@@ -182,9 +194,33 @@ async function wkPull() {
 function wkSig() { return [S.wk && S.wk.id, S.wk && S.wk.done, wkOn('buf'), ...VG.map(g => [vgRound(g), wkOn(g.b)]), wkSignedIn(), WK.ver, WK.err, !!(S.leg && S.leg.mod)]; }
 function wkBar(id, cls = '') { return `<div class="bar ${cls}"><i id="${id}"></i></div>`; }
 function wkBoard(title, k, unit) {
-  const rows = (WK.top && WK.top[k]) || [];
-  return `<div class="wk-board"><b>${title}</b>${rows.length ? `<ol>${rows.map(r => `<li class="${r.me ? 'me' : ''}"><span>${esc(r.name)} <small>${L`ج${r.gen}`}</small></span><b>${unit(r.v)}</b></li>`).join('')}</ol>` : L('<small class="hint">ما أحد للحين، كن الأول!</small>')}</div>`;
+  const rows = (WK.top && WK.top[k]) || [], adm = wkAdmin();
+  // Players see a rude name as «…»; the developer sees the real name, the account id and a ban button.
+  const nm = r => adm || !badName(r.name) ? esc(r.name) : '…';
+  const tools = r => adm && !r.me ? `<button class="wk-ban" data-a="wkBan" data-v="${esc(r.id)}" data-n="${esc(r.name)}" title="${L('🚫 احظر من المتصدرين')}">🚫</button>` : '';
+  const uidLine = r => adm ? `<small class="wk-uid" dir="ltr">${esc(r.id)}</small>` : '';
+  return `<div class="wk-board"><b>${title}</b>${rows.length ? `<ol>${rows.map(r => `<li class="${r.me ? 'me' : ''}"><span>${tools(r)}${nm(r)} <small>${L`ج${r.gen}`}</small>${uidLine(r)}</span><b>${unit(r.v)}</b></li>`).join('')}</ol>` : L('<small class="hint">ما أحد للحين، كن الأول!</small>')}</div>`;
 }
+// Developer mode: the banned players, each with a button to let them back.
+function wkModPanel() {
+  if (!wkAdmin()) return '';
+  const ids = Object.keys(WK.mod.ban);
+  return L`<div class="wk-box wk-mod"><b>🛠️ وضع المطوّر: المحظورين (${ids.length})</b><small class="hint">اضغط 🚫 جنب أي اسم في القوائم تحت عشان تحظره. المحظور يختفي من المتصدرين، وأرقامه ما تنقبل.</small>`
+    + (ids.length ? `<ol>${ids.map(id => `<li><span>${esc(String(WK.mod.ban[id]))} <small class="wk-uid" dir="ltr">${esc(id)}</small></span><button class="btn ghost sm" data-a="wkUnban" data-v="${esc(id)}">${L('↩️ رجّعه')}</button></li>`).join('')}</ol>` : '') + '</div>';
+}
+async function wkModSet(uid, name) {
+  try {
+    await cloudDoc();
+    const F = firebase.firestore.FieldValue;
+    await CLOUD.db.collection('mod').doc('v').update({ ['ban.' + uid]: name === null ? F.delete() : name });
+    if (name === null) delete WK.mod.ban[uid]; else WK.mod.ban[uid] = name;
+    if (WK.top) for (const k in WK.top) WK.top[k] = WK.top[k].filter(r => !wkBanned(r.id));
+    WK.pullAt = 0; WK.ver++; lastSig = '';
+    toast(name === null ? L('↩️ رجع للمتصدرين') : L('🚫 انحظر'));
+  } catch (e) { console.warn('mod', e && e.code); toast(L('❌ ما انحفظ، تأكد إن قواعد Firebase منشورة')); }
+}
+A.wkBan = (uid, b) => { const n = (b && b.dataset.n) || '…'; if (uid && confirm(L`نحظر «${n}» من المتصدرين؟`)) wkModSet(uid, n.slice(0, 24)); };
+A.wkUnban = uid => { if (uid) wkModSet(uid, null); };
 function weeklyPanel() {
   if (!S.wk) return '';
   const T = wkTask(), goal = wkGoal();
@@ -204,7 +240,7 @@ function weeklyPanel() {
       ${on ? `<small>${L`✅ جائزتك شغالة: +${(S.wk[g.b + 'p'] || 0.1) * 100}% ${g.area}، باقي ${ftime((S.wk[g.b] - Date.now()) / 1000)}`}</small>` : ''}</div>`;
   }
   h += `</div></div>
-    <div class="wk-boards">${wkBoard(L('💰 أكثر ذهب'), 'gold', fmt)}${wkBoard(L('⚔️ أعمق طابق'), 'floor', v => fmt(v))}${wkBoard(L('🎣 أكثر صيد'), 'fish', fmt)}</div>
+    ${wkModPanel()}<div class="wk-boards">${wkBoard(L('💰 أكثر ذهب'), 'gold', fmt)}${wkBoard(L('⚔️ أعمق طابق'), 'floor', v => fmt(v))}${wkBoard(L('🎣 أكثر صيد'), 'fish', fmt)}</div>
     <small class="hint">${WK.err ? L('⚠️ ما قدرنا نحدّث القائمة الحين، بنحاول بعد شوي.') : L('تتحدث كل دقيقتين تقريباً. أرقامك تنرسل كل 5 دقايق.')}</small>`;
   return h + '</div>';
 }

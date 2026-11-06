@@ -1113,7 +1113,8 @@ function doRetire() {
   if (heir) LG.heir[heir.id] = H(heir.id) + 1;
   LG.gen++;
   const keep = { leg: LG, stats: S.stats, locked: S.locked, wk: S.wk }, oldTools = { ...S.tools };
-  const nm = (RS.name || '').trim().slice(0, 24) || childName();
+  let nm = (RS.name || '').trim().slice(0, 24) || childName();
+  if (badName(nm)) nm = childName();
   S = newState(); Object.assign(S, keep);
   for (const o of [...ORES.map(x => x.id), 'gem']) S.locked[o] = 1; // ores start locked again every generation
   S.name = nm; S.gender = RS.gender; S.started = true; S.gen.ch = RS.ch; S.gen.prevTools = oldTools;
@@ -1357,6 +1358,7 @@ const A = {
   },
   start: () => {
     const nm = ($('nameIn').value || '').trim() || L('المزارع');
+    if (badName(nm)) return toast(L('❌ اختر اسم ثاني'));
     S.name = nm.slice(0, 20); S.leg.family = S.name; S.gender = introGender; S.started = true; S.last = Date.now();
     fillBoard(); closeModal();
     log(L`🏡 ${gv(L('وصل'), L('وصلت'))} ${S.name} إلى قرية وادي الصدى. حياة جديدة تبدأ!`, 'season');
@@ -2397,6 +2399,16 @@ function saveLoadGo() {
   pendingSave = null; S.last = Date.now(); logs = []; logDirty = true; lastSig = '';
   closeModal(); log(L`⬆️ رجعت لحفظ ${esc(S.name)} — الجيل ${S.leg.gen}`, 'season'); toast(L('✅ تم تحميل الحفظ'));
   markMod(info.mod || saveOddity(S)); save();
+}
+// Rude names: a short list of clear words, in Arabic and English. It can't catch everything:
+// the developer's ban list (weekly.js, mod/v) is the sure way.
+const BAD_SUB = ['fuck', 'shit', 'bitch', 'cunt', 'pussy', 'nigg', 'fagg', 'whore', 'slut', 'porn', '\u0634\u0631\u0645\u0648\u0637', '\u0642\u062d\u0628', '\u0645\u0646\u064a\u0648\u0643', '\u0645\u062a\u0646\u0627\u0643', '\u0643\u0633\u0627\u0645\u0643', '\u0643\u0633\u0645\u0643', '\u0643\u0633\u062e\u062a\u0643', '\u0632\u0628\u0631\u064a', '\u0646\u064a\u0627\u0643'];
+const BAD_WORD = ['dick', 'cock', 'sex', 'ass', '\u0643\u0633', '\u0643\u0633\u0643', '\u0632\u0628', '\u0632\u0628\u064a', '\u0637\u064a\u0632', '\u0646\u064a\u0643', '\u062e\u0648\u0644', '\u0639\u0631\u0635', '\u0632\u0642', '\u0639\u0627\u0647\u0631', '\u0639\u0627\u0647\u0631\u0647', '\u0634\u0627\u0630', '\u0644\u0648\u0637\u064a', '\u062f\u064a\u0648\u062b'];
+function nameNorm(s) { return String(s || '').toLowerCase().replace(/[ً-ٟـ]/g, '').replace(/[أإآ]/g, '\u0627').replace(/ى/g, '\u064a').replace(/ة/g, '\u0647'); }
+function badName(s) {
+  // Repeated Arabic letters count once («شرمووط»); English keeps them (ass, nigg).
+  const n = nameNorm(s).replace(/([؀-ۿ])\1+/g, '$1'), flat = n.replace(/[^\p{L}]/gu, '');
+  return BAD_SUB.some(w => flat.includes(w)) || n.split(/[^\p{L}]+/u).some(t => BAD_WORD.includes(t));
 }
 let saveBlocked = false; // set while another save is being written in (move.js)
 function save() { if (saveBlocked || !S || !S.started) return; try { localStorage.setItem(SAVE_KEY, encodeSave(S)); localStorage.setItem(SAVE_MARK, '1'); } catch (e) { /* التخزين غير متاح */ } }

@@ -222,7 +222,8 @@ function cloudPanel() {
   const who = esc(CLOUD.user.email || CLOUD.user.displayName || '');
   const when = CLOUD.err === 'sync' ? L('⚠️ آخر محاولة رفع ما نجحت، بنحاول مرة ثانية') : CLOUD.last ? L`آخر رفع: قبل ${ftime(Math.max(1, (Date.now() - CLOUD.last) / 1000))}` : L('ما رفعنا شي للحين');
   return h + L`<p class="hint">✅ متصل: <b>${who}</b><br>${when}. الحفظ يترفع تلقائياً كل 3 دقايق، وكل ما تطلع من اللعبة.</p>
-  <div class="row"><button class="btn gold sm" data-a="cloudUpload">☁️ ارفع الحين</button><button class="btn ghost sm" data-a="cloudOut">تسجيل خروج</button><button class="btn red sm" data-a="cloudDelete">حذف الحساب</button></div>` + prevPanel();
+  <div class="row"><button class="btn gold sm" data-a="cloudUpload">☁️ ارفع الحين</button><button class="btn ghost sm" data-a="cloudOut">تسجيل خروج</button><button class="btn red sm" data-a="cloudDelete">حذف الحساب</button></div>`
+  + L`<p class="hint">🆔 رقم حسابك: <code dir="ltr" class="wk-uid">${esc(CLOUD.user.uid)}</code></p>` + prevPanel();
 }
 // The save that lost the last time two saves met (kept on this device). The player can switch back to it.
 function prevInfo() { try { const r = localStorage.getItem(PREV_KEY); return r ? readSave(r) : null; } catch (e) { return null; } }

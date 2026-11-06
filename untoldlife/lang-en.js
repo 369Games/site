@@ -475,7 +475,7 @@
 "فرصة المواد {0}%": "Material chance {0}%",
 " • نص المرات مادة زيادة": " • half the time an extra material",
 "الأكل السريع": "Fast eating",
-"الانتظار بين الأكلات {0}ث": "Wait between meals {0}s",
+"الانتظار بين الأكلات {0}ث • تغيير المهمات {1}ث": "Wait between meals {0}s • New quests every {1}s",
 "المهام": "Quests",
 "مهام الصيد أسرع {0}% • +{1}% نقاط النقابة": "Hunt quests {0}% faster • +{1}% guild points",
 " • +1 خانة مهمة": " • +1 quest slot",

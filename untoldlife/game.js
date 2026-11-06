@@ -736,6 +736,9 @@ function foodList() {
    It picks the cheapest food that fills the missing health, or the most filling one if none does (golden items are never eaten). */
 const EAT_CD = [10, 8, 6, 4, 3, 2];
 function eatCd() { return EAT_CD[gsk('eat')]; }
+// The same skill also shortens the wait before the quest board can be changed again.
+const REF_CD = [60, 50, 40, 30, 22, 15];
+function refreshCd() { return REF_CD[gsk('eat')]; }
 function eat() {
   const D = S.dun, h = S.hero, mhp = heroMaxHp(), list = foodList().filter(id => !ITEMS[id].golden);
   if (!list.length) return 'none';
@@ -821,7 +824,7 @@ function floorCap() { return Math.max(RANK_FLOOR[rankIdx()], (S.gen.dun0 || 1) +
 const MSK = [
   { id: 'pow', e: '⚔️', n: L('القوة'), d: l => L`+${10 * l}% هجوم ودفاع` },
   { id: 'loot', e: '💰', n: L('الغنائم'), d: l => L`فرصة المواد ${Math.round(dropCh(l) * 100)}%` + (l >= 5 ? L(' • نص المرات مادة زيادة') : '') },
-  { id: 'eat', e: '🍽️', n: L('الأكل السريع'), d: l => L`الانتظار بين الأكلات ${EAT_CD[l]}ث` },
+  { id: 'eat', e: '🍽️', n: L('الأكل السريع'), d: l => L`الانتظار بين الأكلات ${EAT_CD[l]}ث • تغيير المهمات ${REF_CD[l]}ث` },
   { id: 'quest', e: '📜', n: L('المهام'), d: l => L`مهام الصيد أسرع ${10 * l}% • +${20 * l}% نقاط النقابة` + (l >= 3 ? L(' • +1 خانة مهمة') : '') },
 ];
 function gsk(id) { return (S.guild.sk || {})[id] || 0; }
@@ -1237,7 +1240,7 @@ const A = {
   },
   refreshBoard: () => {
     const c = refreshCost(); if (S.gold < c || S.guild.refCd > 0) return;
-    S.gold -= c; S.guild.board = []; S.guild.refCd = 60; fillBoard();
+    S.gold -= c; S.guild.board = []; S.guild.refCd = refreshCd(); fillBoard();
   },
   upgrade: v => {
     const l = (S.tools[v] || 0) + 1; if (l > 6 || !TOOLS.some(x => x.id === v)) return;

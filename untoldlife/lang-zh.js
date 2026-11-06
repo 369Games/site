@@ -968,6 +968,8 @@
 "آخر رفع: قبل {0}": "上次上传：{0}前",
 "ما رفعنا شي للحين": "还没有上传",
 "<p class=\"hint\">✅ متصل: <b>{0}</b><br>{1}. الحفظ يترفع تلقائياً كل 3 دقايق، وكل ما تطلع من اللعبة.</p>\n  <div class=\"row\"><button class=\"btn gold sm\" data-a=\"cloudUpload\">☁️ ارفع الحين</button><button class=\"btn ghost sm\" data-a=\"cloudOut\">تسجيل خروج</button><button class=\"btn red sm\" data-a=\"cloudDelete\">حذف الحساب</button></div>": "<p class=\"hint\">✅ 已登录： <b>{0}</b><br>{1}。存档每 3 分钟自动上传，离开游戏时也会上传。</p>\n  <div class=\"row\"><button class=\"btn gold sm\" data-a=\"cloudUpload\">☁️ 立即上传</button><button class=\"btn ghost sm\" data-a=\"cloudOut\">退出登录</button><button class=\"btn red sm\" data-a=\"cloudDelete\">删除账号</button></div>",
+"<h3>🛟 حفظ احتياطي</h3>\n  <p class=\"hint\">لما يلتقي حفظين (من جهازين أو تبويبين)، نحتفظ بالثاني هنا. لو رجع تقدمك لورا، تقدر ترجع له:</p>\n  <div class=\"kv\"><span>👤 {0}</span><span>الجيل {1} • 💰 {2}</span></div>\n  <div class=\"row\"><button class=\"btn ghost sm\" data-a=\"prevRestore\">🛟 رجّع هذا الحفظ</button></div>": "<h3>🛟 备份存档</h3>\n  <p class=\"hint\">两个存档相遇时（来自两台设备或两个标签页），另一个会保存在这里。如果进度倒退了，可以恢复它：</p>\n  <div class=\"kv\"><span>👤 {0}</span><span>第{1}代 • 💰 {2}</span></div>\n  <div class=\"row\"><button class=\"btn ghost sm\" data-a=\"prevRestore\">🛟 恢复此存档</button></div>",
+"نرجع للحفظ الاحتياطي؟ حفظك الحالي بيصير هو الاحتياطي، فتقدر ترجع له بنفس الزر.": "切换到备份存档？当前存档会变成备份，可以用同一个按钮切换回来。",
 "⏳ رفعت قبل شوي. تقدر ترفع مرة ثانية بعد {0}ث": "⏳ 刚刚上传过。{0} 秒后可以再次上传",
 "☁️ انرفع حفظك": "☁️ 存档已上传",
 "☁️ نصيحة: اربط حسابك من «المزيد» عشان ما يضيع تقدمك وتكمل من أي جهاز": "☁️ 提示：在「更多」里绑定账号，进度永不丢失，还能在任何设备上继续",

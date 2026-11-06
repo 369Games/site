@@ -14,6 +14,11 @@ const FB_VER = '10.14.1';
 const EMAIL_KEY = 'untoldlife_email', NUDGE_KEY = 'untoldlife_cloud_nudge';
 const PREV_KEY = 'untoldlife_save_prev';   // the save that lost to the other one, kept just in case
 const LOADED_KEY = 'untoldlife_cloud_loaded';
+// The stamp (t) of the cloud copy this device last wrote or loaded. If the cloud has another stamp, a different device
+// saved since then, and its save wins: this device's older progress never goes over it.
+const SEEN_KEY = 'untoldlife_cloud_seen';
+function seenGet() { try { const o = JSON.parse(localStorage.getItem(SEEN_KEY) || 'null'); return o && o.uid === CLOUD.user.uid ? o.t : 0; } catch (e) { return 0; } }
+function seenSet(t) { CLOUD.seenT = t; try { localStorage.setItem(SEEN_KEY, JSON.stringify({ uid: CLOUD.user.uid, t })); } catch (e) { /* */ } }
 const SYNC_MS = 180000, GAP_MS = 25000, MANUAL_MS = 60000;
 
 function cloudCfg() { const c = siteConfig().firebase; return c && c.apiKey ? c : null; }
@@ -97,7 +102,7 @@ async function cloudEmailFinish() {
 /* ---- sync ---- */
 function cloudSummary(st) { return { name: String(st.name || '').replace(/[<>&"'`]/g, ''), gen: (st.leg && st.leg.gen) || 1, play: Math.round((st.stats && st.stats.play) || 0) }; }
 async function cloudUpload(force) {
-  if (!CLOUD.user || !S || !S.started || CLOUD.busy || CLOUD.pending || saveBlocked) return;
+  if (!CLOUD.user || !CLOUD.synced || !S || !S.started || CLOUD.busy || CLOUD.pending || saveBlocked) return;
   const play = Math.round(S.stats.play);
   if (!force && play === CLOUD.lastPlay) return;
   const wait = CLOUD.sentAt + GAP_MS - Date.now();
@@ -108,7 +113,7 @@ async function cloudUpload(force) {
     if (await cloudNewer(doc)) return; // another device saved further: this page now loads that save
     const t = Date.now();
     await doc.set({ game: 'untoldlife', save: encodeSave(S), ...cloudSummary(S), t, ts: firebase.firestore.FieldValue.serverTimestamp() });
-    CLOUD.seenT = t; CLOUD.last = CLOUD.sentAt = Date.now(); CLOUD.lastPlay = play; CLOUD.err = '';
+    seenSet(t); CLOUD.last = CLOUD.sentAt = Date.now(); CLOUD.lastPlay = play; CLOUD.err = '';
   } catch (e) {
     // Refused by the 20-second rule (another device uploaded just now): try once more a little later.
     if (e && e.code === 'permission-denied' && !CLOUD.retried) { CLOUD.retried = true; CLOUD.sentAt = Date.now(); cloudRetry(GAP_MS); }
@@ -117,24 +122,21 @@ async function cloudUpload(force) {
   if (!CLOUD.err && CLOUD.sentAt === CLOUD.last) CLOUD.retried = false;
   CLOUD.busy = false; cloudRefresh();
 }
-/* Version check, so two devices never overwrite each other's progress.
+/* Version check, so an older device never overwrites newer progress.
    Every upload stamps the save with its time (t), and this page remembers the stamp of the cloud copy it last wrote or
-   loaded. If the cloud has a different stamp, another device saved since then: when that save got further
-   (generation first, then play time) this page loads it, keeping its own as a backup; otherwise ours replaces it. */
+   loaded. If the cloud has a different stamp, another device saved since then, so this page is behind: it loads that
+   save and keeps its own as a backup (the «bring back» button in settings).
+   Play time can't decide this: it also grows while the game is closed, so an old device can look further along. */
 async function cloudNewer(doc) {
   const snap = await doc.get(); if (!snap.exists) return false;
   const d = snap.data(); if (!d.t || d.t === CLOUD.seenT) return false;
-  const info = readSave(d.save); CLOUD.seenT = d.t; if (!info) return false;
-  const here = cloudSummary(S), there = cloudSummary(info.st);
-  if (there.gen > here.gen || (there.gen === here.gen && there.play > here.play)) {
-    try { localStorage.setItem(PREV_KEY, encodeSave(S)); } catch (e) { /* */ }
-    cloudApply(info); return true;
-  }
-  return false;
+  const info = readSave(d.save); if (!info) return false;
+  try { localStorage.setItem(PREV_KEY, encodeSave(S)); } catch (e) { /* */ }
+  seenSet(d.t); cloudApply(info); return true;
 }
 // Coming back to the tab: look for newer progress from another device first (at most every 20 seconds).
 async function cloudCheck() {
-  if (!CLOUD.user || !S || !S.started || CLOUD.busy || CLOUD.pending || saveBlocked || Date.now() - CLOUD.checkedAt < 20000) return;
+  if (!CLOUD.user || !CLOUD.synced || !S || !S.started || CLOUD.busy || CLOUD.pending || saveBlocked || Date.now() - CLOUD.checkedAt < 20000) return;
   CLOUD.checkedAt = Date.now(); CLOUD.busy = true;
   try { if (await cloudNewer(await cloudDoc())) return; } catch (e) { /* the next upload tries again */ }
   CLOUD.busy = false; cloudUpload();
@@ -145,30 +147,35 @@ function cloudRetry(ms) {
 }
 async function cloudOnSignIn() {
   let snap;
-  try { snap = await (await cloudDoc()).get(); } catch (e) { CLOUD.err = 'sync'; return cloudRefresh(); }
+  try { snap = await (await cloudDoc()).get(); } catch (e) { CLOUD.err = 'sync'; setTimeout(() => { if (CLOUD.user && !CLOUD.synced) cloudOnSignIn(); }, 30000); return cloudRefresh(); }
   const who = CLOUD.user.email || '';
   if (!snap.exists) {
+    CLOUD.synced = true;
     if (S.started) { await cloudUpload(true); log(L`☁️ ربطت حسابك (${who}). تقدمك صار محفوظ في السحابة`, 'good'); }
     return;
   }
   const d = snap.data(), info = readSave(d.save);
-  if (!info) return cloudUpload(true);
-  if (!S.started) return cloudApply(info);
-  // No question: keep whichever save got further (generation first, then play time).
-  // The other one is kept on this device as a backup, so nothing is ever lost.
-  const here = cloudSummary(S), there = cloudSummary(info.st);
-  const ahead = (there.gen - here.gen) || (there.play - here.play);
-  if (ahead > 60 || there.gen > here.gen) {
+  if (!info) { CLOUD.synced = true; return cloudUpload(true); }
+  if (!S.started) { seenSet(d.t || 0); return cloudApply(info); }
+  // No question. If this device synced before, the cloud wins only when another device saved since then.
+  // The first time on a device: the further generation wins, then whichever was saved last.
+  // The other save is kept on this device as a backup, so nothing is ever lost.
+  const here = cloudSummary(S), there = cloudSummary(info.st), seen = seenGet();
+  const cloudWins = seen ? d.t !== seen
+    : there.gen !== here.gen ? there.gen > here.gen : (d.t || 0) > loadedLast - 60000;
+  if (cloudWins) {
     try { localStorage.setItem(PREV_KEY, encodeSave(S)); } catch (e) { /* */ }
-    return cloudApply(info);
+    seenSet(d.t || 0); return cloudApply(info);
   }
   if (there.gen !== here.gen || Math.abs(there.play - here.play) > 60 || there.name !== here.name) { try { localStorage.setItem(PREV_KEY, d.save); } catch (e) { /* */ } }
-  CLOUD.lastPlay = there.play; CLOUD.last = d.t || 0; CLOUD.seenT = d.t || 0; cloudRefresh();
+  CLOUD.lastPlay = there.play; CLOUD.last = d.t || 0; seenSet(d.t || 0); CLOUD.synced = true; cloudRefresh();
   return cloudUpload(true);
 }
 function cloudApply(info) {
   saveBlocked = false;
-  S = migrate(info.st); S.last = Date.now();
+  // Keep the save's own time, so the hours since that device saved still count as time away.
+  const was = info.st.last;
+  S = migrate(info.st); S.last = was > 0 && was <= Date.now() ? was : Date.now();
   markMod(info.mod || saveOddity(S));
   save(); saveBlocked = true;
   try { sessionStorage.setItem(LOADED_KEY, String(S.leg.gen)); } catch (e) { /* */ }
@@ -179,7 +186,7 @@ function cloudApply(info) {
 async function cloudSignOut() {
   await cloudUpload(true);
   try { await CLOUD.auth.signOut(); } catch (e) { return cloudFail(e); }
-  CLOUD.last = 0; CLOUD.lastPlay = -1; cloudRefresh(); toast(L('👋 سجلت خروج. حفظك باقي في هذا الجهاز'));
+  CLOUD.last = 0; CLOUD.lastPlay = -1; CLOUD.synced = false; cloudRefresh(); toast(L('👋 سجلت خروج. حفظك باقي في هذا الجهاز'));
 }
 async function cloudDelete() {
   if (!CLOUD.user || !confirm(L('متأكد؟ بنحذف حسابك وحفظك من السحابة نهائياً. الحفظ اللي في هذا الجهاز يبقى.'))) return;
@@ -215,8 +222,28 @@ function cloudPanel() {
   const who = esc(CLOUD.user.email || CLOUD.user.displayName || '');
   const when = CLOUD.err === 'sync' ? L('⚠️ آخر محاولة رفع ما نجحت، بنحاول مرة ثانية') : CLOUD.last ? L`آخر رفع: قبل ${ftime(Math.max(1, (Date.now() - CLOUD.last) / 1000))}` : L('ما رفعنا شي للحين');
   return h + L`<p class="hint">✅ متصل: <b>${who}</b><br>${when}. الحفظ يترفع تلقائياً كل 3 دقايق، وكل ما تطلع من اللعبة.</p>
-  <div class="row"><button class="btn gold sm" data-a="cloudUpload">☁️ ارفع الحين</button><button class="btn ghost sm" data-a="cloudOut">تسجيل خروج</button><button class="btn red sm" data-a="cloudDelete">حذف الحساب</button></div>`;
+  <div class="row"><button class="btn gold sm" data-a="cloudUpload">☁️ ارفع الحين</button><button class="btn ghost sm" data-a="cloudOut">تسجيل خروج</button><button class="btn red sm" data-a="cloudDelete">حذف الحساب</button></div>` + prevPanel();
 }
+// The save that lost the last time two saves met (kept on this device). The player can switch back to it.
+function prevInfo() { try { const r = localStorage.getItem(PREV_KEY); return r ? readSave(r) : null; } catch (e) { return null; } }
+function prevPanel() {
+  const p = prevInfo(); if (!p || !p.st || !p.st.started) return '';
+  const st = p.st, gen = (st.leg && st.leg.gen) || 1;
+  return L`<h3>🛟 حفظ احتياطي</h3>
+  <p class="hint">لما يلتقي حفظين (من جهازين أو تبويبين)، نحتفظ بالثاني هنا. لو رجع تقدمك لورا، تقدر ترجع له:</p>
+  <div class="kv"><span>👤 ${esc(st.name || '')}</span><span>الجيل ${gen} • 💰 ${fmt(st.gold || 0)}</span></div>
+  <div class="row"><button class="btn ghost sm" data-a="prevRestore">🛟 رجّع هذا الحفظ</button></div>`;
+}
+A.prevRestore = () => {
+  const p = prevInfo(); if (!p) return;
+  if (!confirm(L('نرجع للحفظ الاحتياطي؟ حفظك الحالي بيصير هو الاحتياطي، فتقدر ترجع له بنفس الزر.'))) return;
+  try { localStorage.setItem(PREV_KEY, encodeSave(S)); } catch (e) { /* */ }
+  saveBlocked = false;
+  S = migrate(p.st); S.last = Date.now();
+  markMod(p.mod || saveOddity(S));
+  save(); saveBlocked = true;
+  location.reload();
+};
 
 A.cloudGoogle = () => cloudGoogle();
 A.cloudEmail = () => cloudEmailSend();

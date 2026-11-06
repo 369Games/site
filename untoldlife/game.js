@@ -2449,7 +2449,18 @@ function frame() {
 }
 
 S = load() || newState();
+const loadedLast = S.last || 0; // when this device last saved (cloud.js compares it with the cloud copy)
 markMod(loadMod);
+// Only one tab saves. The tab opened or shown last takes over; an older tab stops saving and reloads when used again,
+// so it can't write its older progress over the newer one.
+const TAB_ID = Math.random().toString(36).slice(2), OWNER_KEY = 'untoldlife_tab';
+let tabStale = false;
+function tabClaim() { try { localStorage.setItem(OWNER_KEY, TAB_ID); } catch (e) { /* */ } }
+window.addEventListener('storage', e => { if (e.key === OWNER_KEY && e.newValue && e.newValue !== TAB_ID) { tabStale = true; saveBlocked = true; } });
+const tabBack = () => { if (tabStale) location.reload(); };
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { if (tabStale) tabBack(); else tabClaim(); } });
+document.addEventListener('pointerdown', tabBack, true);
+tabClaim();
 if (!S.started) showIntro();
 else {
   log(L`🏡 مرحباً بعودتك إلى وادي الصدى يا ${S.name}`);

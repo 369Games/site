@@ -863,7 +863,7 @@ function tickGuild(dt) {
       if (Math.random() < q.chance) {
         const m = questMult();
         addGold(Math.round(q.gold * m)); g.gp += qGp(q); heroXp(q.xp); S.stats.quests++;
-        log(L`✅ نجحت مهمة «${Lx(q.n)}»: +${fmt(q.gold * m)}💰 +${qGp(q)} نقاط نقابة`, 'good');
+        log(L`✅ نجحت مهمة «${Lx(q.n)}»: 💰 ${bi('+' + fmt(q.gold * m))} • ${bi('+' + qGp(q))} نقاط نقابة`, 'good');
       } else log(L`❌ فشلت مهمة «${Lx(q.n)}»... حاول عندما تصبح أقوى`, 'bad');
     }
   }
@@ -1240,7 +1240,7 @@ const A = {
     if (q.type === 'deliver') {
       if (!take(q.item, q.qty)) return toast(L('ما عندك الكمية المطلوبة'));
       const m = questMult(); addGold(Math.round(q.gold * m)); g.gp += qGp(q); S.stats.quests++;
-      log(L`📬 سلّمت ${q.qty} ${ITEMS[q.item].e} ${ITEMS[q.item].n}: +${fmt(q.gold * m)}💰 +${qGp(q)} نقاط`, 'good');
+      log(L`📬 سلّمت ${q.qty} ${ITEMS[q.item].e} ${ITEMS[q.item].n}: 💰 ${bi('+' + fmt(q.gold * m))} • ${bi('+' + qGp(q))} نقاط`, 'good');
     } else {
       if (g.active.length >= questSlots()) return toast(L('كل الخانات مشغولة'));
       g.active.push({ ...q, dur: qDur(q), t: 0, chance: chanceOf(q) });
@@ -1690,18 +1690,18 @@ function viewGuild() {
     <h3>المهمات الجارية</h3>`;
   if (!g.active.length) h += L('<p class="hint">لا توجد مهمات جارية.</p>');
   g.active.forEach(q => {
-    h += L`<div class="quest"><div class="qi"><b>⚔️ ${Lx(q.n)}</b><small>نسبة النجاح ${Math.round(q.chance * 100)}% • ${fmt(q.gold * questMult())}💰</small><div class="bar"><i id="q_${q.id}"></i></div></div><small id="qt_${q.id}"></small></div>`;
+    h += `<div class="quest"><div class="qi"><b>⚔️ ${Lx(q.n)}</b><small class="qline">${qc('', Math.round(q.chance * 100) + '%', L('نجاح'))}${qc('💰', fmt(q.gold * questMult()))}</small><div class="bar"><i id="q_${q.id}"></i></div></div><small id="qt_${q.id}"></small></div>`;
   });
   h += L`<h3>لوحة المهمات</h3>`;
   if (!g.board.length) h += L('<p class="hint">لا توجد مهمات الآن، تأتي مهمة جديدة كل 40 ثانية.</p>');
   g.board.forEach(q => {
     if (q.type === 'deliver') {
       const it = ITEMS[q.item], ok = have(q.item) >= q.qty;
-      h += L`<div class="quest"><div class="qi"><b>📦 توصيل ${q.qty} × ${icon(it)} ${it.n}</b><small>لديك ${fmt(have(q.item))} • المكافأة ${fmt(q.gold * questMult())}💰 + ${qGp(q)} نقاط</small></div>
+      h += L`<div class="quest"><div class="qi"><b>📦 توصيل ${q.qty} × ${icon(it)} ${it.n}</b><small class="qline">${qc('', fmt(have(q.item)), L('لديك'))}</small>${qRew(q.gold * questMult(), qGp(q))}</div>
         <button class="btn sm" data-a="quest" data-v="${q.id}" ${ok ? '' : 'disabled'}>سلّم</button></div>`;
     } else {
       const ch = chanceOf(q), cl = ch >= 0.8 ? 'hi' : ch >= 0.4 ? 'mid' : 'lo';
-      h += L`<div class="quest"><div class="qi"><b>⚔️ ${Lx(q.n)}</b><small>القوة المطلوبة ${fmt(q.req)} • ⏱ ${ftime(qDur(q))} • ${fmt(q.gold * questMult())}💰 + ${qGp(q)} نقاط + ${fmt(q.xp)} خبرة</small>
+      h += L`<div class="quest"><div class="qi"><b>⚔️ ${Lx(q.n)}</b><small class="qline">${qc('', fmt(q.req), L('القوة المطلوبة'))}${qc('⏱', ftime(qDur(q)))}</small>${qRew(q.gold * questMult(), qGp(q), q.xp)}
         <small>نسبة النجاح: <span class="chance ${cl}">${Math.round(ch * 100)}%</span></small></div>
         <button class="btn sm" data-a="quest" data-v="${q.id}" ${g.active.length >= questSlots() ? 'disabled' : ''}>قبول</button></div>`;
     }
@@ -1738,7 +1738,7 @@ function dunInfoHtml() {
   let drops = `${icon(ITEMS[top.id])} ${top.n} ${e0.boss ? '×3' : pc(dc * (0.7 + 0.3 / mats.length))}`;
   if (mats.length > 1) drops += L` • مواد أقدم ${pc(dc * 0.3 * (mats.length - 1) / mats.length)}`;
   if (e0.boss) drops += L` • 💎 جوهرة 25%` + (D.floor > 100 ? L(' • 🌟 نجمة إرث') : '');
-  let x = L`<div class="kv"><span>🎁 غنائم الوحش</span><span>${fmt(lt.gold)}💰 • ${fmt(lt.xp * xpMult() * (1 + 0.3 * P('w_xp')))} ✨</span></div>
+  let x = L`<div class="kv"><span>🎁 غنائم الوحش</span><span class="qline">${qc('💰', fmt(lt.gold))}${qc('', fmt(lt.xp * xpMult() * (1 + 0.3 * P('w_xp'))), L('خبرة'))}</span></div>
     <p class="hint" style="margin:0 0 6px">ممكن يطيح: ${drops}</p>
     <div class="kv"><span>صعوبة الطابق ${D.floor} (الحالي)${boss(D.floor)}</span>${diffTag(D.floor)}</div>`;
   if (D.floor < D.max) {
@@ -1787,6 +1787,14 @@ function updGuild() {
 /* ----- الحداد ----- */
 // A cost shown one requirement per line: picture, name, what you have / what it needs, ✔ or what's missing.
 // rows: [[id or 'gold', amount needed], ...]. Any screen that asks for several things can use it.
+/* One small box per value, the number isolated (<bdi>), so Arabic text never swaps numbers around
+   (it used to show «320 + 41.6K💰» with the gold and the points in each other's place). */
+function qc(e, val, label = '') { return `<span class="qc">${e ? e + ' ' : ''}${label ? label + ' ' : ''}<bdi>${val}</bdi></span>`; }
+function qRew(gold, gp, xp) {
+  return `<small class="qline"><span class="qlab">${L('المكافأة:')}</span>${qc('💰', fmt(gold))}${qc('', gp, L('نقاط'))}${xp ? qc('', fmt(xp), L('خبرة')) : ''}</small>`;
+}
+// The same for plain text (the event log): a number kept in one piece in Arabic text.
+function bi(s) { return '⁨' + s + '⁩'; }
 function reqList(rows) {
   const li = ([id, need]) => {
     const gold = id === 'gold', it = !gold && ITEMS[id];

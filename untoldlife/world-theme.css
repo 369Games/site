@@ -328,6 +328,13 @@ a.chip.kofi-chip{margin-right:auto;background:#29abe0;color:#fff;border:1px soli
 .wk-board li{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dashed var(--line)}
 .wk-board li.me{color:var(--gold);font-weight:700}
 .wk-board li small{color:var(--muted)}
+/* Quest and loot values: one small box each, so numbers never swap places in Arabic */
+.qline{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;margin-top:3px}
+.qline .qlab{font-weight:700;color:var(--muted)}
+.qc{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border:1px solid var(--line);border-radius:99px;background:var(--soft);white-space:nowrap;font-size:12.5px;line-height:1.6}
+.qc bdi{font-weight:700;font-variant-numeric:tabular-nums}
+.qc .px,.qc .rich-icon{width:16px;height:16px;margin:0}
+.kv .qline{margin:0;justify-content:flex-end}
 /* developer mode: ban buttons and the banned list */
 .wk-ban{border:0;background:none;cursor:pointer;padding:0 2px;margin-inline-end:4px;font-size:13px;opacity:.7}
 .wk-ban:hover{opacity:1}

@@ -238,18 +238,18 @@ function petFloor() {
     const p = d.pets[id], s = petStage(p.xp); p.xp++;
     if (petStage(p.xp) > s) { const P0 = PETS.find(x => x.id === id); log(L`${P0.e} ${P0.n} كبر وصار ${PET_STAGE[petStage(p.xp)].n}! +${Math.round(PET_STAGE[petStage(p.xp)].b * 100)}% ${P0.sn}`, 'season'); }
   }
-  if (Math.random() < PET_EGG_CH) { d.eggs.push(PET_HATCH); log(L('🥚 لقيت بيضة غريبة بعد ما خلصت الطابق! حطيتها في النقابة تفقس بعد 30 دقيقة.'), 'golden'); }
+  if (Math.random() < PET_EGG_CH) { d.eggs.push(PET_HATCH); d.eggNew = 1; log(L('🥚 طاحت لك بيضة أسطورية بعد ما خلصت الطابق! تلقاها في النقابة ← «🐾 الحيوانات الأسطورية» تحت العدّة، وتفقس بعد 30 دقيقة.'), 'egg'); toast(L('🥚 طاحت لك بيضة أسطورية! تلقاها في النقابة تحت العدّة')); }
 }
 function hatchEgg() {
   const d = petData(), free = PETS.filter(p => !d.pets[p.id]);
   if (free.length) {
-    const p = pick(free); d.pets[p.id] = { xp: 0, born: S.leg.gen };
-    log(L`🐣 فقست البيضة وطلع ${p.e} ${p.n}! يعطيك +${Math.round(PET_STAGE[0].b * 100)}% ${p.sn}، ويكبر مع كل طابق تخلصه.`, 'golden');
+    const p = pick(free); d.pets[p.id] = { xp: 0, born: S.leg.gen }; d.eggNew = 1;
+    log(L`🐣 فقست البيضة وطلع ${p.e} ${p.n}! يعطيك +${Math.round(PET_STAGE[0].b * 100)}% ${p.sn}، ويكبر مع كل طابق تخلصه.`, 'egg');
     return;
   }
   const young = PETS.map(p => d.pets[p.id]).filter(p => petStage(p.xp) < 2).sort((a, b) => a.xp - b.xp)[0];
-  if (young) { young.xp += 500; log(L('🐣 فقست البيضة، وحيوانك الأصغر أكل منها وكبر: +500 خبرة.'), 'golden'); return; }
-  S.leg.stars += 20; S.leg.totalStars += 20; log(L('🐣 كل حيواناتك بالغة، فالبيضة صارت 20 نجمة إرث!'), 'season');
+  if (young) { young.xp += 500; log(L('🐣 فقست البيضة، وحيوانك الأصغر أكل منها وكبر: +500 خبرة.'), 'egg'); return; }
+  S.leg.stars += 20; S.leg.totalStars += 20; log(L('🐣 كل حيواناتك بالغة، فالبيضة صارت 20 نجمة إرث!'), 'egg');
 }
 function tickPets(dt) {
   const d = S.leg.eggs; if (!d || !d.length) return;
@@ -1327,7 +1327,7 @@ function simulate(total) {
 
 /* ---------------- الأوامر ---------------- */
 const A = {
-  tab: v => { tab = v; lastSig = ''; const y = $('wrap').getBoundingClientRect().top + scrollY - $('tabs').offsetHeight - 16; if (scrollY > y) scrollTo(0, Math.max(0, y)); },
+  tab: v => { tab = v; lastSig = ''; if (v === 'guild') S.leg.eggNew = 0; const y = $('wrap').getBoundingClientRect().top + scrollY - $('tabs').offsetHeight - 16; if (scrollY > y) scrollTo(0, Math.max(0, y)); },
   seed: v => { S.farm.seed = v; },
   plot: v => {
     const i = +v, p = S.farm.plots[i];
@@ -1685,7 +1685,7 @@ function tabAlerts() {
     if (st.gd === dayAbs()) return false;
     const gf = giftsOf(np); return have(gf.love) >= 1 || have(gf.like) >= 1;
   })) a.village = 1;
-  if (g.board.some(q => q.type === 'deliver' ? have(q.item) >= q.qty : g.active.length < questSlots() && chanceOf(q) >= ALLY_MIN)) a.guild = 1;
+  if (g.board.some(q => q.type === 'deliver' ? have(q.item) >= q.qty : g.active.length < questSlots() && chanceOf(q) >= ALLY_MIN) || S.leg.eggNew) a.guild = 1;
   if (TOOLS.some(t => { const l = S.tools[t.id] + 1; if (l > 6) return false; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })) a.smith = 1;
   return a;
 }

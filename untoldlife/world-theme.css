@@ -403,4 +403,5 @@ a.chip.kofi-chip{margin-right:auto;background:#111;color:#f6e7b8;border:1px soli
 .pet-card b{font-size:13px}.pet-card small{font-size:11px;color:var(--muted)}.pet-card .bar{width:100%;height:6px}
 .pet-card.off{opacity:.45}.pet-card.egg{border-color:#e2bc6c99}
 .pet-card.st1{border-color:#7fb3ff88}.pet-card.st2{border-color:#e2bc6c;box-shadow:0 0 14px #e2bc6c44}
+.pet-pic{display:grid;place-items:end center;height:104px}.pet-card.st2 .pet-pic .px{filter:drop-shadow(0 0 8px #e2bc6c88)}
 .pet-emoji{display:grid;place-items:center;height:64px;line-height:1}.pet-emoji.s0{font-size:30px}.pet-emoji.s1{font-size:42px}.pet-emoji.s2{font-size:56px}

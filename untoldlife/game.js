@@ -257,11 +257,11 @@ function tickPets(dt) {
 }
 function petIcon(p, stage, size) {
   const key = 'pet-' + p.id + '-' + stage;
-  return ART[key] ? icon(key, size) : `<span class="pet-emoji s${stage}">${p.e}</span>`;
+  return ART[key] ? `<span class="pet-pic">${icon(key, [70, 86, 100] || size)}</span>` : `<span class="pet-emoji s${stage}">${p.e}</span>`;
 }
 function petPanel() {
   const d = petData();
-  const eggs = d.eggs.map(t => `<div class="pet-card egg">${ART['pet-egg'] ? icon('pet-egg', 56) : '<span class="pet-emoji s1">🥚</span>'}<b>${L('بيضة غامضة')}</b>
+  const eggs = d.eggs.map(t => `<div class="pet-card egg">${ART['pet-egg'] ? `<span class="pet-pic">${icon('pet-egg', 76)}</span>` : '<span class="pet-emoji s1">🥚</span>'}<b>${L('بيضة غامضة')}</b>
     <small>${L`تفقس بعد ${Math.ceil(t / 60)} د`}</small><div class="bar"><i style="width:${Math.round((1 - t / PET_HATCH) * 100)}%"></i></div></div>`).join('');
   const cards = PETS.map(p => {
     const me = d.pets[p.id];

@@ -125,3 +125,4 @@ for(let i=0;i<7;i++)ART_CUTOUTS['glove:'+i]='art/work-gloves/glove-'+i+'.webp';
 for(const t of ['hoe','can','pick','sword','armor','rod','glove','crook'])ART_CUTOUTS['legend:'+t]='art/legendary-tools/'+t+'-7.webp';
 ["trout","crayfish","eel","catfish","sturgeon","tuna","oyster","jelly","swordfish","whaleshark","k_lake","k_river","k_sea"].forEach((id,index)=>{ART_CUTOUTS['fish2:'+index]='art/fishing-v2/'+id+'.webp';});
 ['helmet','shield','amulet','boots'].forEach((id,p)=>{for(let i=0;i<8;i++)ART_CUTOUTS['gear16:'+(p*8+i)]='art/combat-gear/'+id+'-'+i+'.webp';});
+['pet-egg','pet-griffin-0','pet-griffin-1','pet-griffin-2','pet-dragon-0','pet-dragon-1','pet-dragon-2','pet-unicorn-0','pet-unicorn-1','pet-unicorn-2'].forEach((id,i)=>{ART_CUTOUTS['pets:'+i]='art/pets/'+id+'.webp';});

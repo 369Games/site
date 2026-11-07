@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.7.6', date: '2026-11-07', big: false, title: L('أهداف القرية بدون سقف'), items: [
+    L('🏘️ أهداف القرية اليومية: كل لاعب صار يقدر يساهم لين 1,000 بالثانية بدل 45، فالأقوى يتسابق على المركز الأول فعلاً.'),
+  ] },
   { v: '1.7.5', date: '2026-11-07', big: false, title: L('روح لأي طابق'), items: [
     L('🔢 في الزنزانة زر «روح لطابق»: اكتب رقم أي طابق مفتوح وتنتقل له على طول، حتى الطابق 1.'),
   ] },

@@ -23,7 +23,7 @@ const WK_OFFSET = 3 * 3600000 - 3 * 86400000; // Riyadh time (+3h), and weeks st
 const WK_PUSH_MS = 5 * 60000, WK_PULL_MS = 2 * 60000, WK_PUSH_IDLE_MS = 15 * 60000;
 // A player who hasn't touched the game for 5 minutes gets no leaderboard refresh (it comes back on their next tap),
 // and their numbers go up every 15 minutes instead of 5. This keeps reads and writes inside Firebase's free daily limit.
-const WK_RATE = 45; // points a second this page may send for each goal (the rules allow 50), so a long offline stretch goes up over several sends
+const WK_RATE = 950; // points a second this page may send for each goal (the rules allow 1,000), so a long offline stretch goes up over several sends
 function wkNow() { return Math.floor((Date.now() + WK_OFFSET) / WK_MS); }
 function wkStart(w) { return w * WK_MS - WK_OFFSET; }
 function wkLeft() { return Math.max(0, wkStart(S.wk.id + 1) - Date.now()) / 1000; }

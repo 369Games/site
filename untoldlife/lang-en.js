@@ -1152,6 +1152,8 @@
 "📋 الجولة الماضية: ما ساهمت": "📋 Last round: you didn't take part",
 "📋 الجولة الماضية: مركزك {0} من {1}، والهدف ما اكتمل": "📋 Last round: you placed {0} of {1}, but the goal wasn't reached",
 "📋 الجولة الماضية: مركزك {0} من {1} ← جائزة +{2}%": "📋 Last round: you placed {0} of {1} → prize +{2}%",
+"أهداف القرية بدون سقف": "Village goals without a ceiling",
+"🏘️ أهداف القرية اليومية: كل لاعب صار يقدر يساهم لين 1,000 بالثانية بدل 45، فالأقوى يتسابق على المركز الأول فعلاً.": "🏘️ Daily village goals: each player can now add up to 1,000 a second instead of 45, so the strongest really race for first place.",
 "روح لأي طابق": "Go to any floor",
 "🔢 في الزنزانة زر «روح لطابق»: اكتب رقم أي طابق مفتوح وتنتقل له على طول، حتى الطابق 1.": "🔢 In the dungeon, a «Go to floor» button: type the number of any open floor and jump straight there, even floor 1.",
 "إرث الأدوات والأسطوري": "Tool legacy and legendary tools",

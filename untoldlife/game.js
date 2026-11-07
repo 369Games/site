@@ -235,10 +235,10 @@ function petMult(stat) {
   return m;
 }
 /* How much a cleared floor grows the pets, by its difficulty for you (the same labels as the dungeon info):
-   easy 0, fitting 1, hard 2, very hard 4, deadly 6. So pets only grow on floors that push you. */
+   easy 0 (1 on the deepest floor open this generation), fitting 1, hard 2, very hard 4, deadly 6. So pets only grow on floors that push you. */
 function petGrow(f) {
   const { r, s } = assess(f);
-  if (r >= 1.5) return 0;
+  if (r >= 1.5) return f >= S.dun.max ? 1 : 0; // easy only counts on new ground: the deepest floor open this generation
   if (r >= 0.8) return 1;
   if (s >= 1) return 2;
   if (foodList().length > 0 && s >= 0.35) return 4;
@@ -283,8 +283,8 @@ function petPanel() {
     return `<div class="pet-card st${s}">${petIcon(p, s, 64)}<b>${p.n} • ${PET_STAGE[s].n}</b><span class="good">+${Math.round(PET_STAGE[s].b * 100)}% ${p.sn}</span>${prog}</div>`;
   }).join('');
   return L`<div class="panel pets"><div class="ph"><h2>🐾 الحيوانات الأسطورية</h2><span class="stat">بيضة نادرة جداً تطيح لما تخلص طابق في الزنزانة</span></div>
-    <p class="hint">البيضة تفقس بعد 30 دقيقة: تنين (+هجوم)، يونيكورن (+دفاع)، أو غريفين (+قوة في مهام النقابة). يكبر لما تخلص طوابق تتحداك: السهل ما يحسب، المناسب بطابق، الصعب بطابقين، الصعب جداً بـ4، والقاتل بـ6. رضيع +10%، مراهق +25%، بالغ +50%. الحيوانات للعائلة وتبقى معك كل الأجيال.</p>
-    ${Object.keys(d.pets).length ? `<p class="hint">${L`🌱 الطابق ${S.dun.floor} يكبّر حيواناتك: ${[L('ولا شي (سهل)'), L('طابق واحد (مناسب)'), L('طابقين (صعب)'), '', L('4 طوابق (صعب جداً)'), '', L('6 طوابق (قاتل)')][petGrow(S.dun.floor)]}`}</p>` : ''}
+    <p class="hint">البيضة تفقس بعد 30 دقيقة: تنين (+هجوم)، يونيكورن (+دفاع)، أو غريفين (+قوة في مهام النقابة). يكبر لما تخلص طوابق تتحداك: السهل ما يحسب إلا لو كان أعلى طابق وصلته في هالجيل، المناسب بطابق، الصعب بطابقين، الصعب جداً بـ4، والقاتل بـ6. رضيع +10%، مراهق +25%، بالغ +50%. الحيوانات للعائلة وتبقى معك كل الأجيال.</p>
+    ${Object.keys(d.pets).length ? `<p class="hint">${L`🌱 الطابق ${S.dun.floor} يكبّر حيواناتك: ${[L('ولا شي (سهل)'), S.dun.floor >= S.dun.max && assess(S.dun.floor).r >= 1.5 ? L('طابق واحد (سهل، بس أعلى طابق وصلته)') : L('طابق واحد (مناسب)'), L('طابقين (صعب)'), '', L('4 طوابق (صعب جداً)'), '', L('6 طوابق (قاتل)')][petGrow(S.dun.floor)]}`}</p>` : ''}
     <div class="pet-list">${eggs}${cards}</div></div>`;
 }
 

@@ -1061,7 +1061,8 @@ function titlePanel() {
     <p class="hint">وصلت الرتبة S! اختر لقب، وكل نقاط النقابة اللي تجيبها بعدها تروح له. كل لقب يحتاج ${fmt(TITLE_XP)} نقطة، ولما يكتمل يصير لك للأبد مع زيادته، ويبقى للعائلة كل الأجيال.${T.cur ? '' : L(' <b>ما اخترت لقب للحين، فالنقاط ما تنحسب.</b>')}</p>
     <div class="title-list">${cards}</div></div>`;
 }
-function guildGen() { return Math.max(1, goldGoal() / 1e6); }
+const GUILD_GEN_CAP = 200; // capped so very high generations don't get hunts worth tens of billions (×200 from generation 16)
+function guildGen() { return Math.min(GUILD_GEN_CAP, Math.max(1, goldGoal() / 1e6)); }
 function qGold(q) { return Math.round(q.gold * questMult() * (q.type === 'deliver' ? 1 : guildGen() * (1 + titleB('quest', 0.1)))); }
 function chanceOf(q) { return clamp(Math.pow(heroPower() / q.req, 2), 0.05, 1); }
 function genQuest() {
@@ -2022,7 +2023,7 @@ function viewGuild() {
   let h = L`<div class="panel"><div class="ph"><h2>📜 نقابة المرتزقة</h2><span class="rank">${RANKS[r][0]}</span></div>
     <div class="kv"><span>نقاط النقابة</span><span id="g_gpt"></span></div><div class="bar gp"><i id="g_gp"></i></div>
     <p class="hint">مهمات الصيد تعمل في الخلفية ونسبة نجاحها تعتمد على قوتك (⚡ <b id="g_pow"></b>). مهمات التوصيل تسلمها فوراً من مخزونك. الخانات: ${g.active.length}/${questSlots()}</p>
-    ${guildGen() > 1 ? L`<p class="hint">📈 جوائز الصيد ×${guildGen() >= 100 ? fmt(guildGen()) : Math.round(guildGen() * 10) / 10} لأنك في الجيل ${S.leg.gen}: تكبر مع كل جيل.</p>` : ''}
+    ${guildGen() > 1 ? L`<p class="hint">📈 جوائز الصيد ×${guildGen() >= 100 ? fmt(guildGen()) : Math.round(guildGen() * 10) / 10} لأنك في الجيل ${S.leg.gen}${guildGen() >= GUILD_GEN_CAP ? L(': وصلت الحد الأعلى (×200).') : L(': تكبر مع كل جيل لين ×200.')}</p>` : ''}
     ${P('w_ally') ? L`<p class="hint">🛡️ رفيقك يقبل مهمات الصيد لحاله لما تفضى خانة (اللي نجاحها ${ALLY_MIN * 100}% أو أكثر).</p>`.replace('🛡️', icon('ally', 32)) : ''}
     <h3>المهمات الجارية</h3>`;
   if (!g.active.length) h += L('<p class="hint">لا توجد مهمات جارية.</p>');

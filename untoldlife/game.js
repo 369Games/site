@@ -171,6 +171,15 @@ const EPITHET = ['', L('المتوحش'), L('الأسطوري'), L('الكارث
 const SWORD = [0, 5, 14, 30, 60, 120, 240];
 const ARMOR_DEF = [0, 3, 9, 20, 40, 80, 160];
 const ARMOR_HP = [0, 30, 80, 160, 320, 640, 1200];
+/* 1.6 fighting gear. Shield and helmet: flat defence plus a % on all defence. Amulet: % attack and defence,
+   and more healing from food. Boots: faster hits. All grow with the legendary forge roll (lf), like the other tools. */
+const SHIELD_DEF = [0, 5, 15, 35, 70, 140, 280], SHIELD_PCT = [0, 0.1, 0.2, 0.35, 0.5, 0.75, 1];
+const HELM_DEF = [0, 4, 12, 28, 56, 110, 220], HELM_PCT = [0, 0.05, 0.1, 0.2, 0.3, 0.45, 0.6];
+const AMULET_POW = [0, 0.05, 0.1, 0.15, 0.22, 0.3, 0.4], AMULET_HEAL = [0, 0.1, 0.2, 0.35, 0.5, 0.7, 1];
+const BOOTS_SPD = [0, 0.1, 0.2, 0.3, 0.45, 0.6, 0.8];
+function gearPct(arr, id) { return arr[S.tools[id] || 0] * lf(id); }
+function heroSpeed() { return 1 + gearPct(BOOTS_SPD, 'boots'); } // hits per second
+function amuletMult() { return 1 + gearPct(AMULET_POW, 'amulet'); }
 
 // Hold to dig or fish: hits per second for each level of the worker's gloves.
 const HOLD_RATE = [2, 3, 4, 5, 6, 8, 10];
@@ -180,6 +189,10 @@ const TOOLS = [
   { id: 'pick', n: L('الفأس'), e: '⛏️', eff: (l, m = 1) => L`قوة حفر ×${(1 + 0.6 * l * m).toFixed(1)} • أقصى عمق ${PICK_CAP[l] > 1e8 ? '∞' : PICK_CAP[l]}` },
   { id: 'sword', guild: 1, n: L('السيف'), e: '🗡️', eff: (l, m = 1) => L`+${Math.round(SWORD[l] * m)} هجوم` },
   { id: 'armor', guild: 1, n: L('الدرع'), e: '🛡️', eff: (l, m = 1) => L`+${Math.round(ARMOR_DEF[l] * m)} دفاع • +${Math.round(ARMOR_HP[l] * m)} صحة` },
+  { id: 'helmet', guild: 1, n: L('الخوذة'), e: '⛑️', eff: (l, m = 1) => L`+${Math.round(HELM_DEF[l] * m)} دفاع • +${Math.round(HELM_PCT[l] * m * 100)}% لكل الدفاع` },
+  { id: 'shield', guild: 1, n: L('الترس'), e: '🔰', eff: (l, m = 1) => L`+${Math.round(SHIELD_DEF[l] * m)} دفاع • +${Math.round(SHIELD_PCT[l] * m * 100)}% لكل الدفاع` },
+  { id: 'amulet', guild: 1, n: L('القلادة'), e: '📿', eff: (l, m = 1) => L`+${Math.round(AMULET_POW[l] * m * 100)}% هجوم ودفاع • +${Math.round(AMULET_HEAL[l] * m * 100)}% شفاء الأكل` },
+  { id: 'boots', guild: 1, n: L('الحذاء'), e: '👢', eff: (l, m = 1) => L`+${Math.round(BOOTS_SPD[l] * m * 100)}% سرعة الضرب` },
   { id: 'rod', n: L('السنارة'), e: '🎣', eff: (l, m = 1) => L`قوة الصيد ×${(1 + 0.5 * l * m).toFixed(1)} • أسماك نادرة أكثر` },
   { id: 'glove', n: L('قفازات العامل'), e: '🧤', eff: (l, m = 1) => L`الضغط المطوّل: ${Math.round(HOLD_RATE[l] * m)} ضربات بالثانية في المنجم والبحيرة` },
   { id: 'crook', n: L('عصا الراعي'), e: '🐑', eff: (l, m = 1) => L`+${Math.round(l * 50 * m)}% سرعة الإنتاج الحيواني` },
@@ -187,7 +200,8 @@ const TOOLS = [
 /* Legendary forge: an adamantite tool can be forged into its legendary form for 500 mithril + 1000 adamantite.
    Each forge rolls a bonus from 5% to 100% on the tool's own effect; forging again rolls a new one (it replaces the old).
    Low rolls are common: white 5–29%, blue 30–59%, purple 60–99%, gold = 100% (0.5%). Starts over every generation. */
-const LEG_TOOLS = { hoe: L('معزقة الخصوبة'), can: L('مرشة الحياة'), pick: L('فأس الدمار'), sword: L('سيف العاصفة'), armor: L('درع الحارس الخالد'), rod: L('سنارة الأعماق'), glove: L('قفازات العمالقة'), crook: L('عصا القطيع') };
+const LEG_TOOLS = { hoe: L('معزقة الخصوبة'), can: L('مرشة الحياة'), pick: L('فأس الدمار'), sword: L('سيف العاصفة'), armor: L('درع الحارس الخالد'), rod: L('سنارة الأعماق'), glove: L('قفازات العمالقة'), crook: L('عصا القطيع'),
+  helmet: L('خوذة الملوك'), shield: L('ترس الجبل'), amulet: L('قلادة الأجداد'), boots: L('حذاء الريح') };
 const LEG_COST = [['mithril', 500], ['adamant', 1000]];
 const LEG_RAR = [{ n: L('بيضاء'), c: 'w' }, { n: L('زرقاء'), c: 'b' }, { n: L('بنفسجية'), c: 'p' }, { n: L('ذهبية'), c: 'g' }];
 // Buffs panel label for a tool: its legendary name and roll once forged.
@@ -423,7 +437,7 @@ function newState() {
     farm: { plots, seed: 'turnip' },
     barn: { n: {}, t: {}, h: {}, q: {}, br: null, houses: 1, cd: [], lab: 0 },
     mine: { depth: 1, max: 1, prog: 0, blocks: 0, miners: 0 },
-    tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0, crook: 0, glove: 0 }, tlg: {},
+    tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0, crook: 0, glove: 0, helmet: 0, shield: 0, amulet: 0, boots: 0 }, tlg: {},
     lake: { prog: 0, fishers: 0, last: null, spot: 'lake', bait: 0, autoBait: false },
     hero: { lvl: 1, xp: 0, hp: 60, xc: 1 },
     wk: null, // the weekly challenge and village goal (weekly.js)
@@ -771,8 +785,11 @@ function blockDone() {
 
 /* ---------------- البطل والقتال ---------------- */
 function heroMaxHp() { return Math.floor((60 + 20 * (S.hero.lvl - 1) + ARMOR_HP[S.tools.armor] * lf('armor')) * (1 + 0.05 * hearts('leila')) * warMult()); }
-function heroAtk() { return (6 + 3 * (S.hero.lvl - 1) + SWORD[S.tools.sword] * lf('sword')) * warMult() * mskPow(); }
-function heroDef() { return (1 + (S.hero.lvl - 1) + ARMOR_DEF[S.tools.armor] * lf('armor')) * mskPow(); }
+function heroAtk() { return (6 + 3 * (S.hero.lvl - 1) + SWORD[S.tools.sword] * lf('sword')) * warMult() * mskPow() * amuletMult(); }
+function heroDef() {
+  const flat = 1 + (S.hero.lvl - 1) + ARMOR_DEF[S.tools.armor] * lf('armor') + gearPct(SHIELD_DEF, 'shield') + gearPct(HELM_DEF, 'helmet');
+  return flat * (1 + gearPct(SHIELD_PCT, 'shield') + gearPct(HELM_PCT, 'helmet')) * mskPow() * amuletMult();
+}
 function heroPower() { return Math.round(heroAtk() * 2 + heroDef() * 2 + heroMaxHp() / 5); }
 // Combat levels come about twice as fast as before 1.9.1 (the old curve was 50·l^2.2): the same xp gives about double the level.
 function hxpNeed(l) { return Math.floor(5.5 * Math.pow(l, 2.2)); }
@@ -796,7 +813,7 @@ function makeEnemy(f) {
 }
 function dmg(a, d) { return Math.max(1, a * a / (a + d)) * R(0.85, 1.15); }
 function regenRate() { return heroMaxHp() * 0.03 * (S.bld.inn ? 2 : 1) * Math.max(0.1, 1 + spv('leila', 'regen')); }
-function healOf(id) { return (ITEMS[id].price * 1.5 + 10) * (S.bld.kitchen ? 2 : 1) * Math.max(0.1, 1 + spv('leila', 'heal')); }
+function healOf(id) { return (ITEMS[id].price * 1.5 + 10) * (S.bld.kitchen ? 2 : 1) * Math.max(0.1, 1 + spv('leila', 'heal')) * (1 + gearPct(AMULET_HEAL, 'amulet')); }
 function foodList() {
   const cats = noFarm() ? ['crop', 'animal', 'fish', 'monster'] : ['crop', 'animal', 'fish'];
   return Object.keys(S.inv).filter(id => cats.includes(ITEMS[id].cat) && !S.locked[id] && !KINGS.some(k => k.id === id))
@@ -873,8 +890,9 @@ function tickCombat(dt) {
   if (D.autoEat && h.hp < mhp * 0.4) eat();
   h.hp = Math.min(mhp, h.hp + mhp * 0.005 * dt); // تعافٍ بسيط أثناء القتال
   D.ht += dt; D.et += dt;
-  while (D.ht >= 1) {
-    D.ht -= 1;
+  const hitT = 1 / heroSpeed(); // the boots shorten the time between hits
+  while (D.ht >= hitT) {
+    D.ht -= hitT;
     D.enemy.hp -= dmg(heroAtk(), D.enemy.def);
     if (D.enemy.hp <= 0) killEnemy();
     if (P('w_ally')) { D.enemy.hp -= dmg(heroAtk() * 0.5, D.enemy.def); if (D.enemy.hp <= 0) killEnemy(); }
@@ -1151,7 +1169,7 @@ function applyGenStart(oldTools) {
   const LG = S.leg, nw = inCh('noworkers');
   S.gold = 50 + startGold(P('t_gold'));
   for (let i = 0; i < 2 * P('f_plots'); i++) S.farm.plots.push({ c: null, p: 0, w: false });
-  for (const t of ['hoe', 'can', 'pick', 'sword', 'armor', 'rod', 'crook', 'glove']) S.tools[t] = Math.min(6, Math.max(H(t), P('q_tools') && oldTools ? (oldTools[t] || 0) - 1 : 0));
+  for (const t of ['hoe', 'can', 'pick', 'sword', 'armor', 'rod', 'crook', 'glove', 'helmet', 'shield', 'amulet', 'boots']) S.tools[t] = Math.min(6, Math.max(H(t), P('q_tools') && oldTools ? (oldTools[t] || 0) - 1 : 0));
   if (!noFarm()) {
     if (P('r_start')) { S.barn.n.chicken = 2 * P('r_start'); S.barn.h.chicken = 100; }
     if (H('cow')) { S.barn.n.cow = H('cow'); S.barn.h.cow = 100; }
@@ -1895,11 +1913,32 @@ function viewGuild() {
       <div class="row"><button class="btn sm" data-a="mastUp" ${can ? '' : 'disabled'}>طوّر (${MAST_COST} نقاط)</button>${can > 1 ? L`<button class="btn ghost sm" data-a="mastUp" data-v="all">طوّر ×${can}</button>` : ''}</div></div>`;
   }
   const heroPanel = (hero + h + '</div>').replace('🧑', icon(S.gender === 'f' ? 'hero-f' : 'hero-m', 48)); // the player's portrait in the title
-  return dun + `<div class="two"><div>${heroPanel}</div><div>${guild}</div></div>`;
+  return dun + `<div class="two"><div>${heroPanel}</div><div>${guild}</div></div>` + gearPanel();
+}
+/* The hero's equipment, laid out like an inventory: helmet and amulet on top, sword, armour and shield in the
+   middle, boots below. Tapping a slot opens the smith. Underneath: what the gear adds up to. */
+const GEAR_SLOTS = [['helmet', 'h'], ['amulet', 'a'], ['sword', 'w'], ['armor', 'b'], ['shield', 's'], ['boots', 'f']];
+function toolIcon(t, size) {
+  const l = S.tools[t.id] || 0, lv = l >= 6 ? lgv(t.id) : 0, key = lv && (ART[t.id + '-7'] || PX[t.id + '-7']) ? t.id + '-7' : t.id + '-' + l;
+  return ART[key] || PX[key] ? icon(key, size) : `<span class="tool-emoji">${t.e}</span>`;
+}
+function gearPanel() {
+  const slot = ([id, area]) => {
+    const t = TOOLS.find(x => x.id === id), l = S.tools[id] || 0, lv = l >= 6 ? lgv(id) : 0, rar = LEG_RAR[lgTier(lv)];
+    return `<button class="gear-slot g-${area} ${lv ? 'lgcard ' + rar.c : ''}" data-a="tab" data-v="smith" title="${esc(t.n)}">${toolIcon(t, 56)}
+      <b>${lv ? LEG_TOOLS[id] : t.n}</b><small>${lv ? L`+${lv}% • ${rar.n}` : TIER[l]}</small></button>`;
+  };
+  const rows = GEAR_SLOTS.map(([id]) => { const t = TOOLS.find(x => x.id === id), l = S.tools[id] || 0; return `<div class="kv"><span>${t.n}</span><span>${l ? t.eff(l, l >= 6 ? lf(id) : 1) : L('ما طوّرته بعد')}</span></div>`; }).join('');
+  return L`<div class="panel gear"><div class="ph"><h2>🎒 عدّة ${esc(S.name)}</h2><span class="stat">اضغط أي قطعة عشان تطوّرها عند الحداد</span></div>
+    <div class="gear-wrap"><div class="gear-doll">${GEAR_SLOTS.map(slot).join('')}</div>
+    <div class="gear-stats"><div class="kv"><span>🗡️ الهجوم</span><b>${fmt(heroAtk())}</b></div><div class="kv"><span>🛡️ الدفاع</span><b>${fmt(heroDef())}</b></div>
+      <div class="kv"><span>❤️ الصحة</span><b>${fmt(heroMaxHp())}</b></div><div class="kv"><span>⚡ القوة</span><b>${fmt(heroPower())}</b></div>
+      <div class="kv"><span>👢 الضربات بالثانية</span><b>${Math.round(heroSpeed() * 100) / 100}</b></div><div class="kv"><span>🍽️ شفاء الأكل</span><b>+${Math.round(gearPct(AMULET_HEAL, 'amulet') * 100)}%</b></div>
+      <h3>من العدّة</h3>${rows}</div></div></div>`;
 }
 function assess(f) {
   const e = makeEnemy(f), a = heroAtk(), d = heroDef();
-  const hd = Math.max(1, a * a / (a + e.def)), ed = Math.max(1, e.atk * e.atk / (e.atk + d)) / 1.25;
+  const hd = Math.max(1, a * a / (a + e.def)) * heroSpeed(), ed = Math.max(1, e.atk * e.atk / (e.atk + d)) / 1.25;
   const tKill = e.mhp / hd, tDie = heroMaxHp() / ed;
   return { r: tDie / (tKill * (e.boss ? 1 : 5)), s: tDie / tKill };
 }
@@ -2359,7 +2398,7 @@ const VIEWS = {
   mine: [viewMine, updMine, () => [S.off, S.mine.miners, S.tools.pick, lgv('pick'), ORES.filter(o => o.depth <= S.mine.max).length]],
   guild: [viewGuild, updGuild, () => {
     const D = S.dun, g = S.guild;
-    return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100)))];
+    return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), S.tools, S.tlg, S.hero.lvl, floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100)))];
   }],
   smith: [viewSmith, updReqs, () => [S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],

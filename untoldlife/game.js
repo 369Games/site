@@ -178,8 +178,8 @@ const TOOLS = [
   { id: 'hoe', n: L('المعزقة'), e: '🌾', eff: (l, m = 1) => L`+${Math.round(l * 20 * m)}% سرعة نمو المحاصيل` },
   { id: 'can', n: L('المرشة'), e: '🚿', eff: (l, m = 1) => L`السقي يسرّع النمو ×${(2 + 0.25 * l * m).toFixed(2)}${l >= 1 ? L(' • زر "سقي الكل"') : ''}` },
   { id: 'pick', n: L('الفأس'), e: '⛏️', eff: (l, m = 1) => L`قوة حفر ×${(1 + 0.6 * l * m).toFixed(1)} • أقصى عمق ${PICK_CAP[l] > 1e8 ? '∞' : PICK_CAP[l]}` },
-  { id: 'sword', n: L('السيف'), e: '🗡️', eff: (l, m = 1) => L`+${Math.round(SWORD[l] * m)} هجوم` },
-  { id: 'armor', n: L('الدرع'), e: '🛡️', eff: (l, m = 1) => L`+${Math.round(ARMOR_DEF[l] * m)} دفاع • +${Math.round(ARMOR_HP[l] * m)} صحة` },
+  { id: 'sword', guild: 1, n: L('السيف'), e: '🗡️', eff: (l, m = 1) => L`+${Math.round(SWORD[l] * m)} هجوم` },
+  { id: 'armor', guild: 1, n: L('الدرع'), e: '🛡️', eff: (l, m = 1) => L`+${Math.round(ARMOR_DEF[l] * m)} دفاع • +${Math.round(ARMOR_HP[l] * m)} صحة` },
   { id: 'rod', n: L('السنارة'), e: '🎣', eff: (l, m = 1) => L`قوة الصيد ×${(1 + 0.5 * l * m).toFixed(1)} • أسماك نادرة أكثر` },
   { id: 'glove', n: L('قفازات العامل'), e: '🧤', eff: (l, m = 1) => L`الضغط المطوّل: ${Math.round(HOLD_RATE[l] * m)} ضربات بالثانية في المنجم والبحيرة` },
   { id: 'crook', n: L('عصا الراعي'), e: '🐑', eff: (l, m = 1) => L`+${Math.round(l * 50 * m)}% سرعة الإنتاج الحيواني` },
@@ -1983,9 +1983,16 @@ function updReqs() {
 }
 function viewSmith() {
   let h = L`<div class="panel"><div class="ph"><h2>🔨 ورشة الحداد قاسم</h2><span class="stat">خصم الصداقة ${3 * hearts('smith')}%</span></div>
-  <p class="hint">كل تطوير يحتاج ذهباً ومعدناً من المنجم. المعادن مقفلة 🔒 في السوق افتراضياً حتى لا تبيعها بالخطأ.</p><div class="smith-scene" aria-hidden="true">${icon("npc-smith-1",64)}${icon("anvil",64)}${icon("iron",64)}</div><div class="grid">`;
-  for (const t of TOOLS) {
-    if (t.id === 'rod' && S.leg.gen < 2) continue;
+  <p class="hint">كل تطوير يحتاج ذهباً ومعدناً من المنجم. المعادن مقفلة 🔒 في السوق افتراضياً حتى لا تبيعها بالخطأ.</p><div class="smith-scene" aria-hidden="true">${icon("npc-smith-1",64)}${icon("anvil",64)}${icon("iron",64)}</div>`;
+  // Two groups: work tools, and the guild's fighting gear (sword and armour; more will join later, marked guild: 1).
+  const shown = TOOLS.filter(t => !(t.id === 'rod' && S.leg.gen < 2));
+  h += L('<h3>🧰 أدوات العمل</h3>') + '<div class="grid">' + shown.filter(t => !t.guild).map(toolCard).join('') + '</div>';
+  h += L('<h3>⚔️ عدة القتال (النقابة)</h3>') + '<div class="grid">' + shown.filter(t => t.guild).map(toolCard).join('') + '</div>';
+  return h + '</div>';
+}
+function toolCard(t) {
+  let h = '';
+  {
     const l = S.tools[t.id] || 0, ti = k => { const key = t.art || t.id + '-' + k; return ART[key] || PX[key] ? icon(key, 48) : `<span class="tool-emoji">${t.e}</span>`; };
     const lv = l >= 6 ? lgv(t.id) : 0, rar = LEG_RAR[lgTier(lv)];
     // The legendary picture is <id>-7 once its art exists; until then the adamantite one, in the roll's colour frame.
@@ -2007,7 +2014,7 @@ function viewSmith() {
     }
     h += '</div>';
   }
-  return h + '</div></div>';
+  return h;
 }
 
 /* ----- السوق ----- */

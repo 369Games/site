@@ -259,7 +259,7 @@ function tickPets(dt) {
 }
 function petIcon(p, stage, size) {
   const key = 'pet-' + p.id + '-' + stage;
-  return ART[key] ? `<span class="pet-pic">${icon(key, [70, 86, 100] || size)}</span>` : `<span class="pet-emoji s${stage}">${p.e}</span>`;
+  return ART[key] ? `<span class="pet-pic">${icon(key, [70, 86, 100][stage] || size)}</span>` : `<span class="pet-emoji s${stage}">${p.e}</span>`;
 }
 function petPanel() {
   const d = petData();

@@ -138,7 +138,7 @@
 "التنين الأحمر": "The Red Dragon",
 "المتوحش": "Savage",
 "الأسطوري": "Legendary",
-"الإلهي": "Divine",
+"الكارثي": "Calamitous",
 "المعزقة": "Hoe",
 "+{0}% سرعة نمو المحاصيل": "+{0}% crop growth speed",
 "المرشة": "Watering can",

@@ -120,6 +120,7 @@ for(let i=0;i<7;i++)ART_CUTOUTS['glove:'+i]='art/work-gloves/glove-'+i+'.webp';
 ['goat','goat-p','goat-g','cheese','cheese_g','turkey','turkey-p','turkey-g','meat','meat_g'].forEach((id,i)=>{ART_CUTOUTS['goatturkey:'+i]='art/goat-turkey/'+id+'.webp';});
 ['camel','camel-p','camel-g','hashi','hashi_g'].forEach((id,i)=>{ART_CUTOUTS['camel:'+i]='art/camel-hashi/'+id+'.webp';});
 ['orichalcum','starmetal'].forEach((id,i)=>{ART_CUTOUTS['deepore:'+i]='art/deep-ores/'+id+'.webp';});
+['ally','hero-f','hero-m','icon-autobreed','icon-donor','icon-dungeon','icon-floorfit','icon-friend','icon-fund','icon-merchant','perk-f_seeds','perk-m_tnt','perk-q_tools','perk-q_twin','perk-r_twin','perk-t_deal','perk-w_ally'].forEach((id,i)=>{ART_CUTOUTS['missing:'+i]='art/missing-v1/'+id+'.webp';});
 ['neutral','friendly','joyful'].forEach((m,i)=>{ART_CUTOUTS['salma:'+i]='art/portraits/salma-'+m+'-v2.webp';});
 for(const t of ['hoe','can','pick','sword','armor','rod','glove','crook'])ART_CUTOUTS['legend:'+t]='art/legendary-tools/'+t+'-7.webp';
 ["trout","crayfish","eel","catfish","sturgeon","tuna","oyster","jelly","swordfish","whaleshark","k_lake","k_river","k_sea"].forEach((id,index)=>{ART_CUTOUTS['fish2:'+index]='art/fishing-v2/'+id+'.webp';});

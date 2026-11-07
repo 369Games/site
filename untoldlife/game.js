@@ -396,6 +396,7 @@ function canBond(np) { return np.id !== 'mayor' && !!S.gender && np.g === S.gend
    either gender) can become a soul twin for TWIN_COST each, at 10 hearts. Their perk is x2.5 (+15 hearts) and love
    never fades. Starts over every generation, like marriage. */
 const TWIN_COST = 10e6;
+function twinIcon(t, size = 22) { return t.replace('🌟', icon('perk-q_twin', size)); } // soul twin lines show the twin badge, not the plain star
 function twinOpen() { return P('q_twin') > 0 && !!S.spouse && !!S.friend && !Object.keys(S.twins || {}).length; } // one soul twin only
 function isTwin(id) { return !!(S.twins && S.twins[id]); }
 function bonded(id) { return S.spouse === id || S.friend === id || isTwin(id); }
@@ -1732,10 +1733,10 @@ function breedPanel() {
   for (let i = 0; i < houseCount(); i++) h += `<span class="house" id="hs${i}"></span>`;
   h += '</div>';
   if (houseCount() < HOUSE_MAX) h += `<div class="row">${costBtn('buyHouse', '', houseCost(), L`🏠 بيت تهجين جديد (${houseCount() + 1}/${HOUSE_MAX}) — ${fmt(houseCost())}💰`)}</div>`
-    + (houseCount() === HOUSE_MAX - 1 ? L('<p class="hint">🎯 البيت السادس يفتح التهجين التلقائي.</p>') : '');
+    + (houseCount() === HOUSE_MAX - 1 ? L('<p class="hint">🎯 البيت السادس يفتح التهجين التلقائي.</p>').replace('🎯', icon('icon-autobreed', 24)) : '');
   else {
     const f = focusOn(), list = BREEDABLE.map(id => ANIMALS.find(x => x.id === id)).filter(a => S.skills.ranch.l >= a.lvl && (S.barn.n[a.id] || 0));
-    h += L`<div class="zonebox"><b>🎯 التهجين التلقائي</b> <small class="hint">اختر حيوان، والبيوت تهجّنه لحالها: العادي لين يصير ممتاز، وبعدين الممتاز لين يصير ذهبي. نفس النسب والخسارة مثل التهجين باليد.</small><div class="row">`
+    h += L`<div class="zonebox"><b>🎯 التهجين التلقائي</b>`.replace('🎯', icon('icon-autobreed', 28)) + L` <small class="hint">اختر حيوان، والبيوت تهجّنه لحالها: العادي لين يصير ممتاز، وبعدين الممتاز لين يصير ذهبي. نفس النسب والخسارة مثل التهجين باليد.</small><div class="row">`
       + list.map(a => `<button class="btn ${f === a.id ? 'gold' : 'ghost'} sm" data-a="breedFocus" data-v="${a.id}">${icon(a, 24)} ${a.n}</button>`).join('')
       + (f ? L`<button class="btn ghost sm" data-a="breedFocus" data-v="">⏹️ إيقاف</button>` : '') + '</div></div>';
   }
@@ -1828,7 +1829,7 @@ function viewGuild() {
     <p class="hint">طوّر السيف والدرع عند الحداد. الطعام من مزرعتك يشفيك أثناء القتال (المقفل 🔒 لا يؤكل)، وبين كل أكلة وأكلة ${eatCd()} ثواني.</p>
   </div>
   <div class="panel"><div class="ph"><h2>🕳️ الزنزانة</h2><span class="stat">أنت في الطابق <b>${D.floor}</b> • المفتوح حتى <b>${D.max}</b></span></div>
-    ${P('w_ally') ? L('<p class="hint">🛡️ رفيق المعارك يقاتل معك.</p>') : ''}
+    ${P('w_ally') ? L('<p class="hint">🛡️ رفيق المعارك يقاتل معك.</p>').replace('🛡️', icon('ally', 32)) : ''}
     <div class="row">
       <button class="btn ${D.active ? 'red' : ''}" data-a="dunToggle">${D.active ? L('🏃 انسحاب') : L('🗡️ دخول الزنزانة')}</button>
       <button class="btn ghost sm" data-a="floor" data-v="-1" ${D.floor <= 1 ? 'disabled' : ''}>◀ طابق أسهل</button>
@@ -1848,7 +1849,7 @@ function viewGuild() {
     <div class="kv"><span>نقاط النقابة</span><span id="g_gpt"></span></div><div class="bar gp"><i id="g_gp"></i></div>
     <p class="hint">مهمات الصيد تعمل في الخلفية ونسبة نجاحها تعتمد على قوتك (⚡ <b id="g_pow"></b>). مهمات التوصيل تسلمها فوراً من مخزونك. الخانات: ${g.active.length}/${questSlots()}</p>
     ${guildGen() > 1 ? L`<p class="hint">📈 جوائز الصيد ×${guildGen() >= 100 ? fmt(guildGen()) : Math.round(guildGen() * 10) / 10} لأنك في الجيل ${S.leg.gen}: تكبر مع كل جيل.</p>` : ''}
-    ${P('w_ally') ? L`<p class="hint">🛡️ رفيقك يقبل مهمات الصيد لحاله لما تفضى خانة (اللي نجاحها ${ALLY_MIN * 100}% أو أكثر).</p>` : ''}
+    ${P('w_ally') ? L`<p class="hint">🛡️ رفيقك يقبل مهمات الصيد لحاله لما تفضى خانة (اللي نجاحها ${ALLY_MIN * 100}% أو أكثر).</p>`.replace('🛡️', icon('ally', 32)) : ''}
     <h3>المهمات الجارية</h3>`;
   if (!g.active.length) h += L('<p class="hint">لا توجد مهمات جارية.</p>');
   g.active.forEach(q => {
@@ -1886,7 +1887,7 @@ function viewGuild() {
       <div class="row"><button class="btn sm" data-a="mastUp" ${can ? '' : 'disabled'}>طوّر (${MAST_COST} نقاط)</button>${can > 1 ? L`<button class="btn ghost sm" data-a="mastUp" data-v="all">طوّر ×${can}</button>` : ''}</div></div>`;
   }
   h += `</div></div></div>`;
-  return h;
+  return h.replace('🧑', icon(S.gender === 'f' ? 'hero-f' : 'hero-m', 48)); // the player's portrait in the hero panel title
 }
 function assess(f) {
   const e = makeEnemy(f), a = heroAtk(), d = heroDef();
@@ -2062,13 +2063,13 @@ function updMarket() {
 function viewVillage() {
   let h = (typeof weeklyPanel === 'function' ? weeklyPanel() : '') + L`<div class="panel"><div class="ph"><h2>🏘️ أهل وادي الصدى</h2></div>
   <p class="hint">أهدِ كل شخص ما يحبه مرة واحدة يومياً. كل قلبين تقريباً يمنحك مكافأة دائمة (حتى 10 قلوب). اللي يحبونه يتغير كل موسم، ولو ما أهديت أحد لمدة نص موسم يزعل ويقل حبه (الوقت اللي تكون فيه برا اللعبة ما ينحسب).</p>
-  ${P('q_twin') && !(S.spouse && S.friend) ? L('<p class="hint">🌟 توأم الروح ينفتح لما يكون عندك زوج وصديق عمر.</p>') : ''}${!S.gender ? L`<div class="zonebox"><b>🧑 حدد شخصيتك</b> <small class="hint">عشان يظهر لك خيار الزواج وصداقة العمر مع أهل القرية</small>${genderPick('setGender', null)}</div>` : ''}<div class="grid">`;
+  ${P('q_twin') && !(S.spouse && S.friend) ? twinIcon(L('<p class="hint">🌟 توأم الروح ينفتح لما يكون عندك زوج وصديق عمر.</p>')) : ''}${!S.gender ? L`<div class="zonebox"><b>🧑 حدد شخصيتك</b> <small class="hint">عشان يظهر لك خيار الزواج وصداقة العمر مع أهل القرية</small>${genderPick('setGender', null)}</div>` : ''}<div class="grid">`;
   for (const np of NPCS) {
     const st = S.npc[np.id] || { pts: 0, gd: 0 }, hr = Math.floor(st.pts / 100), half = st.pts % 100 >= 50, today = st.gd === dayAbs();
     let hs = '';
     for (let i = 0; i < 10; i++) hs += i < hr ? '❤' : (i === hr && half) ? '<span class="half">❤</span>' : '♡';
     h += L`<div class="card npc-card"><button class="npc-info" data-a="npcInfo" data-v="${np.id}" title="القصة" aria-label="القصة">?</button><div class="top"><span class="big">${ART['npc-' + np.id + '-0'] ? icon('npc-' + np.id + '-' + Math.min(2,Math.floor(hr/4)),96) : `<span class="tool-emoji npc-emoji">${np.e}</span>`}</span><div class="meta"><b>${np.n}</b><small class="npc-role">${np.role}</small>
-      <div class="hearts">${hs}</div><small>المكافأة: ${np.perk(hearts(np.id))}${isTwin(np.id) ? L(' (×2.5 🌟)') : S.spouse === np.id ? L(' (مضاعفة 💍)') : S.friend === np.id ? L(' (مضاعفة 🤝)') : ''}</small></div></div>
+      <div class="hearts">${hs}</div><small>المكافأة: ${np.perk(hearts(np.id))}${isTwin(np.id) ? twinIcon(L(' (×2.5 🌟)')) : S.spouse === np.id ? L(' (مضاعفة 💍)') : S.friend === np.id ? L(' (مضاعفة 🤝)') : ''}</small></div></div>
       ${seasonLine(np)}<div class="say">«${np.lines[Math.min(2, Math.floor(hr / 4))]}»</div><div class="gifts">`;
     const gf = giftsOf(np), left = giftDaysLeft(np);
     const gl = [[gf.love, L('❤️ يعشقه هالموسم: +1 قلب'), 'gold'], [gf.like, L('💗 يحبه هالموسم: +½ قلب'), 'ghost']];
@@ -2084,8 +2085,8 @@ function viewVillage() {
     let mar = '';
     if (S.spouse === np.id) mar = L('<p class="okline">💍 شريك حياتك — مكافأته مضاعفة ويساعدك (+10% لكل الإنتاج)</p>');
     else if (S.friend === np.id) mar = np.g === 'f' ? L('<p class="okline">🤝 صديقة عمرك — مكافأتها مضاعفة وتساعدك (+10% لكل الإنتاج)</p>') : L('<p class="okline">🤝 صديق عمرك — مكافأته مضاعفة ويساعدك (+10% لكل الإنتاج)</p>');
-    else if (isTwin(np.id)) mar = np.g === 'f' ? L('<p class="okline">🌟 توأم روحك — مكافأتها ×2.5 وحبها ما يقل أبد</p>') : L('<p class="okline">🌟 توأم روحك — مكافأته ×2.5 وحبه ما يقل أبد</p>');
-    else if (twinOpen() && st.pts >= 1000) mar = `<div class="row">${costBtn('soulTwin', np.id, TWIN_COST, L`🌟 توأم الروح (${fmt(TWIN_COST)}💰)`, 'gold')}</div>`;
+    else if (isTwin(np.id)) mar = twinIcon(np.g === 'f' ? L('<p class="okline">🌟 توأم روحك — مكافأتها ×2.5 وحبها ما يقل أبد</p>') : L('<p class="okline">🌟 توأم روحك — مكافأته ×2.5 وحبه ما يقل أبد</p>'));
+    else if (twinOpen() && st.pts >= 1000) mar = `<div class="row">${costBtn('soulTwin', np.id, TWIN_COST, twinIcon(L`🌟 توأم الروح (${fmt(TWIN_COST)}💰)`), 'gold')}</div>`;
     else if (canWed(np) && st.pts >= 1000 && !S.spouse) mar = S.leg.gen >= 5 ? `<div class="row">${costBtn('marry', np.id, 50000, L('💍 اطلب الزواج (50,000💰)'), 'red')}</div>` : L('<small class="hint">💍 الزواج ينفتح في الجيل الخامس</small>');
     else if (canBond(np) && st.pts >= 1000 && !S.friend) mar = S.leg.gen >= 5 ? `<div class="row">${costBtn('befriend', np.id, 50000, L('🤝 اطلب صداقة العمر (50,000💰)'), 'gold')}</div>` : L('<small class="hint">🤝 صداقة العمر تنفتح في الجيل الخامس</small>');
     const sad = bonded(np.id) || st.pts <= 0 || donorOn() ? '' : left <= 0 ? L('<small class="hint warnline">💔 زعلان: يقل حبه كل يوم لين تهديه</small>') : left <= 2 ? L`<small class="hint">⏳ يزعل بعد ${left} يوم لو ما أهديته</small>` : '';
@@ -2105,12 +2106,13 @@ function viewVillage() {
 function fundPanel() {
   const l = donLv(), c = donCost(l);
   let n = 0, sum = 0; while (n < 200 && sum + donCost(l + n) <= S.gold) { sum += donCost(l + n); n++; }
-  return L`<div class="panel fund"><div class="ph"><h2>🏛️ صندوق القرية</h2><span class="stat">المستوى <b>${l}</b> • +${l}% لكل الإنتاج</span></div>
+  return (L`<div class="panel fund"><div class="ph"><h2>🏛️ صندوق القرية</h2><span class="stat">المستوى <b>${l}</b> • +${l}% لكل الإنتاج</span></div>
   <p class="hint">تبرعك يبني القرية للأبد: كل مستوى يعطي +1% سرعة للمزرعة والحظيرة والمنجم والبحيرة، ويبقى مع العائلة في كل الأجيال. ما له حد، وكل مستوى سعره ضعف اللي قبله.</p>
   <div class="row">${costBtn('donate', '1', c, L`🏛️ تبرّع (${fmt(c)}💰) ← +${l + 1}%`)}${n > 1 ? `<button class="btn ghost" data-a="donate" data-v="all">${L`تبرّع ×${n} (${fmt(sum)}💰)`}</button>` : ''}</div>
   <h3>🤝 المتبرع</h3>
   <p class="hint">${donorOn() ? L('✅ أنت المتبرع هالموسم: ما أحد يزعل ولا ينقص حبه لين يخلص الموسم.') : L('ادفع للقرية، وما أحد يزعل ولا ينقص حبه لين يخلص هالموسم، حتى لو ما أهديته.')}</p>
-  ${donorOn() ? '' : `<div class="row">${costBtn('donor', '', DONOR_COST, L`🤝 كن المتبرع هالموسم (${fmt(DONOR_COST)}💰)`)}</div>`}</div>`;
+  ${donorOn() ? '' : `<div class="row">${costBtn('donor', '', DONOR_COST, L`🤝 كن المتبرع هالموسم (${fmt(DONOR_COST)}💰)`)}</div>`}</div>`)
+    .replaceAll('🏛️', icon('icon-fund', 28)).replaceAll('🤝', icon('icon-donor', 24));
 }
 
 /* ----- المزيد ----- */
@@ -2311,7 +2313,7 @@ function viewLegacy() {
 }
 function perkCard(p) {
   const LG = S.leg, l = P(p.id), maxed = l >= p.max, c = perkCost(p, l), why = perkLock(p);
-  const art = p.ks || !ART['perk-' + p.id] ? `<span class="ks-mark">${p.e}</span>` : icon('perk-' + p.id, 48);
+  const art = ART['perk-' + p.id] ? icon('perk-' + p.id, 48) : `<span class="ks-mark">${p.e}</span>`;
   return `<div class="card perk ${l ? 'has' : ''} ${why ? 'locked' : ''} ${p.ks ? 'ks' : ''}"><div class="top"><span class="big">${art}</span><div class="meta">${p.ks ? L('<small class="ks-tag">⭐ مهارة خاصة</small>') : ''}<b>${p.n}</b> ${p.ks ? '' : p.max === Infinity ? `(${l})` : `(${l}/${p.max})`}${p.start ? ' 🌱' : ''}
     <small>${p.ks ? p.eff(1) : l ? p.eff(l) : L('ما تعلمتها بعد')}</small>${p.start && !maxed ? `<small class="start-note ${startNow() ? 'now' : ''}">${startNow() ? L('🌱 لو تشتريها الحين تطبق عليك فوراً') : L('🌱 تطبق من بداية الجيل القادم')}</small>` : ''}${!maxed && !p.ks ? L`<small>التالي: ${p.eff(l + 1)}</small>` : ''}</div></div>
     <div class="row">${maxed ? L('<span class="stat">✨ مكتملة</span>') : why ? `<span class="stat">🔒 ${why}</span>` : `<button class="btn gold sm" data-a="buyPerk" data-v="${p.id}" ${LG.stars >= c ? '' : 'disabled'}>${icon("legacy-crown",24)} ${fmt(c)}</button>`}</div></div>`;

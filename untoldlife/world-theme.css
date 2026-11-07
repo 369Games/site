@@ -391,3 +391,10 @@ a.chip.kofi-chip{margin-right:auto;background:#111;color:#f6e7b8;border:1px soli
 .g-h{grid-area:h}.g-a{grid-area:a}.g-w{grid-area:w}.g-b{grid-area:b}.g-s{grid-area:s}.g-f{grid-area:f}
 .gear-stats{flex:1;min-width:240px}
 @media(max-width:600px){.gear-doll{grid-template-columns:repeat(3,96px)}.gear-slot{min-height:104px}}
+/* Legendary pets (1.7) */
+.pet-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.pet-card{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;border-radius:12px;border:1px solid #c9a24a55;background:radial-gradient(circle at 50% 35%,#ffffff12,#0000 70%),#1c1914;text-align:center}
+.pet-card b{font-size:13px}.pet-card small{font-size:11px;color:var(--muted)}.pet-card .bar{width:100%;height:6px}
+.pet-card.off{opacity:.45}.pet-card.egg{border-color:#e2bc6c99}
+.pet-card.st1{border-color:#7fb3ff88}.pet-card.st2{border-color:#e2bc6c;box-shadow:0 0 14px #e2bc6c44}
+.pet-emoji{display:grid;place-items:center;height:64px;line-height:1}.pet-emoji.s0{font-size:30px}.pet-emoji.s1{font-size:42px}.pet-emoji.s2{font-size:56px}

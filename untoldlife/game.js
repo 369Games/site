@@ -213,6 +213,67 @@ function lgRoll() { return Math.random() < 0.005 ? 100 : Math.round(5 + 94 * Mat
 // The first forge costs the full price; forging again costs 10% of it.
 function lgCost(t) { const k = Math.max(0.1, 1 - spv('smith', 'forge')); return LEG_COST.map(([id, q]) => [id, Math.ceil((lgv(t) ? q / 10 : q) * k)]); }
 function lgCanPay(t) { return lgCost(t).every(([id, q]) => have(id) >= q); }
+/* Pets (1.7): a very rare egg can drop when you clear a dungeon floor, at the same chance as a king fish (0.08%).
+   The egg hatches after 30 minutes into a griffin, a dragon or a unicorn (one you don't have yet), and the pet grows
+   with every floor you clear: baby → teen → adult. Dragon: attack, unicorn: defence, griffin: power (guild hunts).
+   Pets belong to the family, so they stay across generations. */
+const PET_EGG_CH = 0.0008, PET_HATCH = 1800;
+const PETS = [
+  { id: 'dragon', n: L('التنين'), e: '🐉', stat: 'atk', sn: L('الهجوم') },
+  { id: 'unicorn', n: L('اليونيكورن'), e: '🦄', stat: 'def', sn: L('الدفاع') },
+  { id: 'griffin', n: L('الغريفين'), e: '🦅', stat: 'pow', sn: L('القوة') },
+];
+// Floors cleared to reach each stage, and what each stage adds.
+const PET_STAGE = [{ n: L('رضيع'), xp: 0, b: 0.10 }, { n: L('مراهق'), xp: 300, b: 0.25 }, { n: L('بالغ'), xp: 1500, b: 0.50 }];
+function petData() { const L2 = S.leg; L2.pets = L2.pets || {}; L2.eggs = L2.eggs || []; return L2; }
+function petStage(xp) { let s = 0; PET_STAGE.forEach((x, i) => { if (xp >= x.xp) s = i; }); return s; }
+function petMult(stat) {
+  const ps = petData().pets; let m = 1;
+  for (const p of PETS) if (p.stat === stat && ps[p.id]) m += PET_STAGE[petStage(ps[p.id].xp)].b;
+  return m;
+}
+function petFloor() {
+  const d = petData();
+  for (const id in d.pets) {
+    const p = d.pets[id], s = petStage(p.xp); p.xp++;
+    if (petStage(p.xp) > s) { const P0 = PETS.find(x => x.id === id); log(L`${P0.e} ${P0.n} كبر وصار ${PET_STAGE[petStage(p.xp)].n}! +${Math.round(PET_STAGE[petStage(p.xp)].b * 100)}% ${P0.sn}`, 'season'); }
+  }
+  if (Math.random() < PET_EGG_CH) { d.eggs.push(PET_HATCH); log(L('🥚 لقيت بيضة غريبة بعد ما خلصت الطابق! حطيتها في النقابة تفقس بعد 30 دقيقة.'), 'golden'); }
+}
+function hatchEgg() {
+  const d = petData(), free = PETS.filter(p => !d.pets[p.id]);
+  if (free.length) {
+    const p = pick(free); d.pets[p.id] = { xp: 0, born: S.leg.gen };
+    log(L`🐣 فقست البيضة وطلع ${p.e} ${p.n}! يعطيك +${Math.round(PET_STAGE[0].b * 100)}% ${p.sn}، ويكبر مع كل طابق تخلصه.`, 'golden');
+    return;
+  }
+  const young = PETS.map(p => d.pets[p.id]).filter(p => petStage(p.xp) < 2).sort((a, b) => a.xp - b.xp)[0];
+  if (young) { young.xp += 500; log(L('🐣 فقست البيضة، وحيوانك الأصغر أكل منها وكبر: +500 خبرة.'), 'golden'); return; }
+  S.leg.stars += 20; S.leg.totalStars += 20; log(L('🐣 كل حيواناتك بالغة، فالبيضة صارت 20 نجمة إرث!'), 'season');
+}
+function tickPets(dt) {
+  const d = S.leg.eggs; if (!d || !d.length) return;
+  for (let i = d.length - 1; i >= 0; i--) { d[i] -= dt; if (d[i] <= 0) { d.splice(i, 1); hatchEgg(); } }
+}
+function petIcon(p, stage, size) {
+  const key = 'pet-' + p.id + '-' + stage;
+  return ART[key] ? icon(key, size) : `<span class="pet-emoji s${stage}">${p.e}</span>`;
+}
+function petPanel() {
+  const d = petData();
+  const eggs = d.eggs.map(t => `<div class="pet-card egg">${ART['pet-egg'] ? icon('pet-egg', 56) : '<span class="pet-emoji s1">🥚</span>'}<b>${L('بيضة غامضة')}</b>
+    <small>${L`تفقس بعد ${Math.ceil(t / 60)} د`}</small><div class="bar"><i style="width:${Math.round((1 - t / PET_HATCH) * 100)}%"></i></div></div>`).join('');
+  const cards = PETS.map(p => {
+    const me = d.pets[p.id];
+    if (!me) return `<div class="pet-card off"><span class="pet-emoji s1">❔</span><b>???</b><small>${L('ما عندك هذا الحيوان')}</small></div>`;
+    const s = petStage(me.xp), nx = PET_STAGE[s + 1];
+    const prog = nx ? `<small>${L`${fmt(me.xp - PET_STAGE[s].xp)} / ${fmt(nx.xp - PET_STAGE[s].xp)} طابق لين يصير ${nx.n}`}</small><div class="bar"><i style="width:${Math.round((me.xp - PET_STAGE[s].xp) / (nx.xp - PET_STAGE[s].xp) * 100)}%"></i></div>` : `<small>${L('وصل أقصى قوته')}</small>`;
+    return `<div class="pet-card st${s}">${petIcon(p, s, 64)}<b>${p.n} • ${PET_STAGE[s].n}</b><span class="good">+${Math.round(PET_STAGE[s].b * 100)}% ${p.sn}</span>${prog}</div>`;
+  }).join('');
+  return L`<div class="panel pets"><div class="ph"><h2>🐾 الحيوانات الأسطورية</h2><span class="stat">بيضة نادرة جداً تطيح لما تخلص طابق في الزنزانة</span></div>
+    <p class="hint">البيضة تفقس بعد 30 دقيقة: تنين (+هجوم)، يونيكورن (+دفاع)، أو غريفين (+قوة في مهام النقابة). يكبر مع كل طابق تخلصه: رضيع +10%، مراهق +25%، بالغ +50%. الحيوانات للعائلة وتبقى معك كل الأجيال.</p>
+    <div class="pet-list">${eggs}${cards}</div></div>`;
+}
 
 const BUILDINGS = [
   { id: 'harvester', n: L('عامل حصاد'), e: '🧑‍🌾', desc: L('يحصد المحاصيل الجاهزة تلقائياً'), cost: 300, mult: 3, max: 5, cover: 1 },
@@ -448,7 +509,7 @@ function newState() {
     npc: Object.fromEntries(NPCS.map(n => [n.id, { pts: 250, gd: 0 }])),
     stats: { earned: 0, harvests: 0, products: 0, blocks: 0, kills: 0, quests: 0, play: 0, fish: 0 },
     gen: { earned: 0, days: 0, ch: null, chDone: false },
-    leg: { gen: 1, family: '', stars: 0, totalStars: 0, perks: {}, heir: {}, ch: {}, ach: {}, best: { dun: 0, mine: 0 }, history: [], married: 0, album: {}, fishRec: {} },
+    leg: { gen: 1, family: '', stars: 0, totalStars: 0, perks: {}, heir: {}, ch: {}, ach: {}, best: { dun: 0, mine: 0 }, history: [], married: 0, album: {}, fishRec: {}, pets: {}, eggs: [] },
     last: Date.now(),
   };
 }
@@ -786,12 +847,12 @@ function blockDone() {
 
 /* ---------------- البطل والقتال ---------------- */
 function heroMaxHp() { return Math.floor((60 + 20 * (S.hero.lvl - 1) + ARMOR_HP[S.tools.armor] * lf('armor')) * (1 + 0.05 * hearts('leila')) * warMult()); }
-function heroAtk() { return (6 + 3 * (S.hero.lvl - 1) + SWORD[S.tools.sword] * lf('sword')) * warMult() * mskPow() * amuletMult(); }
+function heroAtk() { return (6 + 3 * (S.hero.lvl - 1) + SWORD[S.tools.sword] * lf('sword')) * warMult() * mskPow() * amuletMult() * petMult('atk'); }
 function heroDef() {
   const flat = 1 + (S.hero.lvl - 1) + ARMOR_DEF[S.tools.armor] * lf('armor') + gearPct(SHIELD_DEF, 'shield') + gearPct(HELM_DEF, 'helmet');
-  return flat * (1 + gearPct(SHIELD_PCT, 'shield') + gearPct(HELM_PCT, 'helmet')) * mskPow() * amuletMult();
+  return flat * (1 + gearPct(SHIELD_PCT, 'shield') + gearPct(HELM_PCT, 'helmet')) * mskPow() * amuletMult() * petMult('def');
 }
-function heroPower() { return Math.round(heroAtk() * 2 + heroDef() * 2 + heroMaxHp() / 5); }
+function heroPower() { return Math.round((heroAtk() * 2 + heroDef() * 2 + heroMaxHp() / 5) * petMult('pow')); }
 // Combat levels come about twice as fast as before 1.9.1 (the old curve was 50·l^2.2): the same xp gives about double the level.
 function hxpNeed(l) { return Math.floor(5.5 * Math.pow(l, 2.2)); }
 function heroXp(x) {
@@ -863,7 +924,7 @@ function killEnemy() {
   }
   D.kills++;
   if (D.kills >= (e.boss ? 1 : 5)) {
-    D.kills = 0;
+    D.kills = 0; petFloor();
     if (D.floor === D.max && !deepLocked() && D.max < floorCap()) { D.max++; if (f % 5 === 0 || e.boss) log(L`🗝️ فتحت الطابق ${D.max} في الزنزانة`); }
     if (D.auto && !(D.retry > 0)) D.floor = Math.min(D.max, D.floor + 1);
   }
@@ -1021,6 +1082,7 @@ function tick(dt) {
   if (S.leg.gen >= 2 && on('fishers')) fish(fisherRate() * dt);
   tickCombat(dt);
   tickGuild(dt);
+  tickPets(dt);
   checkChallenge();
 }
 
@@ -1914,7 +1976,7 @@ function viewGuild() {
       <div class="row"><button class="btn sm" data-a="mastUp" ${can ? '' : 'disabled'}>طوّر (${MAST_COST} نقاط)</button>${can > 1 ? L`<button class="btn ghost sm" data-a="mastUp" data-v="all">طوّر ×${can}</button>` : ''}</div></div>`;
   }
   const heroPanel = (hero + h + '</div>').replace('🧑', icon(S.gender === 'f' ? 'hero-f' : 'hero-m', 48)); // the player's portrait in the title
-  return dun + `<div class="two"><div>${heroPanel}</div><div>${guild}</div></div>` + gearPanel();
+  return dun + `<div class="two"><div>${heroPanel}</div><div>${guild}</div></div>` + gearPanel() + petPanel();
 }
 /* The hero's equipment, laid out like an inventory: helmet and amulet on top, sword, armour and shield in the
    middle, boots below. Tapping a slot opens the smith. Underneath: what the gear adds up to. */

@@ -197,7 +197,7 @@ function lf(id) { return 1 + lgv(id) / 100; }
 function lgTier(v) { return v >= 100 ? 3 : v >= 60 ? 2 : v >= 30 ? 1 : 0; }
 function lgRoll() { return Math.random() < 0.005 ? 100 : Math.round(5 + 94 * Math.pow(Math.random(), 2.5)); }
 // The first forge costs the full price; forging again costs 10% of it.
-function lgCost(t) { return LEG_COST.map(([id, q]) => [id, lgv(t) ? q / 10 : q]); }
+function lgCost(t) { const k = Math.max(0.1, 1 - spv('smith', 'forge')); return LEG_COST.map(([id, q]) => [id, Math.ceil((lgv(t) ? q / 10 : q) * k)]); }
 function lgCanPay(t) { return lgCost(t).every(([id, q]) => have(id) >= q); }
 
 const BUILDINGS = [
@@ -345,6 +345,38 @@ function giftsOf(np) {
   }
   return { love: st.gl, like: st.gm };
 }
+/* Seasonal perks: on top of each villager's fixed perk, one of three extra perks, picked at random every season.
+   It follows the hearts: nothing at 5 hearts, the full value (max) at 10, and the same amount against you at 0.
+   Bond hearts count too (a spouse or friend at 20 hearts gives 3x max, a soul twin at 25 gives 4x). */
+function sgn(v) { return (v >= 0 ? '+' : '−') + Math.round(Math.abs(v) * 1000) / 10 + '%'; }
+const SEASON_PERKS = {
+  mayor: [{ id: 'sell', max: 0.05, d: v => L`${sgn(v)} سعر البيع لكل شي` }, { id: 'feat', max: 0.3, d: v => L`${sgn(v)} سعر ${ITEMS[featItem()].n} (عنصر الموسم)` }, { id: 'off', max: 0.1, d: v => L`${sgn(v)} سعر المحاصيل اللي برا موسمها` }],
+  noura: [{ id: 'gold', max: 0.01, d: v => L`${sgn(v)} فرصة المحصول الذهبي` }, { id: 'seed', max: 0.2, d: v => L`${sgn(-v)} سعر البذور` }, { id: 'offgrow', max: 0.5, d: v => L`${sgn(v)} نمو المحاصيل اللي برا موسمها` }],
+  smith: [{ id: 'mine', max: 0.2, d: v => L`${sgn(v)} قوة الحفر` }, { id: 'gem', max: 0.5, d: v => L`${sgn(v)} فرصة الجواهر` }, { id: 'forge', max: 0.2, d: v => L`${sgn(-v)} خامات الصياغة الأسطورية` }],
+  leila: [{ id: 'heal', max: 0.3, d: v => L`${sgn(v)} شفاء الأكل` }, { id: 'regen', max: 0.3, d: v => L`${sgn(v)} سرعة التعافي` }, { id: 'xp', max: 0.2, d: v => L`${sgn(v)} خبرة القتال` }],
+  raad: [{ id: 'gp', max: 0.2, d: v => L`${sgn(v)} نقاط النقابة` }, { id: 'hunt', max: 0.15, d: v => L`${sgn(-v)} وقت مهمات الصيد` }, { id: 'loot', max: 0.2, d: v => L`${sgn(v)} ذهب الوحوش` }],
+  salma: [{ id: 'ranch', max: 0.15, d: v => L`${sgn(v)} سرعة إنتاج الحيوانات` }, { id: 'rest', max: 0.2, d: v => L`${sgn(-v)} راحة بيوت التهجين` }, { id: 'cost', max: 0.15, d: v => L`${sgn(-v)} سعر الحيوانات` }],
+};
+const SP_CACHE = { k: null, p: {}, f: null }; // picks only change with the season
+function spCache() { const k = seasonKey(); if (SP_CACHE.k !== k) { SP_CACHE.k = k; SP_CACHE.p = {}; SP_CACHE.f = null; } return SP_CACHE; }
+function seasonPerk(id) {
+  const c = spCache(); if (id in c.p) return c.p[id];
+  const L3 = SEASON_PERKS[id]; return (c.p[id] = L3 ? L3[Math.floor(giftRng(id + ':sp:' + c.k)() * L3.length)] : null);
+}
+function spv(npc, key) { const p = seasonPerk(npc); return p && p.id === key ? p.max * (hearts(npc) - 5) / 5 : 0; }
+// The mayor's «item of the season»: a crop of this season or an ore, picked at random each season.
+function featItem() {
+  const c = spCache(); if (c.f) return c.f;
+  const pool = [...CROPS.filter(x => x.season === S.season).map(x => x.id), ...ORES.map(o => o.id)];
+  return (c.f = pool[Math.floor(giftRng('feat:' + c.k)() * pool.length)]);
+}
+function offSeasonCrop(id) { const c = CROP[id]; return !!c && c.season !== S.season && c.season !== 4; }
+// The villager card line: this season's extra perk and how the hearts set it.
+function seasonLine(np) {
+  const p = seasonPerk(np.id); if (!p) return '';
+  const v = spv(np.id, p.id), cls = v > 0 ? 'okline' : v < 0 ? 'warnline' : '';
+  return L`<small class="hint season-perk ${cls}">${SEASONS[S.season].e} بف الموسم: ${p.d(v)}${hearts(np.id) < 5 ? L(' (يصير موجب من 6 قلوب)') : hearts(np.id) === 5 ? L(' (يبدأ من 6 قلوب)') : ''}</small>`;
+}
 function giftDaysLeft(np) { const st = S.npc[np.id]; return st && st.cd !== undefined ? GIFT_GRACE - (dayAbs() - st.cd) : GIFT_GRACE; }
 function tickLove() {
   for (const np of NPCS) {
@@ -445,9 +477,9 @@ function speedSrc(kind) {
   const pen = [[L('⚠️ تحدي الزمن البطيء (نشط)'), inCh('slow') ? 0.5 : 1]];
   if (kind === 'grow') return { gen: [[tlab('hoe', '🌾', L`🌾 المعزقة ${TIER[S.tools.hoe]}`), 0.2 * S.tools.hoe * lf('hoe')], [L`📈 مستوى الزراعة ${S.skills.farm.l}`, 0.02 * (S.skills.farm.l - 1)], [L`👩‍🌾 نورة (${hearts('noura')} قلوب)`, 0.03 * hearts('noura')]],
     fam: [[L('🌳 تربة خصبة'), 0.25 * P('f_grow')], [L('❄️ مكافأة تحدي الشتاء'), 0.15 * CC('winter')], vgSrc('h'), ...familyProd()], pen };
-  if (kind === 'ranch') return { gen: [[tlab('crook', '🐑', L`🐑 عصا الراعي ${TIER[S.tools.crook || 0]}`), 0.5 * (S.tools.crook || 0) * lf('crook')], [L`📈 مستوى الرعي ${S.skills.ranch.l}`, 0.02 * (S.skills.ranch.l - 1)]],
+  if (kind === 'ranch') return { gen: [[tlab('crook', '🐑', L`🐑 عصا الراعي ${TIER[S.tools.crook || 0]}`), 0.5 * (S.tools.crook || 0) * lf('crook')], [L`📈 مستوى الرعي ${S.skills.ranch.l}`, 0.02 * (S.skills.ranch.l - 1)], [L('👩‍🦱 سلمى: بف الموسم'), spv('salma', 'ranch')]],
     fam: [[L('🌳 حيوانات سعيدة'), 0.2 * P('r_speed')], ...familyProd()], pen };
-  if (kind === 'mine') return { gen: [[tlab('pick', '⛏️', L`⛏️ الفأس ${TIER[S.tools.pick]}`), 0.6 * S.tools.pick * lf('pick')], [L`📈 مستوى التعدين ${S.skills.mine.l}`, 0.05 * (S.skills.mine.l - 1)]],
+  if (kind === 'mine') return { gen: [[tlab('pick', '⛏️', L`⛏️ الفأس ${TIER[S.tools.pick]}`), 0.6 * S.tools.pick * lf('pick')], [L`📈 مستوى التعدين ${S.skills.mine.l}`, 0.05 * (S.skills.mine.l - 1)], [L('🧔 قاسم: بف الموسم'), spv('smith', 'mine')]],
     fam: [[L('🌳 سواعد قوية'), 0.3 * P('m_power')], [L('🕳️ مكافأة تحدي تحت الأرض'), 0.2 * CC('underground')], vgSrc('m'), ...familyProd()], pen };
   return { gen: [[tlab('rod', '🎣', L`🎣 السنارة ${TIER[S.tools.rod]}`), 0.5 * S.tools.rod * lf('rod')], [L`📈 مستوى الصيد ${S.skills.fish.l}`, 0.03 * (S.skills.fish.l - 1)]],
     fam: [[L('🌳 سواعد قوية'), 0.3 * P('m_power')], vgSrc('f'), ...familyProd()], pen };
@@ -521,7 +553,7 @@ function take(id, n = 1) {
 }
 function addGold(n) { S.gold += n; if (n > 0) { S.stats.earned += n; S.gen.earned += n; } }
 function hearts(id) { return Math.floor(((S.npc[id] || {}).pts || 0) / 100) + (isTwin(id) ? 15 : S.spouse === id || S.friend === id ? 10 : 0); }
-function sellPrice(id) { return Math.round(ITEMS[id].price * (1 + 0.02 * hearts('mayor')) * goldMult() * (id === dealCrop() ? 3 : 1) * (ITEMS[id].cat === 'fish' ? fishMult() : 1)); }
+function sellPrice(id) { return Math.round(ITEMS[id].price * (1 + 0.02 * hearts('mayor')) * Math.max(0.1, 1 + spv('mayor', 'sell') + (id === featItem() ? spv('mayor', 'feat') : 0) + (offSeasonCrop(id) ? spv('mayor', 'off') : 0)) * goldMult() * (id === dealCrop() ? 3 : 1) * (ITEMS[id].cat === 'fish' ? fishMult() : 1)); }
 // Seasonal trader (special skill): one crop of the current season sells for x3.
 function dealCrop() {
   if (!P('t_deal')) return null;
@@ -551,7 +583,7 @@ function waterMult() { return 2 + 0.25 * S.tools.can * lf('can'); }
 function ghCount() { return on('greenhouse') ? 4 * Math.min(3, S.bld.greenhouse || 0) : 0; }
 function growMult(c, gh) {
   let m = speedMult('grow');
-  if (c.season !== S.season && c.season !== 4 && !gh) m *= 0.5;
+  if (c.season !== S.season && c.season !== 4 && !gh) m *= Math.max(0.1, Math.min(1, 0.5 * (1 + spv('noura', 'offgrow'))));
   return m;
 }
 function plotSpeed(p) { return growMult(CROP[p.c], S.farm.plots.indexOf(p) < ghCount()) * (p.w ? waterMult() : 1); }
@@ -566,7 +598,7 @@ function plotCrop(p) {
   const a = on('zoning') && p.a && CROP[p.a];
   return a && cropUnlocked(a) ? a : CROP[S.farm.seed];
 }
-function seedCost(c) { return P('f_seeds') ? 0 : c.seed; }
+function seedCost(c) { return P('f_seeds') ? 0 : Math.round(c.seed * Math.max(0.1, 1 - spv('noura', 'seed'))); }
 function plant(i) {
   const p = S.farm.plots[i]; if (p.c || noFarm()) return false;
   const c = plotCrop(p);
@@ -579,7 +611,7 @@ function harvest(i) {
   const c = CROP[p.c];
   const n = Math.random() < 0.01 * S.skills.farm.l + 0.03 * H('seedbag') ? 2 : 1;
   give(c.id, n);
-  if (Math.random() < 0.01 * P('f_golden')) {
+  if (Math.random() < Math.max(0, 0.01 * P('f_golden') + spv('noura', 'gold'))) {
     const g = sellPrice(c.id) * 10; addGold(g);
     log(L`✨ محصول ذهبي! ${c.e} ${c.n} يلمع ذهب: +${fmt(g)}💰 (×10 سعره)`, 'golden');
     if (!offline && typeof goldenVisual === 'function') goldenVisual(i, g);
@@ -608,7 +640,7 @@ function tickFarm(dt) {
 
 /* ---------------- الحظيرة ---------------- */
 function barnCap() { return 5 + 5 * (S.bld.barn || 0); }
-function animalCost(a) { return Math.round(a.cost * Math.pow(a.grow || 1.25, S.barn.n[a.id] || 0) * (1 - 0.1 * P('r_cost'))); }
+function animalCost(a) { return Math.round(a.cost * Math.pow(a.grow || 1.25, S.barn.n[a.id] || 0) * (1 - 0.1 * P('r_cost')) * Math.max(0.1, 1 - spv('salma', 'cost'))); }
 function animalSpeed(a) { return (0.5 + (S.barn.h[a.id] ?? 100) / 100) * speedMult('ranch'); }
 function grades(id) { const q = S.barn.q[id] || { p: 0, g: 0 }, n = S.barn.n[id] || 0; return { n0: Math.max(0, n - (q.p || 0) - (q.g || 0)), p: q.p || 0, g: q.g || 0 }; }
 /* Breeding: put two animals of the same grade in a house and the result comes at once.
@@ -625,7 +657,7 @@ function breedLv() { return BREED_LV[Math.min(BREED_LV.length - 1, Math.max(S.bl
 // Salma's hearts raise the chances: at 10 hearts the best tools go from 33% to 67% and from 12% to 25%.
 function breedChance(to) { return Math.min(to === 'p' ? 0.9 : 0.4, breedLv()[to] * (1 + (to === 'p' ? 0.103 : 0.108) * hearts('salma'))); }
 function breedFrom(to) { return to === 'p' ? 'n0' : 'p'; }
-function houseRest() { return breedLv().rest; }
+function houseRest() { return Math.round(breedLv().rest * Math.max(0.2, 1 - spv('salma', 'rest'))); }
 function houseCount() { return Math.min(HOUSE_MAX, S.barn.houses || 1); }
 function houseCost() { return Math.round(5000 * Math.pow(5, houseCount() - 1)); }
 function houseCd(i) { return (S.barn.cd || [])[i] || 0; }
@@ -722,7 +754,7 @@ function blockDone() {
   let r = Math.random() * ws.reduce((a, b) => a + b, 0), o = av[av.length - 1];
   for (let i = 0; i < av.length; i++) { r -= ws[i]; if (r <= 0) { o = av[i]; break; } }
   give(o.id, 1 + Math.floor(d / 40));
-  if (Math.random() < (0.004 + d * 0.0001) * (1 + 0.5 * P('m_gem')) * (1 + 0.2 * CC('underground'))) { give('gem'); log(L('💎 عثرت على جوهرة نادرة!'), 'good'); }
+  if (Math.random() < (0.004 + d * 0.0001) * (1 + 0.5 * P('m_gem')) * (1 + 0.2 * CC('underground')) * Math.max(0, 1 + spv('smith', 'gem'))) { give('gem'); log(L('💎 عثرت على جوهرة نادرة!'), 'good'); }
   addXp('mine', 1 + d * 0.15); S.stats.blocks++;
   if (d === S.mine.max && d < PICK_CAP[S.tools.pick]) {
     S.mine.blocks++;
@@ -744,7 +776,7 @@ function heroPower() { return Math.round(heroAtk() * 2 + heroDef() * 2 + heroMax
 // Combat levels come about twice as fast as before 1.9.1 (the old curve was 50·l^2.2): the same xp gives about double the level.
 function hxpNeed(l) { return Math.floor(5.5 * Math.pow(l, 2.2)); }
 function heroXp(x) {
-  const h = S.hero; h.xp += x * xpMult() * (1 + 0.3 * P('w_xp'));
+  const h = S.hero; h.xp += x * xpMult() * (1 + 0.3 * P('w_xp')) * Math.max(0.1, 1 + spv('leila', 'xp'));
   while (h.xp >= hxpNeed(h.lvl)) {
     h.xp -= hxpNeed(h.lvl); h.lvl++; h.hp = heroMaxHp();
     log(L`⚔️ ارتفع مستواك القتالي إلى ${h.lvl}!`, 'good');
@@ -762,8 +794,8 @@ function makeEnemy(f) {
   };
 }
 function dmg(a, d) { return Math.max(1, a * a / (a + d)) * R(0.85, 1.15); }
-function regenRate() { return heroMaxHp() * 0.03 * (S.bld.inn ? 2 : 1); }
-function healOf(id) { return (ITEMS[id].price * 1.5 + 10) * (S.bld.kitchen ? 2 : 1); }
+function regenRate() { return heroMaxHp() * 0.03 * (S.bld.inn ? 2 : 1) * Math.max(0.1, 1 + spv('leila', 'regen')); }
+function healOf(id) { return (ITEMS[id].price * 1.5 + 10) * (S.bld.kitchen ? 2 : 1) * Math.max(0.1, 1 + spv('leila', 'heal')); }
 function foodList() {
   const cats = noFarm() ? ['crop', 'animal', 'fish', 'monster'] : ['crop', 'animal', 'fish'];
   return Object.keys(S.inv).filter(id => cats.includes(ITEMS[id].cat) && !S.locked[id] && !KINGS.some(k => k.id === id))
@@ -787,7 +819,7 @@ function eat() {
 }
 // What a monster on floor f gives (xp before the xp bonuses, which heroXp adds).
 function enemyLoot(f, boss) {
-  return { gold: Math.round((3 + 2 * f + 0.15 * f * f) * (boss ? 5 : 1) * goldMult()), xp: (4 + 1.5 * f + 0.1 * f * f) * (boss ? 4 : 1) };
+  return { gold: Math.round((3 + 2 * f + 0.15 * f * f) * (boss ? 5 : 1) * goldMult() * Math.max(0.1, 1 + spv('raad', 'loot'))), xp: (4 + 1.5 * f + 0.1 * f * f) * (boss ? 4 : 1) };
 }
 // Material chance; mastery adds to it with no limit. Above 100% every monster drops, and the rest raises the chance
 // of one extra material (on top of the 50% from loot level 5).
@@ -878,8 +910,8 @@ function mskPts() { return Math.floor(S.hero.lvl / 2) + 2 * rankIdx() - MSK.redu
 function pctTxt(v) { return Math.round(v * 1000) / 10 + '%'; } // 0.046 -> "4.6%"
 // Guild points a hunt gives per 90 seconds at each rank (F..S); the quest skill adds +20% a level (×2 at level 5).
 const QUEST_GP = [6, 10, 16, 26, 40, 60, 80];
-function qGp(q) { return Math.round((q.type === 'deliver' ? Math.max(20, q.gp) : q.gp) * (1 + 0.2 * gsk('quest'))); }
-function qDur(q) { return Math.round(q.dur * (1 - 0.1 * gsk('quest'))); }
+function qGp(q) { return Math.round((q.type === 'deliver' ? Math.max(20, q.gp) : q.gp) * (1 + 0.2 * gsk('quest')) * Math.max(0.1, 1 + spv('raad', 'gp'))); }
+function qDur(q) { return Math.round(q.dur * (1 - 0.1 * gsk('quest')) * Math.max(0.3, 1 - spv('raad', 'hunt'))); }
 function questMult() { return (1 + 0.04 * hearts('raad')) * (1 + 0.25 * P('w_quest')) * goldMult(); }
 /* Hunt rewards grow with the generation, in step with the gold goal to retire: x1 up to generation 3,
    about x14 at generation 8. Deliveries don't (their reward already follows the item's price). */
@@ -949,6 +981,7 @@ function newDay() {
     if (S.season > 3) { S.season = 0; S.year++; }
     if (!inCh('winter')) log(L`${SEASONS[S.season].e} بدأ موسم ${SEASONS[S.season].n}!`, 'season');
     const d = dealCrop(); if (d) log(L`🧺 تاجر الموسم وصل: يشتري ${CROP[d].e} ${CROP[d].n} بـ ×3 السعر`, 'gold');
+    log(L('🏘️ أهل القرية عندهم بفات موسم جديدة: شوفها في تبويب القرية'), 'season');
   }
   if (inCh('winter')) S.season = 3;
   const r = Math.random();
@@ -2036,7 +2069,7 @@ function viewVillage() {
     for (let i = 0; i < 10; i++) hs += i < hr ? '❤' : (i === hr && half) ? '<span class="half">❤</span>' : '♡';
     h += L`<div class="card npc-card"><button class="npc-info" data-a="npcInfo" data-v="${np.id}" title="القصة" aria-label="القصة">?</button><div class="top"><span class="big">${ART['npc-' + np.id + '-0'] ? icon('npc-' + np.id + '-' + Math.min(2,Math.floor(hr/4)),96) : `<span class="tool-emoji npc-emoji">${np.e}</span>`}</span><div class="meta"><b>${np.n}</b><small class="npc-role">${np.role}</small>
       <div class="hearts">${hs}</div><small>المكافأة: ${np.perk(hearts(np.id))}${isTwin(np.id) ? L(' (×2.5 🌟)') : S.spouse === np.id ? L(' (مضاعفة 💍)') : S.friend === np.id ? L(' (مضاعفة 🤝)') : ''}</small></div></div>
-      <div class="say">«${np.lines[Math.min(2, Math.floor(hr / 4))]}»</div><div class="gifts">`;
+      ${seasonLine(np)}<div class="say">«${np.lines[Math.min(2, Math.floor(hr / 4))]}»</div><div class="gifts">`;
     const gf = giftsOf(np), left = giftDaysLeft(np);
     const gl = [[gf.love, L('❤️ يعشقه هالموسم: +1 قلب'), 'gold'], [gf.like, L('💗 يحبه هالموسم: +½ قلب'), 'ghost']];
     for (const [it, lab, cls] of gl) {

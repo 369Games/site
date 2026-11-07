@@ -300,7 +300,7 @@ const ROADMAP = [
   [2, L('🎣 البحيرة وصيد السمك + السنارة عند الحداد')],
   [3, L('🌟 المحاصيل النادرة: زعفران، تمر، مانجو، أناناس')],
   [4, L('🕳️ الأعماق المنسية: طوابق بعد 100، وكل زعيم فيها يعطيك نجمة إرث')],
-  [5, L('💍 الزواج من أهل القرية + 🏆 تحديات الأجيال اللانهائية')],
+  [5, L('💍 الزواج و🤝 صداقة العمر مع أهل القرية + 🏆 تحديات الأجيال اللانهائية')],
 ];
 const ACH = [];
 function ach(id, e, n, d, fn) { ACH.push({ id, e, n, d, fn }); }
@@ -350,12 +350,15 @@ function tickLove() {
     const st = S.npc[np.id]; if (!st) continue;
     if (st.cd === undefined) st.cd = dayAbs();
     if (offline) { st.cd++; continue; } // days away from the game don't count
-    if (S.spouse === np.id || donorOn() || dayAbs() - st.cd < GIFT_GRACE || st.pts <= 0) continue;
+    if (S.spouse === np.id || S.friend === np.id || donorOn() || dayAbs() - st.cd < GIFT_GRACE || st.pts <= 0) continue;
     const before = hearts(np.id); st.pts = Math.max(0, st.pts - 50);
     if (hearts(np.id) < before) log(L`💔 ${np.n} زعل لأنك ما أهديته من فترة: صار ${hearts(np.id)} قلوب`, 'warn');
   }
 }
 function canWed(np) { return np.id !== 'mayor' && !!S.gender && np.g !== S.gender; }
+/* Lifelong friend: the same-gender match for marriage, with the same rewards (+10 hearts so the perk doubles,
+   love never fades, +10% to all production). You can have a spouse and a lifelong friend. Never the mayor. */
+function canBond(np) { return np.id !== 'mayor' && !!S.gender && np.g === S.gender; }
 function gv(m, f) { return S.gender === 'f' ? f : m; }
 function genderPick(action, cur) {
   return `<div class="row genderpick">${['m', 'f'].map(g => `<button class="btn ${cur === g ? 'gold' : 'ghost'} sm" data-a="${action}" data-v="${g}">${GENDER[g].e} ${GENDER[g].n}</button>`).join('')}</div>`;
@@ -386,7 +389,7 @@ function newState() {
     wv: 1,
     dun: { active: false, floor: 1, max: 1, kills: 0, enemy: null, auto: true, autoEat: true, resting: false, ht: 0, et: 0, retry: 0, eatCd: 0 },
     guild: { gp: 0, board: [], active: [], boardT: 0, qid: 0, sk: {}, refCd: 0 },
-    bld: {}, off: {}, spouse: null, gender: null,
+    bld: {}, off: {}, spouse: null, friend: null, gender: null,
     npc: Object.fromEntries(NPCS.map(n => [n.id, { pts: 250, gd: 0 }])),
     stats: { earned: 0, harvests: 0, products: 0, blocks: 0, kills: 0, quests: 0, play: 0, fish: 0 },
     gen: { earned: 0, days: 0, ch: null, chDone: false },
@@ -427,7 +430,7 @@ const DON_BASE = 10e6, DONOR_COST = 10e6;
 function donLv() { return S.leg.don || 0; }
 function donCost(l = donLv()) { return DON_BASE * Math.pow(2, l); }
 function donorOn() { return S.donor === seasonKey(); }
-function familyProd() { return [[L('💍 الزواج'), S.spouse ? 0.1 : 0], [L`🏛️ صندوق القرية (${donLv()})`, 0.01 * donLv()], [L('🌈 بركة الوادي'), 0.05 * P('q_bless')], [L('🐌 مكافأة تحدي الزمن البطيء'), 0.1 * CC('slow')], [L('🏘️ هدف القرية الأسبوعي'), wkOn('vb') ? 0.1 : 0]]; }
+function familyProd() { return [[L('💍 الزواج'), S.spouse ? 0.1 : 0], [L('🤝 صديق العمر'), S.friend ? 0.1 : 0], [L`🏛️ صندوق القرية (${donLv()})`, 0.01 * donLv()], [L('🌈 بركة الوادي'), 0.05 * P('q_bless')], [L('🐌 مكافأة تحدي الزمن البطيء'), 0.1 * CC('slow')], [L('🏘️ هدف القرية الأسبوعي'), wkOn('vb') ? 0.1 : 0]]; }
 // A village goal prize (weekly.js), for its own area: h crops, m mine, f fish.
 function vgSrc(k) { return [L('🏘️ جائزة هدف القرية'), typeof vgBuff === 'function' ? vgBuff(k) : 0]; }
 function speedSrc(kind) {
@@ -509,7 +512,7 @@ function take(id, n = 1) {
   return true;
 }
 function addGold(n) { S.gold += n; if (n > 0) { S.stats.earned += n; S.gen.earned += n; } }
-function hearts(id) { return Math.floor(((S.npc[id] || {}).pts || 0) / 100) + (S.spouse === id ? 10 : 0); }
+function hearts(id) { return Math.floor(((S.npc[id] || {}).pts || 0) / 100) + (S.spouse === id || S.friend === id ? 10 : 0); }
 function sellPrice(id) { return Math.round(ITEMS[id].price * (1 + 0.02 * hearts('mayor')) * goldMult() * (id === dealCrop() ? 3 : 1) * (ITEMS[id].cat === 'fish' ? fishMult() : 1)); }
 // Seasonal trader (special skill): one crop of the current season sells for x3.
 function dealCrop() {
@@ -1181,7 +1184,7 @@ function doRetire() {
 function showLetter(o, gain, heir) {
   const g = S.leg.gen;
   const unlock = { 2: L('🎣 انفتحت <b>البحيرة</b>! تقدر تصطاد سمك الحين.'), 3: L('🌟 انفتحت <b>المحاصيل النادرة</b> في المزرعة!'),
-    4: L('🕳️ انفتحت <b>الأعماق المنسية</b>: الزنزانة تكمل بعد الطابق 100!'), 5: L('💍 صار <b>الزواج</b> متاح، و<b>تحديات الأجيال</b> تنفتح عند تقاعدك القادم!') }[g] || '';
+    4: L('🕳️ انفتحت <b>الأعماق المنسية</b>: الزنزانة تكمل بعد الطابق 100!'), 5: L('💍 صار <b>الزواج</b> و🤝 <b>صداقة العمر</b> متاحين، و<b>تحديات الأجيال</b> تنفتح عند تقاعدك القادم!') }[g] || '';
   const c = o.ch && CHALLENGES.find(x => x.id === o.ch);
   openModal(L`<h2>✉️ رسالة من ${esc(o.name)}</h2>
   <div class="letter"><p>يا ${esc(S.name)}،</p>
@@ -1422,7 +1425,14 @@ const A = {
     S.gold -= 50000; S.spouse = v; S.leg.married = 1;
     log(L`💍 تزوجت ${NPC_BY[v].n}! القرية كلها احتفلت بالعرس 🎉`, 'season');
   },
-  setGender: v => { if (S.spouse || !GENDER[v]) return; S.gender = v; lastSig = ''; toast(L`${GENDER[v].e} تم تحديد شخصيتك: ${GENDER[v].n}`); },
+  befriend: v => {
+    const st = S.npc[v];
+    if (S.leg.gen < 5 || S.friend || !NPC_BY[v] || !canBond(NPC_BY[v]) || !st || st.pts < 1000 || S.gold < 50000) return;
+    S.gold -= 50000; S.friend = v;
+    const n = NPC_BY[v].n;
+    log(NPC_BY[v].g === 'f' ? L`🤝 صارت ${n} صديقة عمرك! القرية كلها احتفلت معكم 🎉` : L`🤝 صار ${n} صديق عمرك! القرية كلها احتفلت معكم 🎉`, 'season');
+  },
+  setGender: v => { if (S.spouse || S.friend || !GENDER[v]) return; S.gender = v; lastSig = ''; toast(L`${GENDER[v].e} تم تحديد شخصيتك: ${GENDER[v].n}`); },
   introGender: v => { introGender = v; document.querySelectorAll('.genderpick [data-a=introGender]').forEach(b => { b.classList.toggle('gold', b.dataset.v === v); b.classList.toggle('ghost', b.dataset.v !== v); }); },
   rsGender: v => { RS.gender = v; showRetire(); },
   save: () => { save(); toast(L('💾 تم الحفظ')); },
@@ -2004,13 +2014,13 @@ function updMarket() {
 function viewVillage() {
   let h = (typeof weeklyPanel === 'function' ? weeklyPanel() : '') + L`<div class="panel"><div class="ph"><h2>🏘️ أهل وادي الصدى</h2></div>
   <p class="hint">أهدِ كل شخص ما يحبه مرة واحدة يومياً. كل قلبين تقريباً يمنحك مكافأة دائمة (حتى 10 قلوب). اللي يحبونه يتغير كل موسم، ولو ما أهديت أحد لمدة نص موسم يزعل ويقل حبه (الوقت اللي تكون فيه برا اللعبة ما ينحسب).</p>
-  ${!S.gender ? L`<div class="zonebox"><b>🧑 حدد شخصيتك</b> <small class="hint">عشان يظهر لك خيار الزواج من أهل القرية المناسبين</small>${genderPick('setGender', null)}</div>` : ''}<div class="grid">`;
+  ${!S.gender ? L`<div class="zonebox"><b>🧑 حدد شخصيتك</b> <small class="hint">عشان يظهر لك خيار الزواج وصداقة العمر مع أهل القرية</small>${genderPick('setGender', null)}</div>` : ''}<div class="grid">`;
   for (const np of NPCS) {
     const st = S.npc[np.id] || { pts: 0, gd: 0 }, hr = Math.floor(st.pts / 100), half = st.pts % 100 >= 50, today = st.gd === dayAbs();
     let hs = '';
     for (let i = 0; i < 10; i++) hs += i < hr ? '❤' : (i === hr && half) ? '<span class="half">❤</span>' : '♡';
     h += L`<div class="card npc-card"><button class="npc-info" data-a="npcInfo" data-v="${np.id}" title="القصة" aria-label="القصة">?</button><div class="top"><span class="big">${ART['npc-' + np.id + '-0'] ? icon('npc-' + np.id + '-' + Math.min(2,Math.floor(hr/4)),96) : `<span class="tool-emoji npc-emoji">${np.e}</span>`}</span><div class="meta"><b>${np.n}</b><small class="npc-role">${np.role}</small>
-      <div class="hearts">${hs}</div><small>المكافأة: ${np.perk(hearts(np.id))}${S.spouse === np.id ? L(' (مضاعفة 💍)') : ''}</small></div></div>
+      <div class="hearts">${hs}</div><small>المكافأة: ${np.perk(hearts(np.id))}${S.spouse === np.id ? L(' (مضاعفة 💍)') : S.friend === np.id ? L(' (مضاعفة 🤝)') : ''}</small></div></div>
       <div class="say">«${np.lines[Math.min(2, Math.floor(hr / 4))]}»</div><div class="gifts">`;
     const gf = giftsOf(np), left = giftDaysLeft(np);
     const gl = [[gf.love, L('❤️ يعشقه هالموسم: +1 قلب'), 'gold'], [gf.like, L('💗 يحبه هالموسم: +½ قلب'), 'ghost']];
@@ -2025,8 +2035,10 @@ function viewVillage() {
     }
     let mar = '';
     if (S.spouse === np.id) mar = L('<p class="okline">💍 شريك حياتك — مكافأته مضاعفة ويساعدك (+10% لكل الإنتاج)</p>');
+    else if (S.friend === np.id) mar = np.g === 'f' ? L('<p class="okline">🤝 صديقة عمرك — مكافأتها مضاعفة وتساعدك (+10% لكل الإنتاج)</p>') : L('<p class="okline">🤝 صديق عمرك — مكافأته مضاعفة ويساعدك (+10% لكل الإنتاج)</p>');
     else if (canWed(np) && st.pts >= 1000 && !S.spouse) mar = S.leg.gen >= 5 ? `<div class="row">${costBtn('marry', np.id, 50000, L('💍 اطلب الزواج (50,000💰)'), 'red')}</div>` : L('<small class="hint">💍 الزواج ينفتح في الجيل الخامس</small>');
-    const sad = S.spouse === np.id || st.pts <= 0 || donorOn() ? '' : left <= 0 ? L('<small class="hint warnline">💔 زعلان: يقل حبه كل يوم لين تهديه</small>') : left <= 2 ? L`<small class="hint">⏳ يزعل بعد ${left} يوم لو ما أهديته</small>` : '';
+    else if (canBond(np) && st.pts >= 1000 && !S.friend) mar = S.leg.gen >= 5 ? `<div class="row">${costBtn('befriend', np.id, 50000, L('🤝 اطلب صداقة العمر (50,000💰)'), 'gold')}</div>` : L('<small class="hint">🤝 صداقة العمر تنفتح في الجيل الخامس</small>');
+    const sad = S.spouse === np.id || S.friend === np.id || st.pts <= 0 || donorOn() ? '' : left <= 0 ? L('<small class="hint warnline">💔 زعلان: يقل حبه كل يوم لين تهديه</small>') : left <= 2 ? L`<small class="hint">⏳ يزعل بعد ${left} يوم لو ما أهديته</small>` : '';
     h += `</div>${today ? L('<small class="hint">✔ أهديته اليوم، ارجع بكرة</small>') : ''}${sad}${mar}</div>`;
   }
   h += '</div></div>' + fundPanel();
@@ -2282,7 +2294,7 @@ const VIEWS = {
   }],
   smith: [viewSmith, updReqs, () => [S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
-  village: [viewVillage, () => { if (typeof wkUpd === 'function') wkUpd(); }, () => [typeof wkSig === 'function' ? wkSig() : 0, dayAbs(), S.bld, S.npc, S.off, S.spouse, S.gender, S.leg.gen, donLv(), donorOn(), Math.floor(Math.log2(Math.max(1, S.gold / DON_BASE))), NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
+  village: [viewVillage, () => { if (typeof wkUpd === 'function') wkUpd(); }, () => [typeof wkSig === 'function' ? wkSig() : 0, dayAbs(), S.bld, S.npc, S.off, S.spouse, S.friend, S.gender, S.leg.gen, donLv(), donorOn(), Math.floor(Math.log2(Math.max(1, S.gold / DON_BASE))), NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, S.skills.fish.l, S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],
   legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length, dunGoal()]; }],
   settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0]],

@@ -2408,18 +2408,30 @@ function sitePanel() {
   const C = siteConfig();
   const fb = `<button class="btn gold" data-a="feedback">${L('✍️ أرسل ملاحظاتك')}</button>`; // in-game form, feedback.js
   const home = C.home ? `<a class="btn ghost" href="${C.home}">${L('🏠 كل ألعابنا')}</a>` : '';
-  // Ko-fi support link, when tools/site/config.json has "kofi": "<name>".
-  const kofi = /^\w+$/.test(C.kofi || '') ? `<a class="btn kofi" href="https://ko-fi.com/${C.kofi}" target="_blank" rel="noopener">${L('☕ ادعمنا على Ko-fi')}</a>` : '';
+  // Support links from tools/site/config.json: "kofi" (Ko-fi page name) and "creators" (creators.sa page).
+  const kofi = supportLinks().map(([u, t]) => `<a class="btn kofi" href="${u}" target="_blank" rel="noopener">${t}</a>`).join('');
   const legal = C.home ? `<p class="hint"><a href="${C.home}privacy.html">${L('سياسة الخصوصية')}</a> · <a href="${C.home}about.html">${L('عن الاستديو')}</a></p>` : '';
   return `<h3>${L('💬 ملاحظاتك')}</h3><p class="hint">${L('هذي نسخة تجريبية. أي شيء عجبك أو ضايقك أو خرب، قل لنا.')}</p><div class="row">${fb}${kofi}${home}</div>${legal}`;
 }
 function initSiteLinks() {
   const fb = $('fbBtn');
   if (fb) { fb.textContent = L('💬 ملاحظاتك'); fb.classList.remove('hidden'); }
-  // Ko-fi support button in the top bar, next to the theme and language buttons.
-  const kf = $('kofiBtn'), name = siteConfig().kofi || '';
-  if (kf && /^\w+$/.test(name)) { kf.href = 'https://ko-fi.com/' + name; kf.textContent = L('☕ ادعمنا'); kf.classList.remove('hidden'); }
+  // Support button in the top bar: one link goes straight there; with two it opens a small choice.
+  const kf = $('kofiBtn'), links = supportLinks();
+  if (kf && links.length) {
+    kf.textContent = L('💝 ادعمنا'); kf.classList.remove('hidden');
+    if (links.length === 1) kf.href = links[0][0]; else { kf.removeAttribute('href'); kf.removeAttribute('target'); kf.dataset.a = 'support'; }
+  }
 }
+function supportLinks() {
+  const C = siteConfig(), out = [];
+  if (/^\w+$/.test(C.kofi || '')) out.push(['https://ko-fi.com/' + C.kofi, L('☕ ادعمنا على Ko-fi (بطاقة و PayPal)')]);
+  if (/^https:\/\/creators\.sa\/[\w-]+$/.test(C.creators || '')) out.push([C.creators, L('💝 ادعمنا على Creators (الخليج • Apple Pay)')]);
+  return out;
+}
+A.support = () => openModal(L`<h2>💝 ادعم 369Games</h2><p class="hint">دعمك يخلينا نكمل نطوّر اللعبة ونضيف أشياء جديدة. اختر الطريقة اللي تناسبك:</p>`
+  + `<div class="support-pick">${supportLinks().map(([u, t]) => `<a class="btn ${u.includes('creators.sa') ? 'creators' : 'kofi'}" href="${u}" target="_blank" rel="noopener">${t}</a>`).join('')}</div>`
+  + `<div class="row"><button class="btn ghost" data-a="closeModal">${L('إغلاق')}</button></div>`);
 initSiteLinks();
 // Language names always show in their own language (see LANGS in i18n.js).
 function langPick() {

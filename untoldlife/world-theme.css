@@ -312,7 +312,12 @@ body.has-ad{padding-bottom:96px}body.has-ad #toast{bottom:110px}
 @media(max-width:600px){#adbar{height:60px}body.has-ad{padding-bottom:66px}body.has-ad #toast{bottom:76px}}
 /* Ko-fi support button */
 .btn.kofi{background:#29abe0;color:#fff;border-color:#1b8fbd}
-a.chip.kofi-chip{margin-right:auto;background:#29abe0;color:#fff;border:1px solid #1b8fbd;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:700;text-decoration:none;text-shadow:none;cursor:pointer}a.chip.kofi-chip:hover{background:#1f9ccf}a.chip.kofi-chip.hidden{display:none}
+/* Support button: black with a slow, soft gold glow (no glow when the player prefers less motion). */
+a.chip.kofi-chip{margin-right:auto;background:#111;color:#f6e7b8;border:1px solid #c9a24a;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:700;text-decoration:none;text-shadow:none;cursor:pointer;animation:supGlow 3.2s ease-in-out infinite}a.chip.kofi-chip:hover{background:#1d1d1d;color:#fff3cf}
+@keyframes supGlow{0%,100%{box-shadow:0 0 0 #e2bc6c00}50%{box-shadow:0 0 10px 1px #e2bc6c88}}
+@media(prefers-reduced-motion:reduce){a.chip.kofi-chip{animation:none}}
+.btn.creators{background:#111;color:#f6e7b8;border-color:#c9a24a}.btn.creators:hover{background:#1d1d1d}
+.support-pick{display:flex;flex-direction:column;gap:10px;margin:12px 0}.support-pick .btn{justify-content:center;text-align:center}a.chip.kofi-chip.hidden{display:none}
 
 /* Market: the amount to sell, typed next to each item */
 .it .mk-q{width:64px;flex:none;padding:5px 6px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:inherit;font:inherit;font-size:13px;text-align:center;min-height:33px}

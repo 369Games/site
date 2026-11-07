@@ -52,8 +52,15 @@ function logVisualHTML(msg) {
   return String(msg).replace(logIconPattern,s=>logIconMap.get(s));
 }
 const quietMotion = matchMedia('(prefers-reduced-motion: reduce)');
+/* Light mode (per device, kept outside the save): no effects or animations, no sky particles, fewer log messages
+   and a slower screen refresh. Made for phones in high generations, where everything happens many times a second. */
+let LITE = (() => { try { return localStorage.getItem('untoldlife_lite') === '1'; } catch (e) { return false; } })();
+function calm() { return LITE || quietMotion.matches; }
+function setLite(on) { LITE = !!on; try { localStorage.setItem('untoldlife_lite', LITE ? '1' : '0'); } catch (e) { /* storage off */ } document.body.classList.toggle('lite', LITE); }
+document.addEventListener('DOMContentLoaded', () => document.body.classList.toggle('lite', LITE));
+if (document.body) document.body.classList.toggle('lite', LITE);
 function floatVisual(el, html, type = '') {
-  if (!el || quietMotion.matches || document.hidden) return;
+  if (!el || calm() || document.hidden) return;
   const layer = document.getElementById('effects');
   if (!layer || layer.childElementCount >= 30) return;
   const rect = el.getBoundingClientRect();
@@ -66,7 +73,7 @@ function floatVisual(el, html, type = '') {
   setTimeout(() => f.remove(), 1100);
 }
 function burstVisual(el, type = '') {
-  if (!el || quietMotion.matches || document.hidden) return;
+  if (!el || calm() || document.hidden) return;
   const layer = document.getElementById('effects');
   const box = el.getBoundingClientRect();
   for (let i=0; i<8 && layer.childElementCount<30; i++) {
@@ -76,11 +83,14 @@ function burstVisual(el, type = '') {
     layer.appendChild(dot); setTimeout(()=>dot.remove(),800);
   }
 }
+let lvlFlashT = 0;
 function eventVisual(msg, type) {
-  if (quietMotion.matches) return;
+  if (calm()) return;
   if (type === 'gold') floatVisual(document.getElementById('hGold'), '✦ ' + (msg.match(/\+[\d,.]+[KMBT]?/) || [''])[0] + ' ' + icon('coin'), 'gold-float');
   if (type === 'good' && /إنجاز جديد|New achievement|Nuevo logro|Nova conquista|Новое достижение|新成就/.test(msg)) burstVisual(document.getElementById('hGen'));
   if (/مستوى|ارتقيت|\blevel\b|nivel|nível|уровень|级/i.test(msg)) {
+    if (Date.now() - lvlFlashT < 5000) return; // high levels come every few seconds: flash the page at most once every 5 s
+    lvlFlashT = Date.now();
     const v = document.getElementById('view');
     v.animate([{filter:'brightness(1)'},{filter:'brightness(1.2)'},{filter:'brightness(1)'}],{duration:700});
   }
@@ -103,7 +113,7 @@ function updateEnemyVisual(box, dungeon, hero, maxHp) {
   }
   if(enemy.hp<box._enemyHP) {
     floatVisual(box,'−'+fmt(box._enemyHP-enemy.hp));
-    if(!quietMotion.matches)box.querySelector('.em').animate([{filter:'brightness(2.2) sepia(.4)'},{filter:'none'}],{duration:220,easing:'steps(2)'});
+    if(!calm())box.querySelector('.em').animate([{filter:'brightness(2.2) sepia(.4)'},{filter:'none'}],{duration:220,easing:'steps(2)'});
   }
   box._enemyHP=enemy.hp;
   box.querySelector('.enemy-hp-text').textContent=`${fmt(Math.max(0,enemy.hp))} / ${fmt(enemy.mhp)}`;
@@ -134,7 +144,7 @@ function updateEnemyVisual(box, dungeon, hero, maxHp) {
       else ctx.fillRect(Math.round(x),Math.round(y),1+(i%3===0?1:0),1);
     }
   }
-  function loop(now){if(!document.hidden&&now-last>48){draw(now);last=now;}if(!quietMotion.matches)requestAnimationFrame(loop);}
+  function loop(now){if(!document.hidden&&!LITE&&now-last>48){draw(now);last=now;}if(!quietMotion.matches)requestAnimationFrame(loop);}
   new ResizeObserver(resize).observe(sky);
   quietMotion.addEventListener('change',()=>{draw(performance.now());if(!quietMotion.matches)requestAnimationFrame(loop);});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)draw(performance.now());});
@@ -144,14 +154,14 @@ function updateEnemyVisual(box, dungeon, hero, maxHp) {
 // Golden harvest: a gold flash over the plot, sparks and the gold amount rising.
 function goldenVisual(i, g) {
   const el = document.getElementById('plot' + i), layer = document.getElementById('effects');
-  if (!el || !layer || document.hidden) return;
+  if (!el || !layer || document.hidden || LITE) return;
   const r = el.getBoundingClientRect();
   const f = document.createElement('div');
   f.className = 'golden-flash';
   f.style.cssText = `left:${Math.round(r.left)}px;top:${Math.round(r.top)}px;width:${Math.round(r.width)}px;height:${Math.round(r.height)}px`;
   f.innerHTML = '<span>✨</span>';
   layer.appendChild(f); setTimeout(() => f.remove(), 1700);
-  if (quietMotion.matches) return;
+  if (calm()) return;
   for (let k = 0; k < 14 && layer.childElementCount < 40; k++) {
     const d = document.createElement('i'), a = k / 14 * Math.PI * 2, dist = 30 + (k % 3) * 16;
     d.className = 'particle-vfx golden-spark';
@@ -181,7 +191,7 @@ function breedVisual(a, to, win) {
   box.innerHTML = `<div class="bfx-card"><div class="bfx-pair">${icon(from, 64)}${icon(from, 64)}</div><b class="bfx-q">🧬</b></div>`;
   box.addEventListener('click', () => box.remove());
   document.body.appendChild(box);
-  const wait = quietMotion.matches ? 150 : 1100;
+  const wait = calm() ? 150 : 1100;
   setTimeout(() => {
     if (!box.isConnected) return;
     box.classList.add(win ? 'win' : 'lose');

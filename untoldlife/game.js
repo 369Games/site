@@ -521,7 +521,7 @@ let tab = 'farm';
 let lastSig = '';
 let offline = false;
 let logs = [];
-let logDirty = true;
+let logDirty = true, logDrawT = 0;
 let zoneMode = false;
 function owned(id) { return id === 'miners' ? S.mine.miners > 0 : id === 'fishers' ? S.lake.fishers > 0 : !!S.bld[id]; }
 
@@ -651,7 +651,7 @@ function addXp(k, x) {
   const s = S.skills[k];
   x *= xpMult() * (k === 'farm' ? 1 + 0.3 * P('f_xp') : 1);
   s.x += x;
-  while (s.x >= xpNeed(s.l)) { s.x -= xpNeed(s.l); s.l++; log(L`⭐ ارتفع مستوى ${SKILL_N[k]} إلى ${s.l}!`, 'good'); }
+  while (s.x >= xpNeed(s.l)) { s.x -= xpNeed(s.l); s.l++; if (!LITE || s.l % 10 === 0) log(L`⭐ ارتفع مستوى ${SKILL_N[k]} إلى ${s.l}!`, 'good'); }
 }
 
 /* ---------------- المزرعة ---------------- */
@@ -691,7 +691,7 @@ function harvest(i) {
   give(c.id, n);
   if (Math.random() < Math.max(0, 0.01 * P('f_golden') + spv('noura', 'gold'))) {
     const g = sellPrice(c.id) * 10; addGold(g);
-    log(L`✨ محصول ذهبي! ${c.e} ${c.n} يلمع ذهب: +${fmt(g)}💰 (×10 سعره)`, 'golden');
+    if (!LITE) log(L`✨ محصول ذهبي! ${c.e} ${c.n} يلمع ذهب: +${fmt(g)}💰 (×10 سعره)`, 'golden');
     if (!offline && typeof goldenVisual === 'function') goldenVisual(i, g);
   } addXp('farm', c.price / 5 * n); S.stats.harvests += n;
   p.c = null; p.p = 0; p.w = false;
@@ -1122,7 +1122,7 @@ function catchFish() {
   if (S.lake.bait > 0) S.lake.bait--;
   if (Math.random() < 0.01) {
     const g = Math.round(300 * S.skills.fish.l * goldMult()); addGold(g);
-    S.lake.last = 'treasure'; S.stats.fish++; if (!offline) log(L`🧰 اصطدت صندوق كنز! +${fmt(g)}💰`, 'gold'); return;
+    S.lake.last = 'treasure'; S.stats.fish++; if (!offline && !LITE) log(L`🧰 اصطدت صندوق كنز! +${fmt(g)}💰`, 'gold'); return;
   }
   const sp = curSpot(), K = KINGS.find(k => k.spot === sp.id);
   if (K && S.skills.fish.l >= K.lvl && Math.random() < 0.0008) return landFish(K, 0); // bait doesn't help kings
@@ -1145,7 +1145,7 @@ function landFish(f, r) {
   addXp('fish', f.price * n / 6);
   if (offline) return;
   if (f.king) log(L`👑 اصطدت ${f.e} ${f.n}! وزنه ${kg} كغ`, 'golden');
-  else if (r === 2) log(L`🌟 صيدة أسطورية! ${f.e} ${f.n} ${kg} كغ (×${n})`, 'golden');
+  else if (r === 2 && !LITE) log(L`🌟 صيدة أسطورية! ${f.e} ${f.n} ${kg} كغ (×${n})`, 'golden');
 }
 
 /* ---------------- التحديات والإنجازات ---------------- */
@@ -2251,7 +2251,7 @@ function viewSettings() {
   </ul></div>
   <div class="panel"><h2>📊 الإحصائيات</h2><div id="statsBox"></div>
     <h3>💾 الحفظ</h3><div id="saveBox"></div>
-    <h3>🧑 شخصيتك</h3>${S.spouse ? L`<p class="hint">${S.gender ? GENDER[S.gender].e + ' ' + GENDER[S.gender].n : ''} — متزوج${gv('', L('ة'))} من ${NPC_BY[S.spouse].n} 💍</p>` : L`${genderPick('setGender', S.gender)}<p class="hint">يحدد من تقدر تتزوج من أهل القرية. ولدك أو بنتك في الجيل القادم تختاره عند التقاعد.</p>`}${langPick()}${sitePanel()}${typeof tutPanel === 'function' ? tutPanel() : ''}${typeof audioPanel === 'function' ? audioPanel() : ''}${typeof statsPanel === 'function' ? statsPanel() : ''}${typeof cloudPanel === 'function' ? cloudPanel() : ''}</div></div>`;
+    <h3>🧑 شخصيتك</h3>${S.spouse ? L`<p class="hint">${S.gender ? GENDER[S.gender].e + ' ' + GENDER[S.gender].n : ''} — متزوج${gv('', L('ة'))} من ${NPC_BY[S.spouse].n} 💍</p>` : L`${genderPick('setGender', S.gender)}<p class="hint">يحدد من تقدر تتزوج من أهل القرية. ولدك أو بنتك في الجيل القادم تختاره عند التقاعد.</p>`}${langPick()}${litePanel()}${sitePanel()}${typeof tutPanel === 'function' ? tutPanel() : ''}${typeof audioPanel === 'function' ? audioPanel() : ''}${typeof statsPanel === 'function' ? statsPanel() : ''}${typeof cloudPanel === 'function' ? cloudPanel() : ''}</div></div>`;
 }
 // Save section: with a cloud account the save takes care of itself and the file is tucked away;
 // without one, the file buttons are the backup, with a nudge to link an account.
@@ -2459,9 +2459,14 @@ function updLegacy() {
   }
 }
 
+function litePanel() {
+  return L`<h3>🪶 الوضع الخفيف</h3><p class="hint">للجوال والأجيال العالية: يوقف المؤثرات والحركات، ويخفف رسائل السجل (المحاصيل الذهبية والصيد الأسطوري وكنوز الصيد، والمستويات إلا كل 10)، ويحدّث الشاشة أبطأ. اللعب نفسه ما يتغير، والإعداد لهذا الجهاز بس.</p>
+  <div class="row"><button class="btn ${LITE ? '' : 'ghost'} sm" data-a="liteToggle">${LITE ? '✅' : '⬜'} الوضع الخفيف</button></div>`;
+}
+A.liteToggle = () => { setLite(!LITE); lastSig = ''; logDirty = true; toast(LITE ? L('🪶 الوضع الخفيف شغّال') : L('✨ رجعت المؤثرات')); };
 const VIEWS = {
-  farm: [viewFarm, updFarm, () => [S.off, S.leg.gen, zoneMode, S.bld.zoning, S.farm.plots.length, S.farm.seed, S.skills.farm.l, S.tools.can, S.season, S.weather, S.bld.harvester, S.bld.planter, S.bld.sprinkler, S.bld.greenhouse, hearts('mayor')]],
-  barn: [viewBarn, updBarn, () => [S.off, S.skills.ranch.l, barnCap(), S.bld.rancher, ...ANIMALS.map(a => S.barn.n[a.id] || 0), S.barn.q, houseCount(), S.barn.focus, BREEDABLE.map(id => ['p', 'g'].map(to => breedBlock(ANIMALS.find(x => x.id === id), to)))]],
+  farm: [viewFarm, updFarm, () => [S.off, S.leg.gen, zoneMode, S.bld.zoning, S.farm.plots.length, S.farm.seed, Math.min(S.skills.farm.l, 30), S.tools.can, S.season, S.weather, S.bld.harvester, S.bld.planter, S.bld.sprinkler, S.bld.greenhouse, hearts('mayor')]],
+  barn: [viewBarn, updBarn, () => [S.off, Math.min(S.skills.ranch.l, 30), barnCap(), S.bld.rancher, ...ANIMALS.map(a => S.barn.n[a.id] || 0), S.barn.q, houseCount(), S.barn.focus, BREEDABLE.map(id => ['p', 'g'].map(to => breedBlock(ANIMALS.find(x => x.id === id), to)))]],
   mine: [viewMine, updMine, () => [S.off, S.mine.miners, S.tools.pick, lgv('pick'), ORES.filter(o => o.depth <= S.mine.max).length]],
   guild: [viewGuild, updGuild, () => {
     const D = S.dun, g = S.guild;
@@ -2470,7 +2475,7 @@ const VIEWS = {
   smith: [viewSmith, updReqs, () => [S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
   village: [viewVillage, () => { if (typeof wkUpd === 'function') wkUpd(); }, () => [typeof wkSig === 'function' ? wkSig() : 0, dayAbs(), S.bld, S.npc, S.off, S.spouse, S.friend, S.twins, P('q_twin'), S.gender, S.leg.gen, donLv(), donorOn(), Math.floor(Math.log2(Math.max(1, S.gold / DON_BASE))), NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
-  lake: [viewLake, updLake, () => [S.off, S.lake.fishers, S.skills.fish.l, S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],
+  lake: [viewLake, updLake, () => [S.off, S.lake.fishers, Math.min(S.skills.fish.l, 30), S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],
   legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length, dunGoal()]; }],
   settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0]],
 };
@@ -2495,8 +2500,8 @@ function render(force) {
   document.querySelectorAll('[data-cost]').forEach(b => { b.disabled = S.gold < +b.dataset.cost; });
   renderHeader();
   renderSide();
-  if (logDirty) {
-    logDirty = false;
+  if (logDirty && Date.now() - logDrawT > (LITE ? 2000 : 700)) { // many messages a second at high generations: redraw the list at most this often
+    logDirty = false; logDrawT = Date.now();
     $('log').innerHTML = pixelHTML(logs.map(l => `<li class="${l.type}"><small>${l.t}</small>${logVisualHTML(l.msg)}</li>`).join(''));
   }
 }
@@ -2846,7 +2851,8 @@ else {
 render(true);
 frame();
 setInterval(frame, 100);
-setInterval(() => render(false), 200);
+let renderN = 0;
+setInterval(() => { if (LITE && renderN++ % 3) return; render(false); }, 200); // light mode: every 0.6 s
 setInterval(save, 10000);
 setInterval(checkAch, 1000);
 window.addEventListener('beforeunload', save);

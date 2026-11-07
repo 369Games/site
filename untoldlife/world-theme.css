@@ -405,3 +405,7 @@ a.chip.kofi-chip{margin-right:auto;background:#111;color:#f6e7b8;border:1px soli
 .pet-card.st1{border-color:#7fb3ff88}.pet-card.st2{border-color:#e2bc6c;box-shadow:0 0 14px #e2bc6c44}
 .pet-pic{display:grid;place-items:end center;height:104px}.pet-card.st2 .pet-pic .px{filter:drop-shadow(0 0 8px #e2bc6c88)}
 .pet-emoji{display:grid;place-items:center;height:64px;line-height:1}.pet-emoji.s0{font-size:30px}.pet-emoji.s1{font-size:42px}.pet-emoji.s2{font-size:56px}
+/* Light mode (settings): no animations, transitions or effect layers; easier on phones */
+body.lite *,body.lite *:before,body.lite *:after{animation:none!important;transition:none!important}
+body.lite #effects,body.lite .golden-flash{display:none!important}
+body.lite #log li.golden,body.lite #log li.egg{box-shadow:none}

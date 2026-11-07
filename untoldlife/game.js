@@ -1477,9 +1477,27 @@ const TABS = [
   ['farm', L('🌱 المزرعة')], ['barn', L('🐄 الحظيرة')], ['mine', L('⛏️ المنجم')], ['lake', L('🎣 البحيرة')], ['guild', L('⚔️ النقابة')],
   ['smith', L('🔨 الحداد')], ['market', L('🛒 السوق')], ['village', L('🏘️ القرية')], ['legacy', L('🌳 الإرث')], ['settings', L('⚙️ المزيد')],
 ];
+/* Red dots on the tabs: something there is waiting for the player.
+   Village: someone can get a gift today (or a royal gift this season). Guild: a delivery you can hand in, or a free
+   quest slot with a quest you'd most likely win. Smith: you can afford the next level of a tool. */
+function tabAlerts() {
+  const a = {}, g = S.guild;
+  if (NPCS.some(np => {
+    const st = S.npc[np.id] || { pts: 0 }; if (st.pts >= 1000) return false;
+    const kid = KING_GIFT[np.id]; if (kid && st.kk !== seasonKey() && have(kid) >= 1) return true;
+    if (st.gd === dayAbs()) return false;
+    const gf = giftsOf(np); return have(gf.love) >= 1 || have(gf.like) >= 1;
+  })) a.village = 1;
+  if (g.board.some(q => q.type === 'deliver' ? have(q.item) >= q.qty : g.active.length < questSlots() && chanceOf(q) >= ALLY_MIN)) a.guild = 1;
+  if (TOOLS.some(t => { const l = S.tools[t.id] + 1; if (l > 6) return false; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })) a.smith = 1;
+  return a;
+}
+let tabAlertSig = '';
 function renderTabs() {
   const ready = S.farm.plots.filter(isReady).length;
-  const badge = { farm: ready, legacy: canRetire() ? '⭐' : 0 };
+  const badge = { farm: ready, legacy: canRetire() ? '⭐' : 0 }, al = tabAlerts();
+  for (const k in al) if (!badge[k]) badge[k] = 'dot';
+  tabAlertSig = Object.keys(al).join();
   $('tabs').innerHTML = tabsMarkup(TABS,badge,tab);
 }
 function skillBar(k) {
@@ -2219,7 +2237,7 @@ function renderHeader() {
   if (cc) visualText(hc, `${icon('challenge-' + cc.id)} ${cc.n}: ${S.gen.chDone ? L('✅ أنجزته') : Math.floor(Math.min(1, chValue(cc) / chGoal(cc)) * 100) + '%'}`);
   renderSky();
   const ready = S.farm.plots.filter((p, i) => isReady(p) && !covers('harvester', i)).length + (canRetire() ? 1000 : 0);
-  if (ready !== lastBadge) { lastBadge = ready; renderTabs(); }
+  if (ready !== lastBadge || Object.keys(tabAlerts()).join() !== tabAlertSig) { lastBadge = ready; renderTabs(); }
 }
 
 /* ---------------- السماء: الشمس والقمر ---------------- */

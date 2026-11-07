@@ -79,5 +79,5 @@ document.addEventListener('click',event=>{const button=event.target.closest('[da
 Object.assign(PX_EMOJI,{'➕':'plus','✅':'check','❌':'close','⚠️':'help','🟢':'check','💡':'help','❓':'help','📊':'settings','🌱':'farm'});
 const NAV_ART={farm:'sprout',barn:'cow',mine:'pick',lake:'rod',guild:'sword',smith:'anvil',market:'chest',village:'village',legacy:'legacy-tree',settings:'gear'};
 function tabsMarkup(list,badges,current){
- return list.map(([id,label])=>`<button data-a="tab" data-v="${id}" class="${current===id?'on':''}" aria-current="${current===id?'page':'false'}"><span class="nav-emblem nav-${id}" aria-hidden="true">${artMarkup(NAV_ART[id],40,'',true)}</span><span>${label.replace(/^\S+\s/,'')}</span>${badges[id]?`<span class="badge">${typeof badges[id]==='number'?badges[id]:'✦'}</span>`:''}</button>`).join('');
+ return list.map(([id,label])=>`<button data-a="tab" data-v="${id}" class="${current===id?'on':''}" aria-current="${current===id?'page':'false'}"><span class="nav-emblem nav-${id}" aria-hidden="true">${artMarkup(NAV_ART[id],40,'',true)}${badges[id]==='dot'?'<i class="tab-dot"></i>':''}</span><span>${label.replace(/^\S+\s/,'')}</span>${badges[id]&&badges[id]!=='dot'?`<span class="badge">${typeof badges[id]==='number'?badges[id]:'✦'}</span>`:''}</button>`).join('');
 }

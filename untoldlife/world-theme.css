@@ -367,3 +367,8 @@ a.chip.kofi-chip{margin-right:auto;background:#29abe0;color:#fff;border:1px soli
 .wk .vg-tiers{font-weight:700;color:var(--warn)}
 @media(max-width:900px){.wk .vgs{grid-template-columns:minmax(0,1fr)}}
 .note li .rich-icon,.note li img.px{width:22px;height:22px;vertical-align:-5px;margin-inline-end:4px}
+/* Red dot on a tab: something there is waiting (see tabAlerts in game.js) */
+.nav-emblem{position:relative}
+.tab-dot{position:absolute;top:-5px;right:-5px;width:12px;height:12px;border-radius:50%;background:#e2453a;border:2px solid #2b2519;box-shadow:0 0 6px #e2453a99;animation:tabDot 1.8s ease-in-out infinite;pointer-events:none}
+@keyframes tabDot{50%{transform:scale(1.18);box-shadow:0 0 10px #e2453acc}}
+@media(prefers-reduced-motion:reduce){.tab-dot{animation:none}}

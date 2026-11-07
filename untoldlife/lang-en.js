@@ -967,6 +967,7 @@
 "🏠 كل ألعابنا": "🏠 All our games",
 "سياسة الخصوصية": "Privacy policy",
 "عن الاستديو": "About us",
+"تواصل معنا": "Contact us",
 "💬 ملاحظاتك": "💬 Feedback",
 "هذي نسخة تجريبية. أي شيء عجبك أو ضايقك أو خرب، قل لنا.": "This is a beta. Anything you liked, anything that annoyed you, anything that broke — tell us.",
 "💝 ادعمنا": "💝 Support us",

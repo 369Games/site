@@ -126,31 +126,31 @@ footer a{color:#b59d74}
   </section>
 </main>
 
-<footer>© <span id="year"></span> 369Games · <a href="about.html" data-t="about"></a> · <a href="privacy.html" data-t="privacy"></a> · <a href="https://ko-fi.com/369games" target="_blank" rel="noopener">☕ Ko-fi</a> · <a href="https://creators.sa/369games" target="_blank" rel="noopener">💝 Creators</a></footer>
+<footer>© <span id="year"></span> 369Games · <a href="about.html" data-t="about"></a> · <a href="privacy.html" data-t="privacy"></a> · <a href="contact.html" data-t="contact"></a> · <a href="https://ko-fi.com/369games" target="_blank" rel="noopener">☕ Ko-fi</a> · <a href="https://creators.sa/369games" target="_blank" rel="noopener">💝 Creators</a></footer>
 
 <script>
 'use strict';
 const FEEDBACK_URL = '';
 const T = {
-  ar: { about: 'عن الاستديو', privacy: 'سياسة الخصوصية', heroTitle: 'ألعاب <span>idle</span> تكمل وأنت غايب', heroText: 'عوالم صغيرة تكبر حتى لو سكّرت الصفحة. ارجع ولقى مزرعتك ومملكتك وشارعك أكبر من ما تركتهم.',
+  ar: { about: 'عن الاستديو', privacy: 'سياسة الخصوصية', contact: 'تواصل معنا', heroTitle: 'ألعاب <span>idle</span> تكمل وأنت غايب', heroText: 'عوالم صغيرة تكبر حتى لو سكّرت الصفحة. ارجع ولقى مزرعتك ومملكتك وشارعك أكبر من ما تركتهم.',
     gamesTitle: 'ألعابنا', beta: 'نسخة تجريبية', ulText: 'ورثت مزرعة جدك في وادي الصدى. ازرع، ربِّ الحيوانات، احفر المناجم، قاتل في الزنزانة، وسلّم المزرعة لأولادك جيلاً بعد جيل.',
     tag1: 'مزرعة', tag2: 'أجيال', tag3: '4 لغات', play: '▶ العب الآن', soon: 'قريباً',
     soon1Title: 'لعبة المملكة', soon1Text: 'أنت الملك. ابنِ المصانع، اجمع المواد الخام، وكبّر مملكتك من قرية صغيرة إلى إمبراطورية.',
     soon2Title: 'لعبة مدينة النيون', soon2Text: 'مدينة نيون ما تنام. تبدأ من الشارع بلا شيء، وتشق طريقك للقمة.',
     fbTitle: 'جربت ألعابنا؟', fbText: 'كل الألعاب تجريبية، وملاحظاتك تفرق. أي شيء عجبك أو ضايقك أو خرب، قل لنا.', fbBtn: '✍️ أرسل ملاحظاتك' },
-  en: { about: 'About us', privacy: 'Privacy policy', heroTitle: '<span>Idle</span> games that keep going while you\'re away', heroText: 'Small worlds that grow even when the tab is closed. Come back to a bigger farm, kingdom or street than you left.',
+  en: { about: 'About us', privacy: 'Privacy policy', contact: 'Contact us', heroTitle: '<span>Idle</span> games that keep going while you\'re away', heroText: 'Small worlds that grow even when the tab is closed. Come back to a bigger farm, kingdom or street than you left.',
     gamesTitle: 'Our games', beta: 'Beta', ulText: 'Inherit your grandfather\'s farm in Echo Valley. Grow crops, raise animals, dig the mines, fight in the dungeon, and pass the farm down from generation to generation.',
     tag1: 'Farming', tag2: 'Generations', tag3: '4 languages', play: '▶ Play now', soon: 'Coming soon',
     soon1Title: 'Kingdom game', soon1Text: 'You are the king. Build factories, gather raw materials, and grow your kingdom from a small village into an empire.',
     soon2Title: 'Neon city game', soon2Text: 'A neon city that never sleeps. Start on the street with nothing and fight your way to the top.',
     fbTitle: 'Played our games?', fbText: 'Everything here is in beta, and your feedback matters. Anything you liked, anything that annoyed you, anything that broke — tell us.', fbBtn: '✍️ Send feedback' },
-  ru: { about: 'О студии', privacy: 'Конфиденциальность', heroTitle: '<span>Idle</span>-игры, которые идут, пока вас нет', heroText: 'Маленькие миры, которые растут, даже когда вкладка закрыта. Возвращайтесь — ферма, королевство или улица станут больше.',
+  ru: { about: 'О студии', privacy: 'Конфиденциальность', contact: 'Контакты', heroTitle: '<span>Idle</span>-игры, которые идут, пока вас нет', heroText: 'Маленькие миры, которые растут, даже когда вкладка закрыта. Возвращайтесь — ферма, королевство или улица станут больше.',
     gamesTitle: 'Наши игры', beta: 'Бета', ulText: 'Унаследуйте ферму деда в Долине Эха. Выращивайте урожай, разводите животных, копайте шахты, сражайтесь в подземелье и передавайте ферму детям из поколения в поколение.',
     tag1: 'Ферма', tag2: 'Поколения', tag3: '4 языка', play: '▶ Играть', soon: 'Скоро',
     soon1Title: 'Игра о королевстве', soon1Text: 'Вы — король. Стройте фабрики, добывайте сырьё и превратите маленькую деревню в империю.',
     soon2Title: 'Игра о неоновом городе', soon2Text: 'Неоновый город, который никогда не спит. Начните с улицы без гроша и пробейтесь на вершину.',
     fbTitle: 'Поиграли в наши игры?', fbText: 'Всё здесь в бете, и ваше мнение важно. Что понравилось, что раздражало, что сломалось — расскажите нам.', fbBtn: '✍️ Отправить отзыв' },
-  zh: { about: '关于我们', privacy: '隐私政策', heroTitle: '你不在时也在运转的<span>放置</span>游戏', heroText: '即使关掉页面也会继续成长的小世界。回来时，你的农场、王国和街区都比离开时更大。',
+  zh: { about: '关于我们', privacy: '隐私政策', contact: '联系我们', heroTitle: '你不在时也在运转的<span>放置</span>游戏', heroText: '即使关掉页面也会继续成长的小世界。回来时，你的农场、王国和街区都比离开时更大。',
     gamesTitle: '我们的游戏', beta: '测试版', ulText: '继承爷爷在回声谷的农场。种植作物、饲养动物、挖掘矿井、闯荡地牢，把农场一代代传下去。',
     tag1: '农场', tag2: '世代传承', tag3: '4 种语言', play: '▶ 立即开玩', soon: '即将推出',
     soon1Title: '王国游戏', soon1Text: '你就是国王。建造工厂，收集原料，把小村庄发展成一个帝国。',

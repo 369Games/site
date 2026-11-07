@@ -69,10 +69,11 @@ const ANIMALS = [
   { id: 'camel', n: L('ناقة'), e: '🐪', cost: 500000, prod: 'hashi', time: 600, lvl: 12, gn: { n0: L('مجهم'), p: L('وضحى'), g: L('شقحاء') } },
 ];
 function gName(a, to) { return (a.gn && a.gn[to]) || (to === 'n0' ? L('عادي') : GRADE[to].n); }
-[['egg', L('بيض'), '🥚', 25], ['milk', L('حليب'), '🥛', 120], ['wool', L('صوف'), '🧶', 350], ['cheese', L('جبن'), '🧀', 700], ['honey', L('عسل'), '🍯', 1500], ['meat', L('فخذ ديك رومي'), '🍗', 4000], ['hashi', L('لحم حاشي'), '🍖', 60000]]
+// 1.3.3: every product x2 except camel meat, which went to half (60,000 -> 30,000), so a full golden barn isn't all camels.
+[['egg', L('بيض'), '🥚', 50], ['milk', L('حليب'), '🥛', 240], ['wool', L('صوف'), '🧶', 700], ['cheese', L('جبن'), '🧀', 1400], ['honey', L('عسل'), '🍯', 3000], ['meat', L('فخذ ديك رومي'), '🍗', 8000], ['hashi', L('لحم حاشي'), '🍖', 30000]]
   .forEach(([id, n, e, price]) => addItem(id, { n, e, price, cat: 'animal' }));
 // Golden animals give golden products worth 5x the base price.
-[['egg_g', L('بيضة ذهبية'), 125], ['milk_g', L('حليب ذهبي'), 600], ['wool_g', L('صوف ذهبي'), 1750], ['cheese_g', L('جبن ذهبي'), 3500], ['honey_g', L('عسل ملكي'), 7500], ['meat_g', L('فخذ ديك رومي ذهبي'), 20000], ['hashi_g', L('لحم حاشي ذهبي'), 300000]]
+[['egg_g', L('بيضة ذهبية'), 250], ['milk_g', L('حليب ذهبي'), 1200], ['wool_g', L('صوف ذهبي'), 3500], ['cheese_g', L('جبن ذهبي'), 7000], ['honey_g', L('عسل ملكي'), 15000], ['meat_g', L('فخذ ديك رومي ذهبي'), 40000], ['hashi_g', L('لحم حاشي ذهبي'), 150000]]
   .forEach(([id, n, price]) => addItem(id, { n, e: '🌟', price, cat: 'animal', golden: true }));
 // Until dedicated art exists, golden products reuse the base art with a gold tint.
 if (typeof ART !== 'undefined') ['egg', 'milk', 'wool', 'cheese', 'honey', 'meat', 'hashi'].forEach(b => { if (!ART[b + '_g'] && ART[b]) ART[b + '_g'] = { ...ART[b], tint: true }; });

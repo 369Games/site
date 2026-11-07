@@ -210,8 +210,8 @@ function lgv(id) { return (S.tlg || {})[id] || 0; }
 function lf(id) { return 1 + lgv(id) / 100; }
 function lgTier(v) { return v >= 100 ? 3 : v >= 60 ? 2 : v >= 30 ? 1 : 0; }
 function lgRoll() { return Math.random() < 0.005 ? 100 : Math.round(5 + 94 * Math.pow(Math.random(), 2.5)); }
-// The first forge costs the full price; forging again costs 10% of it.
-function lgCost(t) { const k = Math.max(0.1, 1 - spv('smith', 'forge')); return LEG_COST.map(([id, q]) => [id, Math.ceil((lgv(t) ? q / 10 : q) * k)]); }
+// The first forge costs the full price; forging again costs 10% of it. Qasim's discount (hearts) and season buff both cut it.
+function lgCost(t) { const k = Math.max(0.1, (1 - spv('smith', 'forge')) * (1 - 0.03 * hearts('smith'))); return LEG_COST.map(([id, q]) => [id, Math.ceil((lgv(t) ? q / 10 : q) * k)]); }
 function lgCanPay(t) { return lgCost(t).every(([id, q]) => have(id) >= q); }
 /* Pets (1.7): a very rare egg can drop when you clear a dungeon floor, at the same chance as a king fish (0.08%).
    The egg hatches after 30 minutes into a griffin, a dragon or a unicorn (one you don't have yet), and the pet grows

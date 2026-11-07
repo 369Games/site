@@ -455,7 +455,10 @@ function seasonLine(np) {
   return L`<small class="hint season-perk ${cls}">${SEASONS[S.season].e} بف الموسم: ${p.d(v)}${hearts(np.id) < 5 ? L(' (يصير موجب من 6 قلوب)') : hearts(np.id) === 5 ? L(' (يبدأ من 6 قلوب)') : ''}</small>`;
 }
 function giftDaysLeft(np) { const st = S.npc[np.id]; return st && st.cd !== undefined ? GIFT_GRACE - (dayAbs() - st.cd) : GIFT_GRACE; }
+// Auto donor (kept by the family): pays the Donor at the start of every season, as soon as there's enough gold.
+function autoDonor() { if (S.leg.donorAuto && !donorOn() && S.gold >= DONOR_COST) A.donor(); }
 function tickLove() {
+  autoDonor();
   for (const np of NPCS) {
     const st = S.npc[np.id]; if (!st) continue;
     if (st.cd === undefined) st.cd = dayAbs();
@@ -1410,6 +1413,7 @@ const A = {
     S.gold -= DONOR_COST; S.donor = seasonKey();
     log(L('🤝 صرت المتبرع هالموسم: أهل القرية ما يزعلون لين يخلص الموسم'), 'good');
   },
+  donorAuto: () => { S.leg.donorAuto = !S.leg.donorAuto; autoDonor(); },
   dunEat: () => { S.dun.autoEat = !S.dun.autoEat; },
   // The deepest opened floor the hero handles well right now («fits» in the difficulty tag). Only opened floors,
   // so the guild rank limit doesn't matter here.
@@ -2233,7 +2237,8 @@ function fundPanel() {
   <div class="row">${costBtn('donate', '1', c, L`🏛️ تبرّع (${fmt(c)}💰) ← +${l + 1}%`)}${n > 1 ? `<button class="btn ghost" data-a="donate" data-v="all">${L`تبرّع ×${n} (${fmt(sum)}💰)`}</button>` : ''}</div>
   <h3>🤝 المتبرع</h3>
   <p class="hint">${donorOn() ? L('✅ أنت المتبرع هالموسم: ما أحد يزعل ولا ينقص حبه لين يخلص الموسم.') : L('ادفع للقرية، وما أحد يزعل ولا ينقص حبه لين يخلص هالموسم، حتى لو ما أهديته.')}</p>
-  ${donorOn() ? '' : `<div class="row">${costBtn('donor', '', DONOR_COST, L`🤝 كن المتبرع هالموسم (${fmt(DONOR_COST)}💰)`)}</div>`}</div>`)
+  <div class="row">${donorOn() ? '' : costBtn('donor', '', DONOR_COST, L`🤝 كن المتبرع هالموسم (${fmt(DONOR_COST)}💰)`)}<button class="btn ${S.leg.donorAuto ? 'gold' : 'ghost'} sm" data-a="donorAuto">${S.leg.donorAuto ? '✅' : '⬜'} ${L('تبرّع تلقائي كل موسم')}</button></div>
+  ${S.leg.donorAuto ? L('<p class="hint">🔁 كل ما يبدأ موسم جديد يدفع المتبرع عنك تلقائياً، وتبقى القلوب ما تنقص. يبقى شغّال حتى بعد التقاعد.</p>') : ''}</div>`)
     .replaceAll('🏛️', icon('icon-fund', 28)).replaceAll('🤝', icon('icon-donor', 24));
 }
 
@@ -2474,7 +2479,7 @@ const VIEWS = {
   }],
   smith: [viewSmith, updReqs, () => [S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
-  village: [viewVillage, () => { if (typeof wkUpd === 'function') wkUpd(); }, () => [typeof wkSig === 'function' ? wkSig() : 0, dayAbs(), S.bld, S.npc, S.off, S.spouse, S.friend, S.twins, P('q_twin'), S.gender, S.leg.gen, donLv(), donorOn(), Math.floor(Math.log2(Math.max(1, S.gold / DON_BASE))), NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
+  village: [viewVillage, () => { if (typeof wkUpd === 'function') wkUpd(); }, () => [typeof wkSig === 'function' ? wkSig() : 0, dayAbs(), S.bld, S.npc, S.off, S.spouse, S.friend, S.twins, P('q_twin'), S.gender, S.leg.gen, donLv(), donorOn(), S.leg.donorAuto, Math.floor(Math.log2(Math.max(1, S.gold / DON_BASE))), NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, Math.min(S.skills.fish.l, 30), S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],
   legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length, dunGoal()]; }],
   settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0]],

@@ -266,7 +266,6 @@ const PERKS = [
   { id: 'q_hearts', b: 'family', n: L('سمعة الجد'), e: '💞', max: 5, cost: 2, mult: 1.7, start: 1, eff: l => L`أهل القرية يبدؤون من ${2.5 + l} قلوب` },
   { id: 'q_heirs', req: ['q_hearts', 3], b: 'family', n: L('خزانة العائلة'), e: '🗝️', max: 2, cost: 5, mult: 3, eff: l => L`${3 + l} خيارات لقطع الإرث عند التقاعد` },
   { id: 'q_bless', req: ['q_workers', 2], b: 'family', n: L('بركة الوادي'), e: '🌈', max: Infinity, cost: 10, mult: 1.35, eff: l => L`+${5 * l}% لكل شيء (بلا حد)` },
-  { id: 'q_twin', req: ['q_bless', 5], b: 'family', n: L('توأم الروح'), e: '🌟', max: 1, cost: 300, mult: 1, eff: () => L('بعد ما يكون عندك زوج وصديق عمر: تقدر تخلي أي أحد من الباقين توأم روحك بـ10 مليون، حتى العمدة. مكافأته ×2.5 وحبه ما يقل أبد') },
   // Special skills: one per branch, unlocked after spending KS_NEED levels in that branch.
   { id: 'f_seeds', ks: 1, b: 'farm', n: L('بذور خالدة'), e: '♾️', max: 1, cost: 25, mult: 1, eff: () => L('الزراعة ما تكلف بذور أبداً') },
   { id: 'r_twin', ks: 1, b: 'ranch', n: L('مربّي خبير'), e: '🧬', max: 1, cost: 25, mult: 1, eff: () => L('لو فشل التهجين ما تخسر حيواناتك') },
@@ -274,6 +273,7 @@ const PERKS = [
   { id: 'w_ally', ks: 1, b: 'war', n: L('رفيق المعارك'), e: '🛡️', max: 1, cost: 25, mult: 1, eff: () => L('رفيق يقاتل معك بنصف قوتك، وينقذك من السقوط مرة كل 5 دقائق، ويقبل مهمات الصيد بدالك') },
   { id: 't_deal', ks: 1, b: 'trade', n: L('تاجر الموسم'), e: '🧺', max: 1, cost: 25, mult: 1, eff: () => L('كل موسم يجيك تاجر يشتري محصول من محاصيل الموسم بـ ×3 السعر') },
   { id: 'q_tools', ks: 1, b: 'family', n: L('إرث الأدوات'), e: '🧰', max: 1, cost: 25, mult: 1, start: 1, eff: () => L('أدواتك تنتقل للجيل الجديد بدرجة أقل بدل ما ترجع للصفر') },
+  { id: 'q_twin', ks: 1, b: 'family', n: L('توأم الروح'), e: '🌟', max: 1, cost: 300, mult: 1, eff: () => L('بعد ما يكون عندك زوج وصديق عمر: تقدر تخلي أي أحد من الباقين توأم روحك بـ10 مليون، حتى العمدة. مكافأته ×2.5 وحبه ما يقل أبد') },
 ];
 const HEIRLOOMS = [
   { id: 'sword', n: L('سيف الجد'), e: '🗡️', max: 6, eff: l => L`تبدأ كل جيل بسيف ${TIER[l]} • +${l}% ذهب` },
@@ -2252,11 +2252,11 @@ function viewLegacy() {
   h += L`<div class="panel"><div class="ph"><h2>${icon("legacy-tree",32)} شجرة الإرث</h2><span class="stat starchip">${icon("legacy-crown",24)} ${fmt(LG.stars)}</span></div><p class="hint">ابدأ من أول مهارة في كل فرع: كل 3 مستويات تفتح لك فرع جديد، ولما تصرف ${KS_NEED} مستويات في فرع تنفتح مهارته الخاصة ⭐. المهارات المعلّمة بـ 🌱 تطبق من بداية الجيل القادم، إلا لو اشتريتها في أول يومين من الجيل فتطبق عليك فوراً. الباقي يشتغل فوراً دائماً.</p>
   <div class="row"><button class="btn ghost sm" data-a="respec" ${S.gen.respec || !perkSpent() ? 'disabled' : ''}>↺ إعادة توزيع النقاط</button><small class="hint">${S.gen.respec ? L('استخدمتها في هذا الجيل') : L('مجانية، مرة وحدة كل جيل')}</small></div>`;
   for (const [b, bn] of Object.entries(BRANCHES)) {
-    const list = PERKS.filter(x => x.b === b), lv = branchLv(b), ks = list.find(x => x.ks);
+    const list = PERKS.filter(x => x.b === b), lv = branchLv(b), ks = list.filter(x => x.ks); // the family branch has two
     h += L`<div class="ptree"><div class="ptree-head"><h3>${bn}</h3><span class="stat">${lv} مستوى</span></div>`;
     const tiers = [];
     for (const p of list.filter(x => !x.ks)) (tiers[perkTier(p)] = tiers[perkTier(p)] || []).push(p);
-    tiers.push([ks]);
+    tiers.push(ks);
     tiers.forEach((row, i) => {
       if (i) h += '<div class="plink"></div>';
       h += '<div class="ptier">' + row.map(perkCard).join('') + '</div>';

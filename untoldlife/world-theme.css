@@ -409,3 +409,9 @@ a.chip.kofi-chip{margin-right:auto;background:#111;color:#f6e7b8;border:1px soli
 body.lite *,body.lite *:before,body.lite *:after{animation:none!important;transition:none!important}
 body.lite #effects,body.lite .golden-flash{display:none!important}
 body.lite #log li.golden,body.lite #log li.egg{box-shadow:none}
+/* Guild titles (1.7.9) */
+.title-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.title-card{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 8px;border-radius:12px;border:1px solid #c9a24a44;background:#1c1914;text-align:center}
+.title-card b{font-size:14px}.title-card small{font-size:11px;color:var(--muted)}.title-card .bar{width:100%;height:6px}
+.title-card.cur{border-color:#7fb3ff99;box-shadow:0 0 10px #7fb3ff33}.title-card.own{border-color:#e2bc6c;background:radial-gradient(circle at 50% 30%,#e2bc6c1f,#0000 70%),#1c1914}
+.hero-title{font-size:13px;font-weight:600;color:#e2bc6c;margin-inline-start:6px}

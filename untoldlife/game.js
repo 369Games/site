@@ -178,7 +178,7 @@ const HELM_DEF = [0, 4, 12, 28, 56, 110, 220], HELM_PCT = [0, 0.05, 0.1, 0.2, 0.
 const AMULET_POW = [0, 0.05, 0.1, 0.15, 0.22, 0.3, 0.4], AMULET_HEAL = [0, 0.1, 0.2, 0.35, 0.5, 0.7, 1];
 const BOOTS_SPD = [0, 0.1, 0.2, 0.3, 0.45, 0.6, 0.8];
 function gearPct(arr, id) { return arr[S.tools[id] || 0] * lf(id); }
-function heroSpeed() { return 1 + gearPct(BOOTS_SPD, 'boots'); } // hits per second
+function heroSpeed() { return (1 + gearPct(BOOTS_SPD, 'boots')) * (1 + titleB('swift', 0.05)); } // hits per second
 function amuletMult() { return 1 + gearPct(AMULET_POW, 'amulet'); }
 
 // Hold to dig or fish: hits per second for each level of the worker's gloves.
@@ -235,12 +235,14 @@ function petMult(stat) {
   return m;
 }
 /* How much a cleared floor grows the pets, by its difficulty for you (the same labels as the dungeon info):
-   easy 0, fitting / hard / very hard 1, deadly 5. So pets only grow on floors that push you. */
+   easy 0, fitting 1, hard 2, very hard 4, deadly 6. So pets only grow on floors that push you. */
 function petGrow(f) {
   const { r, s } = assess(f);
   if (r >= 1.5) return 0;
-  if (r >= 0.8 || s >= 1 || (foodList().length > 0 && s >= 0.35)) return 1;
-  return 5;
+  if (r >= 0.8) return 1;
+  if (s >= 1) return 2;
+  if (foodList().length > 0 && s >= 0.35) return 4;
+  return 6;
 }
 function petFloor(f) {
   const d = petData(), g = Object.keys(d.pets).length ? petGrow(f) : 0;
@@ -248,7 +250,7 @@ function petFloor(f) {
     const p = d.pets[id], s = petStage(p.xp); p.xp += g;
     if (petStage(p.xp) > s) { const P0 = PETS.find(x => x.id === id); log(L`${P0.e} ${P0.n} كبر وصار ${PET_STAGE[petStage(p.xp)].n}! +${Math.round(PET_STAGE[petStage(p.xp)].b * 100)}% ${P0.sn}`, 'season'); }
   }
-  if (Math.random() < PET_EGG_CH * petEggX(hearts('leila'))) { d.eggs.push(PET_HATCH); d.eggNew = 1; log(L('🥚 طاحت لك بيضة أسطورية بعد ما خلصت الطابق! تلقاها في النقابة ← «🐾 الحيوانات الأسطورية» تحت العدّة، وتفقس بعد 30 دقيقة.'), 'egg'); toast(L('🥚 طاحت لك بيضة أسطورية! تلقاها في النقابة تحت العدّة')); }
+  if (Math.random() < PET_EGG_CH * petEggX(hearts('leila')) * (1 + titleB('tamer', 0.25))) { d.eggs.push(PET_HATCH); d.eggNew = 1; log(L('🥚 طاحت لك بيضة أسطورية بعد ما خلصت الطابق! تلقاها في النقابة ← «🐾 الحيوانات الأسطورية» تحت العدّة، وتفقس بعد 30 دقيقة.'), 'egg'); toast(L('🥚 طاحت لك بيضة أسطورية! تلقاها في النقابة تحت العدّة')); }
 }
 function hatchEgg() {
   const d = petData(), free = PETS.filter(p => !d.pets[p.id]);
@@ -281,8 +283,8 @@ function petPanel() {
     return `<div class="pet-card st${s}">${petIcon(p, s, 64)}<b>${p.n} • ${PET_STAGE[s].n}</b><span class="good">+${Math.round(PET_STAGE[s].b * 100)}% ${p.sn}</span>${prog}</div>`;
   }).join('');
   return L`<div class="panel pets"><div class="ph"><h2>🐾 الحيوانات الأسطورية</h2><span class="stat">بيضة نادرة جداً تطيح لما تخلص طابق في الزنزانة</span></div>
-    <p class="hint">البيضة تفقس بعد 30 دقيقة: تنين (+هجوم)، يونيكورن (+دفاع)، أو غريفين (+قوة في مهام النقابة). يكبر لما تخلص طوابق تتحداك: الطابق السهل ما يحسب، المناسب والصعب بطابق، والقاتل بـ5 طوابق. رضيع +10%، مراهق +25%، بالغ +50%. الحيوانات للعائلة وتبقى معك كل الأجيال.</p>
-    ${Object.keys(d.pets).length ? `<p class="hint">${L`🌱 الطابق ${S.dun.floor} يكبّر حيواناتك: ${[L('ولا شي (سهل)'), L('طابق واحد'), '', '', '', L('5 طوابق (قاتل)')][petGrow(S.dun.floor)]}`}</p>` : ''}
+    <p class="hint">البيضة تفقس بعد 30 دقيقة: تنين (+هجوم)، يونيكورن (+دفاع)، أو غريفين (+قوة في مهام النقابة). يكبر لما تخلص طوابق تتحداك: السهل ما يحسب، المناسب بطابق، الصعب بطابقين، الصعب جداً بـ4، والقاتل بـ6. رضيع +10%، مراهق +25%، بالغ +50%. الحيوانات للعائلة وتبقى معك كل الأجيال.</p>
+    ${Object.keys(d.pets).length ? `<p class="hint">${L`🌱 الطابق ${S.dun.floor} يكبّر حيواناتك: ${[L('ولا شي (سهل)'), L('طابق واحد (مناسب)'), L('طابقين (صعب)'), '', L('4 طوابق (صعب جداً)'), '', L('6 طوابق (قاتل)')][petGrow(S.dun.floor)]}`}</p>` : ''}
     <div class="pet-list">${eggs}${cards}</div></div>`;
 }
 
@@ -860,19 +862,19 @@ function blockDone() {
 }
 
 /* ---------------- البطل والقتال ---------------- */
-function heroMaxHp() { return Math.floor((60 + 20 * (S.hero.lvl - 1) + ARMOR_HP[S.tools.armor] * lf('armor')) * (1 + 0.05 * hearts('leila')) * warMult()); }
-function heroAtk() { return (6 + 3 * (S.hero.lvl - 1) + SWORD[S.tools.sword] * lf('sword')) * warMult() * mskPow() * amuletMult() * petMult('atk'); }
+function heroMaxHp() { return Math.floor((60 + 20 * (S.hero.lvl - 1) + ARMOR_HP[S.tools.armor] * lf('armor')) * (1 + 0.05 * hearts('leila')) * warMult() * (1 + titleB('iron', 0.05))); }
+function heroAtk() { return (6 + 3 * (S.hero.lvl - 1) + SWORD[S.tools.sword] * lf('sword')) * warMult() * mskPow() * amuletMult() * petMult('atk') * (1 + titleB('sword', 0.05)); }
 function heroDef() {
   const flat = 1 + (S.hero.lvl - 1) + ARMOR_DEF[S.tools.armor] * lf('armor') + gearPct(SHIELD_DEF, 'shield') + gearPct(HELM_DEF, 'helmet');
-  return flat * (1 + gearPct(SHIELD_PCT, 'shield') + gearPct(HELM_PCT, 'helmet')) * mskPow() * amuletMult() * petMult('def') * (1 + 0.02 * hearts('leila'));
+  return flat * (1 + gearPct(SHIELD_PCT, 'shield') + gearPct(HELM_PCT, 'helmet')) * mskPow() * amuletMult() * petMult('def') * (1 + 0.02 * hearts('leila')) * (1 + titleB('guard', 0.05));
 }
 // Leila's season buff «guard»: less damage taken in the dungeon (more below 5 hearts). Never under 40% of the hit.
 function leilaGuard() { return clamp(1 - spv('leila', 'guard'), 0.4, 2); }
-function heroPower() { return Math.round((heroAtk() * 2 + heroDef() * 2 + heroMaxHp() / 5) * petMult('pow')); }
+function heroPower() { return Math.round((heroAtk() * 2 + heroDef() * 2 + heroMaxHp() / 5) * petMult('pow') * (1 + titleB('legend', 0.05))); }
 // Combat levels come about twice as fast as before 1.9.1 (the old curve was 50·l^2.2): the same xp gives about double the level.
 function hxpNeed(l) { return Math.floor(5.5 * Math.pow(l, 2.2)); }
 function heroXp(x) {
-  const h = S.hero; h.xp += x * xpMult() * (1 + 0.3 * P('w_xp')) * Math.max(0.1, 1 + spv('leila', 'xp'));
+  const h = S.hero; h.xp += x * xpMult() * (1 + 0.3 * P('w_xp')) * Math.max(0.1, 1 + spv('leila', 'xp')) * (1 + titleB('sage', 0.1));
   while (h.xp >= hxpNeed(h.lvl)) {
     h.xp -= hxpNeed(h.lvl); h.lvl++; h.hp = heroMaxHp();
     log(L`⚔️ ارتفع مستواك القتالي إلى ${h.lvl}!`, 'good');
@@ -891,7 +893,7 @@ function makeEnemy(f) {
 }
 function dmg(a, d) { return Math.max(1, a * a / (a + d)) * R(0.85, 1.15); }
 function regenRate() { return heroMaxHp() * 0.03 * (S.bld.inn ? 2 : 1) * Math.max(0.1, 1 + spv('leila', 'regen')); }
-function healOf(id) { return (ITEMS[id].price * 1.5 + 10) * (S.bld.kitchen ? 2 : 1) * (1 + gearPct(AMULET_HEAL, 'amulet')); }
+function healOf(id) { return (ITEMS[id].price * 1.5 + 10) * (S.bld.kitchen ? 2 : 1) * (1 + gearPct(AMULET_HEAL, 'amulet')) * (1 + titleB('healer', 0.1)); }
 function foodList() {
   const cats = noFarm() ? ['crop', 'animal', 'fish', 'monster'] : ['crop', 'animal', 'fish'];
   return Object.keys(S.inv).filter(id => cats.includes(ITEMS[id].cat) && !S.locked[id] && !KINGS.some(k => k.id === id))
@@ -915,7 +917,7 @@ function eat() {
 }
 // What a monster on floor f gives (xp before the xp bonuses, which heroXp adds).
 function enemyLoot(f, boss) {
-  return { gold: Math.round((3 + 2 * f + 0.15 * f * f) * (boss ? 5 : 1) * goldMult() * Math.max(0.1, 1 + spv('raad', 'loot'))), xp: (4 + 1.5 * f + 0.1 * f * f) * (boss ? 4 : 1) };
+  return { gold: Math.round((3 + 2 * f + 0.15 * f * f) * (boss ? 5 : 1) * goldMult() * (1 + titleB('hunt', 0.1)) * Math.max(0.1, 1 + spv('raad', 'loot'))), xp: (4 + 1.5 * f + 0.1 * f * f) * (boss ? 4 : 1) };
 }
 // Material chance; mastery adds to it with no limit. Above 100% every monster drops, and the rest raises the chance
 // of one extra material (on top of the 50% from loot level 5).
@@ -1012,8 +1014,55 @@ function qDur(q) { return Math.round(q.dur * (1 - 0.1 * gsk('quest')) * Math.max
 function questMult() { return (1 + 0.04 * hearts('raad')) * (1 + 0.25 * P('w_quest')) * goldMult(); }
 /* Hunt rewards grow with the generation, in step with the gold goal to retire: x1 up to generation 3,
    about x14 at generation 8. Deliveries don't (their reward already follows the item's price). */
+/* Guild titles (1.7.9): once the guild rank is S, guild points also fill the title you picked. Each title needs
+   TITLE_XP points; when it's full the title is yours for good (kept by the family) and its small bonus stays on.
+   You show one title next to your name. */
+const TITLE_XP = 50000;
+const TITLES = [
+  { id: 'hunt', e: '💰', n: L('صائد الوحوش'), d: L('+10% ذهب الوحوش') },
+  { id: 'sword', e: '⚔️', n: L('سيف النقابة'), d: L('+5% هجوم') },
+  { id: 'guard', e: '🛡️', n: L('حارس الوادي'), d: L('+5% دفاع') },
+  { id: 'iron', e: '❤️', n: L('القلب الحديدي'), d: L('+5% صحة قصوى') },
+  { id: 'sage', e: '📖', n: L('المحارب الحكيم'), d: L('+10% خبرة القتال') },
+  { id: 'quest', e: '📜', n: L('سيد المهام'), d: L('+10% ذهب مهام الصيد') },
+  { id: 'swift', e: '⚡', n: L('البرق'), d: L('+5% سرعة الضرب') },
+  { id: 'tamer', e: '🥚', n: L('مروض الأساطير'), d: L('+25% فرصة بيض الحيوانات') },
+  { id: 'healer', e: '🍽️', n: L('نصير الجرحى'), d: L('+10% شفاء الأكل') },
+  { id: 'legend', e: '👑', n: L('أسطورة القرية'), d: L('+5% قوة في مهام النقابة') },
+];
+function titleData() { const T = S.leg.titles || (S.leg.titles = { have: {}, cur: '', xp: 0, show: '' }); T.have = T.have || {}; return T; }
+function hasTitle(id) { return !!((S.leg.titles || {}).have || {})[id]; }
+function titleB(id, v) { return hasTitle(id) ? v : 0; }
+function titleOpen() { return rankIdx() >= RANKS.length - 1; }
+// Called every guild tick: guild points earned since the last tick go to the chosen title once the rank is S.
+function tickTitles() {
+  const g = S.guild; if (g.gpT === undefined || g.gp < g.gpT) g.gpT = g.gp;
+  const d = g.gp - g.gpT; g.gpT = g.gp;
+  if (d <= 0 || !titleOpen()) return;
+  const T = titleData(); if (!T.cur || T.have[T.cur]) return;
+  T.xp += d;
+  if (T.xp >= TITLE_XP) {
+    const t = TITLES.find(x => x.id === T.cur); T.have[T.cur] = 1; T.xp -= TITLE_XP; T.show = T.cur; T.cur = '';
+    log(L`🎖️ حصلت على لقب «${t.n}»! ${t.d}. اختر لقبك الجاي من النقابة.`, 'golden'); toast(L`🎖️ لقب جديد: ${t.n}`);
+  }
+}
+function titleName() { const T = S.leg.titles, t = T && T.show && TITLES.find(x => x.id === T.show); return t ? t.e + ' ' + t.n : ''; }
+function titlePanel() {
+  if (!titleOpen()) return '';
+  const T = titleData(), n = Object.keys(T.have).length;
+  const cards = TITLES.map(t => {
+    const own = T.have[t.id], cur = T.cur === t.id;
+    const act = own ? (T.show === t.id ? `<small class="good">${L('✅ معروض جنب اسمك')}</small>` : `<button class="btn ghost sm" data-a="titleShow" data-v="${t.id}">${L('اعرضه جنب اسمك')}</button>`)
+      : cur ? `<small>${L`${fmt(T.xp)} / ${fmt(TITLE_XP)} نقطة`}</small><div class="bar"><i style="width:${Math.min(100, T.xp / TITLE_XP * 100)}%"></i></div>`
+      : `<button class="btn sm" data-a="titlePick" data-v="${t.id}">${L('افرم هذا اللقب')}</button>`;
+    return `<div class="title-card ${own ? 'own' : ''} ${cur ? 'cur' : ''}"><b>${t.e} ${t.n}</b><small>${t.d}</small>${act}</div>`;
+  }).join('');
+  return L`<div class="panel titles"><div class="ph"><h2>🎖️ ألقاب النقابة</h2><span class="stat">${n} / ${TITLES.length}</span></div>
+    <p class="hint">وصلت الرتبة S! اختر لقب، وكل نقاط النقابة اللي تجيبها بعدها تروح له. كل لقب يحتاج ${fmt(TITLE_XP)} نقطة، ولما يكتمل يصير لك للأبد مع زيادته، ويبقى للعائلة كل الأجيال.${T.cur ? '' : L(' <b>ما اخترت لقب للحين، فالنقاط ما تنحسب.</b>')}</p>
+    <div class="title-list">${cards}</div></div>`;
+}
 function guildGen() { return Math.max(1, goldGoal() / 1e6); }
-function qGold(q) { return Math.round(q.gold * questMult() * (q.type === 'deliver' ? 1 : guildGen())); }
+function qGold(q) { return Math.round(q.gold * questMult() * (q.type === 'deliver' ? 1 : guildGen() * (1 + titleB('quest', 0.1)))); }
 function chanceOf(q) { return clamp(Math.pow(heroPower() / q.req, 2), 0.05, 1); }
 function genQuest() {
   const r = rankIdx(), g = S.guild; g.qid++;
@@ -1035,6 +1084,7 @@ const ALLY_MIN = 0.75;
 function fillBoard() { while (S.guild.board.length < 4) S.guild.board.push(genQuest()); }
 function tickGuild(dt) {
   const g = S.guild;
+  tickTitles();
   for (const q of [...g.active]) {
     q.t += dt;
     if (q.t >= q.dur) {
@@ -1434,6 +1484,8 @@ const A = {
     toast(L`⚖️ الطابق ${f} يناسب قوتك`);
   },
   floor: v => { const D = S.dun; const f = clamp(D.floor + (+v), 1, D.max); if (f !== D.floor) { D.floor = f; D.kills = 0; D.enemy = null; } },
+  titlePick: v => { const T = titleData(); if (T.have[v] || !TITLES.some(t => t.id === v)) return; T.cur = v; lastSig = ''; },
+  titleShow: v => { const T = titleData(); if (T.have[v]) { T.show = v; lastSig = ''; } },
   floorMax: () => { S.dun.floor = S.dun.max; S.dun.kills = 0; S.dun.enemy = null; },
   // Jump to any open floor by number (e.g. back to floor 1 to clear easy floors fast).
   floorGo: () => {
@@ -1944,7 +1996,7 @@ function updMine() {
 function viewGuild() {
   const D = S.dun, g = S.guild, r = rankIdx();
   // Layout: the dungeon across the top; under it the hero (stats + mercenary skills) on one side, the guild on the other.
-  const hero = L`<div class="panel"><div class="ph"><h2>🧑 ${S.name}</h2><span class="stat">⚔️ مستوى <b id="h_lvl"></b></span></div>
+  const hero = L`<div class="panel"><div class="ph"><h2>🧑 ${S.name}${titleName() ? ` <small class="hero-title">${titleName()}</small>` : ''}</h2><span class="stat">⚔️ مستوى <b id="h_lvl"></b></span></div>
     <div class="kv"><span>❤️ الصحة</span><span id="h_hpt"></span></div><div class="bar hp"><i id="h_hp"></i></div>
     <div class="kv"><span>✨ الخبرة</span><span id="h_xpt"></span></div><div class="bar xp"><i id="h_xp"></i></div>
     <div class="row" id="h_stats"></div>
@@ -2009,7 +2061,7 @@ function viewGuild() {
       <div class="row"><button class="btn sm" data-a="mastUp" ${can ? '' : 'disabled'}>طوّر (${MAST_COST} نقاط)</button>${can > 1 ? L`<button class="btn ghost sm" data-a="mastUp" data-v="all">طوّر ×${can}</button>` : ''}</div></div>`;
   }
   const heroPanel = (hero + h + '</div>').replace('🧑', icon(S.gender === 'f' ? 'hero-f' : 'hero-m', 48)); // the player's portrait in the title
-  return dun + `<div class="two"><div>${heroPanel}</div><div>${guild}</div></div>` + gearPanel() + petPanel();
+  return dun + `<div class="two"><div>${heroPanel}</div><div>${guild}</div></div>` + gearPanel() + titlePanel() + petPanel();
 }
 /* The hero's equipment, laid out like an inventory: helmet and amulet on top, sword, armour and shield in the
    middle, boots below. Tapping a slot opens the smith. Underneath: what the gear adds up to. */
@@ -2500,7 +2552,7 @@ const VIEWS = {
   mine: [viewMine, updMine, () => [S.off, S.mine.miners, S.tools.pick, lgv('pick'), ORES.filter(o => o.depth <= S.mine.max).length]],
   guild: [viewGuild, updGuild, () => {
     const D = S.dun, g = S.guild;
-    return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), S.tools, S.tlg, S.hero.lvl, floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100)))];
+    return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), S.tools, S.tlg, S.hero.lvl, floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100))), S.leg.titles && [S.leg.titles.cur, S.leg.titles.show, Object.keys(S.leg.titles.have || {}).length, Math.floor((S.leg.titles.xp || 0) / 1000)]];
   }],
   smith: [viewSmith, updReqs, () => [S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],

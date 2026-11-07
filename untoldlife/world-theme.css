@@ -377,3 +377,8 @@ a.chip.kofi-chip{margin-right:auto;background:#111;color:#f6e7b8;border:1px soli
 .tab-dot{position:absolute;top:-5px;right:-5px;width:12px;height:12px;border-radius:50%;background:#e2453a;border:2px solid #2b2519;box-shadow:0 0 6px #e2453a99;animation:tabDot 1.8s ease-in-out infinite;pointer-events:none}
 @keyframes tabDot{50%{transform:scale(1.18);box-shadow:0 0 10px #e2453acc}}
 @media(prefers-reduced-motion:reduce){.tab-dot{animation:none}}
+
+/* Scene backgrounds behind the mine, lake and dungeon boxes (set by sceneBg in game.js), darkened so text stays readable. */
+.minebox.scene-bg,.enemy.scene-bg{background:linear-gradient(180deg,#0b0d1255,#0b0d1299),var(--scene) center/cover no-repeat !important;border-color:#c9a24a44}
+.enemy.scene-bg{border-radius:14px;min-height:260px}
+.minebox.scene-bg .mineinfo,.enemy.scene-bg{text-shadow:0 1px 2px #000c}

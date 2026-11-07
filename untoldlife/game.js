@@ -1801,8 +1801,17 @@ function viewMine() {
   for (const o of ORES) h += L`<div class="ore" id="ore_${o.id}">${icon(o)} <b>${o.n}</b><br><small>من الطابق ${o.depth} • ${fmt(o.price)}💰</small></div>`;
   return h + '</div></div>';
 }
+/* Scene backgrounds (assets/art/scenes-v1): the mine follows the deepest ore of the current floor,
+   the lake follows the fishing spot, the dungeon shows a boss cave on boss floors. Set only when it changes. */
+const MINE_SCENE = { gold_ore: 'gold' };
+function sceneBg(el, name) {
+  if (!el || (el.dataset.scene === name && el.classList.contains('scene-bg'))) return; // the enemy box resets its classes
+  el.dataset.scene = name; el.classList.add('scene-bg');
+  el.style.setProperty('--scene', `url("assets/art/scenes-v1/${name}.webp")`);
+}
 function updMine() {
   const m = S.mine; if (!$('m_depth')) return;
+  const top = oresAt(m.depth).pop(); sceneBg(document.querySelector('#view .minebox'), 'mine-' + (MINE_SCENE[top.id] || top.id));
   $('view').style.setProperty('--cave', ['#465554','#3d4d4d','#354347','#303b44','#303344','#2a293c'][[1,10,25,45,70,100].filter(n=>m.depth>=n).length-1]);
   $('m_depth').textContent = m.depth; $('m_max').textContent = m.max;
   $('m_prog').style.width = (m.prog / hardness() * 100) + '%';
@@ -1940,6 +1949,7 @@ function updGuild() {
   visualText($('dunInfo'), dunInfoHtml());
   const eb = $('enemyBox');
   updateEnemyVisual(eb, D, h, mhp);
+  sceneBg(eb, (D.enemy ? D.enemy.boss : D.floor % 10 === 0) ? 'dungeon-cave-boss' : 'dungeon-cave');
   const lo = RANKS[r][1], hi = RANKS[r + 1] ? RANKS[r + 1][1] : null;
   $('g_gp').style.width = (hi ? (g.gp - lo) / (hi - lo) * 100 : 100) + '%';
   $('g_gpt').textContent = hi ? L`${fmt(g.gp)} / ${fmt(hi)} للرتبة ${RANKS[r + 1][0]}` : L`${fmt(g.gp)} — أعلى رتبة!`;
@@ -2254,6 +2264,7 @@ function viewLake() {
 }
 function updLake() {
   if (!$('lk_p')) return;
+  sceneBg(document.querySelector('#view .minebox'), 'fish-' + curSpot().id);
   $('lk_p').style.width = (S.lake.prog / biteNeed() * 100) + '%';
   $('lk_t').textContent = `${fmt(S.lake.prog)} / ${fmt(biteNeed())}`;
   const l = S.lake.last;

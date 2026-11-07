@@ -1151,6 +1151,7 @@
 "الوضع الخفيف للجوال": "Light mode for phones",
 "🪶 في الإعدادات: «الوضع الخفيف». يوقف المؤثرات والحركات، ويخفف رسائل السجل، ويحدّث الشاشة أبطأ. مفيد للجوال والأجيال العالية.": "🪶 In settings: «Light mode». Turns off effects and animations, trims log messages and refreshes the screen more slowly. Handy on phones and in high generations.",
 "⚡ اللعبة صارت أخف للكل: السجل ما يرسم نفسه أكثر من مرة كل ثانية تقريباً، والمزرعة ما تنبني من جديد مع كل مستوى زراعة.": "⚡ The game is lighter for everyone: the log redraws itself at most about once a second, and the farm no longer rebuilds with every farming level.",
+"⏳ لما ترجع للعبة بعد غياب، حساب وقت الغياب صار أسرع بكثير، فما تعلق الصفحة أول ما تفتحها.": "⏳ When you come back after being away, the catch-up for the time you were gone is much faster, so the page doesn't freeze when you open it.",
 "ليلى صارت أقوى": "Leila got stronger",
 "👩‍⚕️ بف ليلى الدائم زاد: فوق +5% صحة قصوى لكل قلب، صار يعطي +2% دفاع لكل قلب بعد. يعني يرفع قوتك في النقابة فعلاً.": "👩‍⚕️ Leila's lasting buff grew: on top of +5% max health per heart, she now gives +2% defence per heart. So she really raises your guild power.",
 "🥚 ليلى تضاعف فرصة بيض الحيوانات الأسطورية عند 10 قلوب، وأكثر مع الزواج أو توأم الروح.": "🥚 Leila doubles the chance of legendary pet eggs at 10 hearts, and more with marriage or a soul twin.",

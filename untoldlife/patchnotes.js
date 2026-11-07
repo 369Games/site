@@ -3,6 +3,10 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.7.4', date: '2026-11-07', big: false, title: L('إرث الأدوات والأسطوري'), items: [
+    L('🧰 مع «إرث الأدوات»، الأداة الأسطورية صارت تنتقل للجيل الجديد أدامانتيت بدل ميثريل (الأسطوري يعتبر درجة فوق الأدامانتيت). الصياغة نفسها تبدأ من جديد مثل قبل.'),
+    L('🔧 اللي تقاعد قبل هالتحديث وأدواته نزلت من أدامانتيت لميثريل، ترجع له أدامانتيت مرة وحدة.'),
+  ] },
   { v: '1.7.3', date: '2026-11-07', big: false, title: L('تبرّع تلقائي'), items: [
     L('🤝 في القرية تحت «المتبرع»: زر «تبرّع تلقائي كل موسم». يدفع المتبرع عنك أول ما يبدأ كل موسم، فالقلوب ما تنقص وتنساها. يبقى شغّال حتى بعد التقاعد.'),
   ] },

@@ -349,7 +349,7 @@ const PERKS = [
   { id: 'm_tnt', ks: 1, b: 'mine', n: L('ديناميت'), e: '🧨', max: 1, cost: 25, mult: 1, eff: () => L('كل طابق تكمله في المنجم ينزلك طابقين') },
   { id: 'w_ally', ks: 1, b: 'war', n: L('رفيق المعارك'), e: '🛡️', max: 1, cost: 25, mult: 1, eff: () => L('رفيق يقاتل معك بنصف قوتك، وينقذك من السقوط مرة كل 5 دقائق، ويقبل مهمات الصيد بدالك') },
   { id: 't_deal', ks: 1, b: 'trade', n: L('تاجر الموسم'), e: '🧺', max: 1, cost: 25, mult: 1, eff: () => L('كل موسم يجيك تاجر يشتري محصول من محاصيل الموسم بـ ×3 السعر') },
-  { id: 'q_tools', ks: 1, b: 'family', n: L('إرث الأدوات'), e: '🧰', max: 1, cost: 25, mult: 1, start: 1, eff: () => L('أدواتك تنتقل للجيل الجديد بدرجة أقل بدل ما ترجع للصفر') },
+  { id: 'q_tools', ks: 1, b: 'family', n: L('إرث الأدوات'), e: '🧰', max: 1, cost: 25, mult: 1, start: 1, eff: () => L('أدواتك تنتقل للجيل الجديد بدرجة أقل بدل ما ترجع للصفر، والأسطورية ترجع أدامانتيت') },
   { id: 'q_twin', ks: 1, b: 'family', n: L('توأم الروح'), e: '🌟', max: 1, cost: 300, mult: 1, eff: () => L('بعد ما يكون عندك زوج وصديق عمر: تختار شخص واحد من الباقين يصير توأم روحك بـ10 مليون، حتى العمدة. مكافأته ×2.5 وحبه ما يقل أبد') },
 ];
 const HEIRLOOMS = [
@@ -1298,6 +1298,7 @@ function doRetire() {
   if (heir) LG.heir[heir.id] = H(heir.id) + 1;
   LG.gen++;
   const keep = { leg: LG, stats: S.stats, locked: S.locked, wk: S.wk }, oldTools = { ...S.tools };
+  for (const t in oldTools) if (oldTools[t] >= 6 && lgv(t)) oldTools[t] = 7; // a legendary tool counts one tier above adamantite, so «Tool legacy» keeps it adamantite
   let nm = (RS.name || '').trim().slice(0, 24) || childName();
   if (badName(nm)) nm = childName();
   S = newState(); Object.assign(S, keep);
@@ -2789,6 +2790,13 @@ function migrate(o) {
     for (let l = 1; l < h.lvl; l++) x += Math.floor(50 * Math.pow(l, 2.2));
     h.lvl = 1; while (x >= hxpNeed(h.lvl)) { x -= hxpNeed(h.lvl); h.lvl++; }
     h.xp = x; h.xc = 1;
+  }
+  // 1.7.4: «Tool legacy» now passes legendary tools on as adamantite. The forge rolls of the last generation weren't kept,
+  // so this generation's tools that dropped from adamantite to mithril go back to adamantite, once.
+  if (!st.leg.tlFix) {
+    const pt = st.gen.prevTools;
+    if (pt && (st.leg.perks || {}).q_tools) for (const t in st.tools) if (pt[t] >= 6 && st.tools[t] === 5) st.tools[t] = 6;
+    st.leg.tlFix = 1;
   }
   if (!st.gender && st.spouse && NPC_BY[st.spouse]) st.gender = NPC_BY[st.spouse].g === 'f' ? 'm' : 'f';
   // 1.5.1: only one soul twin. Saves from 1.4.2 with more keep the first one and get the others' price back.

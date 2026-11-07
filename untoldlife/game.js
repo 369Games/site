@@ -234,10 +234,18 @@ function petMult(stat) {
   for (const p of PETS) if (p.stat === stat && ps[p.id]) m += PET_STAGE[petStage(ps[p.id].xp)].b;
   return m;
 }
-function petFloor() {
-  const d = petData();
+/* How much a cleared floor grows the pets, by its difficulty for you (the same labels as the dungeon info):
+   easy 0, fitting / hard / very hard 1, deadly 5. So pets only grow on floors that push you. */
+function petGrow(f) {
+  const { r, s } = assess(f);
+  if (r >= 1.5) return 0;
+  if (r >= 0.8 || s >= 1 || (foodList().length > 0 && s >= 0.35)) return 1;
+  return 5;
+}
+function petFloor(f) {
+  const d = petData(), g = Object.keys(d.pets).length ? petGrow(f) : 0;
   for (const id in d.pets) {
-    const p = d.pets[id], s = petStage(p.xp); p.xp++;
+    const p = d.pets[id], s = petStage(p.xp); p.xp += g;
     if (petStage(p.xp) > s) { const P0 = PETS.find(x => x.id === id); log(L`${P0.e} ${P0.n} كبر وصار ${PET_STAGE[petStage(p.xp)].n}! +${Math.round(PET_STAGE[petStage(p.xp)].b * 100)}% ${P0.sn}`, 'season'); }
   }
   if (Math.random() < PET_EGG_CH * petEggX(hearts('leila'))) { d.eggs.push(PET_HATCH); d.eggNew = 1; log(L('🥚 طاحت لك بيضة أسطورية بعد ما خلصت الطابق! تلقاها في النقابة ← «🐾 الحيوانات الأسطورية» تحت العدّة، وتفقس بعد 30 دقيقة.'), 'egg'); toast(L('🥚 طاحت لك بيضة أسطورية! تلقاها في النقابة تحت العدّة')); }
@@ -246,7 +254,7 @@ function hatchEgg() {
   const d = petData(), free = PETS.filter(p => !d.pets[p.id]);
   if (free.length) {
     const p = pick(free); d.pets[p.id] = { xp: 0, born: S.leg.gen }; d.eggNew = 1;
-    log(L`🐣 فقست البيضة وطلع ${p.e} ${p.n}! يعطيك +${Math.round(PET_STAGE[0].b * 100)}% ${p.sn}، ويكبر مع كل طابق تخلصه.`, 'egg');
+    log(L`🐣 فقست البيضة وطلع ${p.e} ${p.n}! يعطيك +${Math.round(PET_STAGE[0].b * 100)}% ${p.sn}، ويكبر لما تخلص طوابق مناسبة أو أصعب.`, 'egg');
     return;
   }
   const young = PETS.map(p => d.pets[p.id]).filter(p => petStage(p.xp) < 2).sort((a, b) => a.xp - b.xp)[0];
@@ -273,7 +281,8 @@ function petPanel() {
     return `<div class="pet-card st${s}">${petIcon(p, s, 64)}<b>${p.n} • ${PET_STAGE[s].n}</b><span class="good">+${Math.round(PET_STAGE[s].b * 100)}% ${p.sn}</span>${prog}</div>`;
   }).join('');
   return L`<div class="panel pets"><div class="ph"><h2>🐾 الحيوانات الأسطورية</h2><span class="stat">بيضة نادرة جداً تطيح لما تخلص طابق في الزنزانة</span></div>
-    <p class="hint">البيضة تفقس بعد 30 دقيقة: تنين (+هجوم)، يونيكورن (+دفاع)، أو غريفين (+قوة في مهام النقابة). يكبر مع كل طابق تخلصه: رضيع +10%، مراهق +25%، بالغ +50%. الحيوانات للعائلة وتبقى معك كل الأجيال.</p>
+    <p class="hint">البيضة تفقس بعد 30 دقيقة: تنين (+هجوم)، يونيكورن (+دفاع)، أو غريفين (+قوة في مهام النقابة). يكبر لما تخلص طوابق تتحداك: الطابق السهل ما يحسب، المناسب والصعب بطابق، والقاتل بـ5 طوابق. رضيع +10%، مراهق +25%، بالغ +50%. الحيوانات للعائلة وتبقى معك كل الأجيال.</p>
+    ${Object.keys(d.pets).length ? `<p class="hint">${L`🌱 الطابق ${S.dun.floor} يكبّر حيواناتك: ${[L('ولا شي (سهل)'), L('طابق واحد'), '', '', '', L('5 طوابق (قاتل)')][petGrow(S.dun.floor)]}`}</p>` : ''}
     <div class="pet-list">${eggs}${cards}</div></div>`;
 }
 
@@ -931,7 +940,7 @@ function killEnemy() {
   }
   D.kills++;
   if (D.kills >= (e.boss ? 1 : 5)) {
-    D.kills = 0; petFloor();
+    D.kills = 0; petFloor(f);
     if (D.floor === D.max && !deepLocked() && D.max < floorCap()) { D.max++; if (f % 5 === 0 || e.boss) log(L`🗝️ فتحت الطابق ${D.max} في الزنزانة`); }
     if (D.auto && !(D.retry > 0)) D.floor = Math.min(D.max, D.floor + 1);
   }

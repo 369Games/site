@@ -882,7 +882,7 @@ function tickCombat(dt) {
   while (D.et >= 1.25) {
     D.et -= 1.25;
     h.hp -= dmg(D.enemy.atk, heroDef());
-    if (h.hp <= 0 && P('w_ally') && !(D.allyT > 0)) { h.hp = mhp * 0.3; D.allyT = 300; log(L('🛡️ رفيقك وقف قدامك وأنقذك من السقوط!'), 'good'); }
+    if (h.hp <= 0 && P('w_ally') && !(D.allyT > 0)) { h.hp = mhp * 0.3; D.allyT = 300; log(L('🫡 رفيقك وقف قدامك وأنقذك من السقوط!'), 'good'); }
     if (h.hp <= 0) { heroDie(); return; }
   }
 }
@@ -958,7 +958,7 @@ function tickGuild(dt) {
     if (!q) break;
     g.board.splice(g.board.indexOf(q), 1); g.boardT = 0;
     g.active.push({ ...q, dur: qDur(q), t: 0, chance: chanceOf(q) });
-    if (!offline) log(L`🛡️ رفيقك قبل مهمة «${Lx(q.n)}»`);
+    if (!offline) log(L`🫡 رفيقك قبل مهمة «${Lx(q.n)}»`); // 🫡 = the companion's portrait (🛡️ draws the armour)
   }
   if (g.refCd > 0) g.refCd = Math.max(0, g.refCd - dt);
   if (g.board.length < 4) { g.boardT += dt; if (g.boardT >= 40) { g.boardT = 0; g.board.push(genQuest()); } }

@@ -153,6 +153,7 @@ async function cloudOnSignIn() {
   if (!snap.exists) {
     CLOUD.synced = true;
     if (S.started) { await cloudUpload(true); log(L`☁️ ربطت حسابك (${who}). تقدمك صار محفوظ في السحابة`, 'good'); }
+    else toast(L`☁️ ما لقينا حفظ في حساب ${who}. ابدأ لعبة جديدة، وبينحفظ فيه`);
     return;
   }
   const d = snap.data(), info = readSave(d.save);

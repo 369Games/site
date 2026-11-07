@@ -18,12 +18,14 @@ function stSave() { try { localStorage.setItem(STATS_KEY, JSON.stringify(ST)); }
 stSave();
 
 function statsForm() { const c = siteConfig().stats; return c && c.action && c.fields ? c : null; }
-function statsOn() { return !!statsForm() && !ST.off; }
+// Search and ad crawlers run the page too; they aren't players.
+const ST_BOT = navigator.webdriver || /bot|crawl|spider|slurp|Mediapartners|Lighthouse|HeadlessChrome|PageSpeed/i.test(navigator.userAgent);
+function statsOn() { return !!statsForm() && !ST.off && !ST_BOT; }
 
 function track(ev, value) {
   if (ST.sent[ev]) return;
   ST.sent[ev] = 1; stSave();
-  const c = statsForm(); if (!c || ST.off) return;
+  const c = statsForm(); if (!c || ST.off || ST_BOT) return;
   const F = c.fields, b = new URLSearchParams();
   const put = (k, v) => { if (F[k]) b.set(F[k], String(v)); };
   put('player', ST.id); put('event', ev); put('value', value === undefined ? '' : value);

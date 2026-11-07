@@ -1396,6 +1396,8 @@ const A = {
     log(L('💡 ابدأ بزراعة اللفت، ثم بِع المحصول من السوق.'));
     save();
   },
+  // A returning player on a new phone, browser or home-screen app: sign in first and the cloud save loads.
+  introCloud: () => { if (typeof CLOUD === 'undefined' || !CLOUD.auth) return toast(L('⏳ لحظة، جاري التحميل…')); cloudGoogle(); },
   closeModal: () => closeModal(),
   reloadNew: () => { try { save(); } catch (e) { /* */ } location.reload(); },
   side: v => { sideTab = v; lastBuffs = ''; renderSide(); },
@@ -2304,7 +2306,8 @@ function showIntro() {
   <p style="text-align:end">— جدك</p></div>
   ${langPick()}<label><b>ما اسمك؟</b></label><input id="nameIn" maxlength="20" placeholder="اكتب اسمك هنا">
   <label><b>أنت؟</b></label>${genderPick('introGender', introGender)}
-  <div class="intro-go"><button class="btn gold" data-a="start" style="width:100%;font-size:17px">🏡 ادخل القرية</button></div>`);
+  <div class="intro-go"><button class="btn gold" data-a="start" style="width:100%;font-size:17px">🏡 ادخل القرية</button></div>
+  ${(siteConfig().firebase || {}).apiKey && location.protocol !== 'file:' ? L('<button class="btn ghost sm intro-cloud" data-a="introCloud">☁️ لعبت قبل؟ كمّل تقدمك بحساب Google</button>') : ''}`);
   setTimeout(() => { const i = $('nameIn'); if (i) { i.focus(); i.onkeydown = e => { if (e.key === 'Enter') A.start(); }; } }, 50);
 }
 /* New version notice: an idle game tab can stay open for days, so every 10 minutes (and when the player comes back)

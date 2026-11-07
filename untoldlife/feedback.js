@@ -21,7 +21,12 @@ let fbState = { type: 'opinion', rating: 0 }, fbLastSent = 0;
 function fbDevice() {
   const ua = navigator.userAgent;
   const mobile = /Mobi|Android|iPhone|iPad/i.test(ua) ? 'mobile' : 'desktop';
-  const browser = /Edg\//.test(ua) ? 'Edge' : /OPR\//.test(ua) ? 'Opera' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : 'other';
+  // Links opened inside an app use its own browser (and its own storage, and Google sign-in may not work there).
+  const inApp = /Snapchat/i.test(ua) ? 'Snapchat' : /Instagram/i.test(ua) ? 'Instagram' : /FBAN|FBAV|FB_IAB/.test(ua) ? 'Facebook'
+    : /musical_ly|TikTok|BytedanceWebview/i.test(ua) ? 'TikTok' : /Twitter/i.test(ua) ? 'X' : /WhatsApp/i.test(ua) ? 'WhatsApp'
+    : /Telegram/i.test(ua) ? 'Telegram' : /; wv\)/.test(ua) ? 'WebView' : '';
+  if (inApp) return `${mobile} • ${inApp} • ${screen.width}x${screen.height}`;
+  const browser = /SamsungBrowser/.test(ua) ? 'Samsung' : /Edg\//.test(ua) ? 'Edge' : /OPR\//.test(ua) ? 'Opera' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : 'other';
   return `${mobile} • ${browser} • ${screen.width}x${screen.height}`;
 }
 function fbProgress() {

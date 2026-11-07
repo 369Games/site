@@ -1821,14 +1821,13 @@ function updMine() {
 /* ----- النقابة ----- */
 function viewGuild() {
   const D = S.dun, g = S.guild, r = rankIdx();
-  let h = L`<div class="two"><div>
-  <div class="panel"><div class="ph"><h2>🧑 ${S.name}</h2><span class="stat">⚔️ مستوى <b id="h_lvl"></b></span></div>
+  // Layout: the dungeon across the top; under it the hero (stats + mercenary skills) on one side, the guild on the other.
+  const hero = L`<div class="panel"><div class="ph"><h2>🧑 ${S.name}</h2><span class="stat">⚔️ مستوى <b id="h_lvl"></b></span></div>
     <div class="kv"><span>❤️ الصحة</span><span id="h_hpt"></span></div><div class="bar hp"><i id="h_hp"></i></div>
     <div class="kv"><span>✨ الخبرة</span><span id="h_xpt"></span></div><div class="bar xp"><i id="h_xp"></i></div>
     <div class="row" id="h_stats"></div>
-    <p class="hint">طوّر السيف والدرع عند الحداد. الطعام من مزرعتك يشفيك أثناء القتال (المقفل 🔒 لا يؤكل)، وبين كل أكلة وأكلة ${eatCd()} ثواني.</p>
-  </div>
-  <div class="panel"><div class="ph"><h2>🕳️ الزنزانة</h2><span class="stat">أنت في الطابق <b>${D.floor}</b> • المفتوح حتى <b>${D.max}</b></span></div>
+    <p class="hint">طوّر السيف والدرع عند الحداد. الطعام من مزرعتك يشفيك أثناء القتال (المقفل 🔒 لا يؤكل)، وبين كل أكلة وأكلة ${eatCd()} ثواني.</p>`;
+  const dun = L`<div class="panel"><div class="ph"><h2>🕳️ الزنزانة</h2><span class="stat">أنت في الطابق <b>${D.floor}</b> • المفتوح حتى <b>${D.max}</b></span></div>
     ${P('w_ally') ? L('<p class="hint">🛡️ رفيق المعارك يقاتل معك.</p>').replace('🛡️', icon('ally', 32)) : ''}
     <div class="row">
       <button class="btn ${D.active ? 'red' : ''}" data-a="dunToggle">${D.active ? L('🏃 انسحاب') : L('🗡️ دخول الزنزانة')}</button>
@@ -1844,8 +1843,8 @@ function viewGuild() {
     </div>
     <div class="duninfo" id="dunInfo"></div>
     <div class="enemy" id="enemyBox"></div>
-  </div></div><div>
-  <div class="panel"><div class="ph"><h2>📜 نقابة المرتزقة</h2><span class="rank">${RANKS[r][0]}</span></div>
+  </div>`;
+  let h = L`<div class="panel"><div class="ph"><h2>📜 نقابة المرتزقة</h2><span class="rank">${RANKS[r][0]}</span></div>
     <div class="kv"><span>نقاط النقابة</span><span id="g_gpt"></span></div><div class="bar gp"><i id="g_gp"></i></div>
     <p class="hint">مهمات الصيد تعمل في الخلفية ونسبة نجاحها تعتمد على قوتك (⚡ <b id="g_pow"></b>). مهمات التوصيل تسلمها فوراً من مخزونك. الخانات: ${g.active.length}/${questSlots()}</p>
     ${guildGen() > 1 ? L`<p class="hint">📈 جوائز الصيد ×${guildGen() >= 100 ? fmt(guildGen()) : Math.round(guildGen() * 10) / 10} لأنك في الجيل ${S.leg.gen}: تكبر مع كل جيل.</p>` : ''}
@@ -1870,8 +1869,8 @@ function viewGuild() {
     }
   });
   h += `<div class="row"><button class="btn ghost sm" data-a="refreshBoard" id="g_ref"></button></div></div>`;
-  const pts = mskPts();
-  h += L`<div class="panel"><div class="ph"><h2>🌟 مهارات المرتزق</h2><span class="stat">نقاط: <b>${pts}</b></span></div>
+  const guild = h, pts = mskPts();
+  h = L`<h3>🌟 مهارات المرتزق <small class="stat">نقاط: <b>${pts}</b></small></h3>
     <p class="hint">تفيد الزنزانة والنقابة بس، وتبدأ من الصفر مع كل جيل. تاخذ نقطة كل مستويين قتال ونقطتين مع كل رتبة نقابة. المستوى رقم ن يكلف ن نقاط.</p>`;
   for (const k of MSK) {
     const l = gsk(k.id), dots = [0, 1, 2, 3, 4].map(i => i < l ? '●' : '○').join('');
@@ -1886,8 +1885,8 @@ function viewGuild() {
       <small>الحين: +${pctTxt(MAST_STEP * m)} هجوم ودفاع • ${drop}</small></div>
       <div class="row"><button class="btn sm" data-a="mastUp" ${can ? '' : 'disabled'}>طوّر (${MAST_COST} نقاط)</button>${can > 1 ? L`<button class="btn ghost sm" data-a="mastUp" data-v="all">طوّر ×${can}</button>` : ''}</div></div>`;
   }
-  h += `</div></div></div>`;
-  return h.replace('🧑', icon(S.gender === 'f' ? 'hero-f' : 'hero-m', 48)); // the player's portrait in the hero panel title
+  const heroPanel = (hero + h + '</div>').replace('🧑', icon(S.gender === 'f' ? 'hero-f' : 'hero-m', 48)); // the player's portrait in the title
+  return dun + `<div class="two"><div>${heroPanel}</div><div>${guild}</div></div>`;
 }
 function assess(f) {
   const e = makeEnemy(f), a = heroAtk(), d = heroDef();

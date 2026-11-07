@@ -226,6 +226,8 @@ const PETS = [
 // Floors cleared to reach each stage, and what each stage adds.
 const PET_STAGE = [{ n: L('رضيع'), xp: 0, b: 0.10 }, { n: L('مراهق'), xp: 300, b: 0.25 }, { n: L('بالغ'), xp: 1500, b: 0.50 }];
 function petData() { const L2 = S.leg; L2.pets = L2.pets || {}; L2.eggs = L2.eggs || []; return L2; }
+// Leila doubles the egg chance at 10 hearts (x1 + hearts/10, so marriage or a soul twin gives more).
+function petEggX(h) { return Math.round((1 + Math.max(0, h) / 10) * 10) / 10; }
 function petStage(xp) { let s = 0; PET_STAGE.forEach((x, i) => { if (xp >= x.xp) s = i; }); return s; }
 function petMult(stat) {
   const ps = petData().pets; let m = 1;
@@ -238,7 +240,7 @@ function petFloor() {
     const p = d.pets[id], s = petStage(p.xp); p.xp++;
     if (petStage(p.xp) > s) { const P0 = PETS.find(x => x.id === id); log(L`${P0.e} ${P0.n} كبر وصار ${PET_STAGE[petStage(p.xp)].n}! +${Math.round(PET_STAGE[petStage(p.xp)].b * 100)}% ${P0.sn}`, 'season'); }
   }
-  if (Math.random() < PET_EGG_CH) { d.eggs.push(PET_HATCH); d.eggNew = 1; log(L('🥚 طاحت لك بيضة أسطورية بعد ما خلصت الطابق! تلقاها في النقابة ← «🐾 الحيوانات الأسطورية» تحت العدّة، وتفقس بعد 30 دقيقة.'), 'egg'); toast(L('🥚 طاحت لك بيضة أسطورية! تلقاها في النقابة تحت العدّة')); }
+  if (Math.random() < PET_EGG_CH * petEggX(hearts('leila'))) { d.eggs.push(PET_HATCH); d.eggNew = 1; log(L('🥚 طاحت لك بيضة أسطورية بعد ما خلصت الطابق! تلقاها في النقابة ← «🐾 الحيوانات الأسطورية» تحت العدّة، وتفقس بعد 30 دقيقة.'), 'egg'); toast(L('🥚 طاحت لك بيضة أسطورية! تلقاها في النقابة تحت العدّة')); }
 }
 function hatchEgg() {
   const d = petData(), free = PETS.filter(p => !d.pets[p.id]);
@@ -297,7 +299,7 @@ const NPCS = [
     lines: [L('الأرض تحب من يسقيها كل يوم.'), L('محاصيلك صارت أجمل من محاصيلي!'), L('لو احتجت أي نصيحة في الزراعة أنا موجودة دائماً.')] },
   { id: 'smith', g: 'm', n: L('قاسم'), role: L('حداد القرية'), story: L('ورث الورشة عن أبيه، ويقول إن لكل معدن صوتاً. قليل الكلام لكنه لا يرد أحداً، وإذا أحضرت له فضة نسي تعبه وابتسم.'), e: '🧔', love: 'silver', like: 'copper', perk: h => L`-${3 * h}% تكلفة الحداد`,
     lines: [L('هممم... أحضر لي معدناً جيداً وسأصنع لك العجب.'), L('يدك قوية، تصلح للفأس والسيف.'), L('أنت أفضل زبون عندي، خصم خاص لك!')] },
-  { id: 'leila', g: 'f', n: L('ليلى'), role: L('طبيبة القرية'), story: L('رجعت إلى الوادي بعد سنوات من الدراسة في المدينة، وفتحت عيادة صغيرة قرب الساحة. تعالج المرتزقة العائدين من الزنزانة، وتقول إن الفراولة أفضل دواء للقلب.'), e: '👩‍⚕️', love: 'strawberry', like: 'egg', perk: h => L`+${5 * h}% صحة قصوى`,
+  { id: 'leila', g: 'f', n: L('ليلى'), role: L('طبيبة القرية'), story: L('رجعت إلى الوادي بعد سنوات من الدراسة في المدينة، وفتحت عيادة صغيرة قرب الساحة. تعالج المرتزقة العائدين من الزنزانة، وتقول إن الفراولة أفضل دواء للقلب.'), e: '👩‍⚕️', love: 'strawberry', like: 'egg', perk: h => L`+${5 * h}% صحة قصوى • +${2 * h}% دفاع • بيض الحيوانات الأسطورية ×${petEggX(h)}`,
     lines: [L('انتبه لنفسك في الزنزانة، الجروح هناك عميقة.'), L('كُل جيداً قبل القتال، الطعام دواء.'), L('أشعر بالأمان حين أعرف أنك بخير.')] },
   { id: 'raad', g: 'm', n: L('رعد'), role: L('قائد نقابة المرتزقة'), story: L('جاب الأراضي البعيدة مرتزقاً قبل أن يستقر في الوادي ويؤسس النقابة. صارم مع المبتدئين لأنه فقد رفاقاً في الأعماق، لكنه يحترم من يثبت نفسه. يجمع أنياب الوحوش تذكاراً من معاركه.'), e: '🤺', love: 'fang', like: 'gel', perk: h => L`+${4 * h}% مكافآت المهمات`,
     lines: [L('مرتزق جديد؟ أثبت نفسك أولاً.'), L('سمعت عن انتصاراتك، أحسنت.'), L('أنت أسطورة النقابة الآن!')] },
@@ -428,7 +430,7 @@ const SEASON_PERKS = {
   mayor: [{ id: 'sell', max: 0.05, d: v => L`${sgn(v)} سعر البيع لكل شي` }, { id: 'feat', max: 0.3, d: v => L`${sgn(v)} سعر ${ITEMS[featItem()].n} (عنصر الموسم)` }, { id: 'off', max: 0.1, d: v => L`${sgn(v)} سعر المحاصيل اللي برا موسمها` }],
   noura: [{ id: 'gold', max: 0.01, d: v => L`${sgn(v)} فرصة المحصول الذهبي` }, { id: 'seed', max: 0.2, d: v => L`${sgn(-v)} سعر البذور` }, { id: 'offgrow', max: 0.5, d: v => L`${sgn(v)} نمو المحاصيل اللي برا موسمها` }],
   smith: [{ id: 'mine', max: 0.2, d: v => L`${sgn(v)} قوة الحفر` }, { id: 'gem', max: 0.5, d: v => L`${sgn(v)} فرصة الجواهر` }, { id: 'forge', max: 0.2, d: v => L`${sgn(-v)} خامات الصياغة الأسطورية` }],
-  leila: [{ id: 'heal', max: 0.3, d: v => L`${sgn(v)} شفاء الأكل` }, { id: 'regen', max: 0.3, d: v => L`${sgn(v)} سرعة التعافي` }, { id: 'xp', max: 0.2, d: v => L`${sgn(v)} خبرة القتال` }],
+  leila: [{ id: 'guard', max: 0.1, d: v => L`${sgn(-v)} الضرر اللي تاخذه في الزنزانة` }, { id: 'regen', max: 0.3, d: v => L`${sgn(v)} سرعة التعافي` }, { id: 'xp', max: 0.2, d: v => L`${sgn(v)} خبرة القتال` }],
   raad: [{ id: 'gp', max: 0.2, d: v => L`${sgn(v)} نقاط النقابة` }, { id: 'hunt', max: 0.15, d: v => L`${sgn(-v)} وقت مهمات الصيد` }, { id: 'loot', max: 0.2, d: v => L`${sgn(v)} ذهب الوحوش` }],
   salma: [{ id: 'ranch', max: 0.15, d: v => L`${sgn(v)} سرعة إنتاج الحيوانات` }, { id: 'rest', max: 0.2, d: v => L`${sgn(-v)} راحة بيوت التهجين` }, { id: 'cost', max: 0.15, d: v => L`${sgn(-v)} سعر الحيوانات` }],
 };
@@ -850,8 +852,10 @@ function heroMaxHp() { return Math.floor((60 + 20 * (S.hero.lvl - 1) + ARMOR_HP[
 function heroAtk() { return (6 + 3 * (S.hero.lvl - 1) + SWORD[S.tools.sword] * lf('sword')) * warMult() * mskPow() * amuletMult() * petMult('atk'); }
 function heroDef() {
   const flat = 1 + (S.hero.lvl - 1) + ARMOR_DEF[S.tools.armor] * lf('armor') + gearPct(SHIELD_DEF, 'shield') + gearPct(HELM_DEF, 'helmet');
-  return flat * (1 + gearPct(SHIELD_PCT, 'shield') + gearPct(HELM_PCT, 'helmet')) * mskPow() * amuletMult() * petMult('def');
+  return flat * (1 + gearPct(SHIELD_PCT, 'shield') + gearPct(HELM_PCT, 'helmet')) * mskPow() * amuletMult() * petMult('def') * (1 + 0.02 * hearts('leila'));
 }
+// Leila's season buff «guard»: less damage taken in the dungeon (more below 5 hearts). Never under 40% of the hit.
+function leilaGuard() { return clamp(1 - spv('leila', 'guard'), 0.4, 2); }
 function heroPower() { return Math.round((heroAtk() * 2 + heroDef() * 2 + heroMaxHp() / 5) * petMult('pow')); }
 // Combat levels come about twice as fast as before 1.9.1 (the old curve was 50·l^2.2): the same xp gives about double the level.
 function hxpNeed(l) { return Math.floor(5.5 * Math.pow(l, 2.2)); }
@@ -875,7 +879,7 @@ function makeEnemy(f) {
 }
 function dmg(a, d) { return Math.max(1, a * a / (a + d)) * R(0.85, 1.15); }
 function regenRate() { return heroMaxHp() * 0.03 * (S.bld.inn ? 2 : 1) * Math.max(0.1, 1 + spv('leila', 'regen')); }
-function healOf(id) { return (ITEMS[id].price * 1.5 + 10) * (S.bld.kitchen ? 2 : 1) * Math.max(0.1, 1 + spv('leila', 'heal')) * (1 + gearPct(AMULET_HEAL, 'amulet')); }
+function healOf(id) { return (ITEMS[id].price * 1.5 + 10) * (S.bld.kitchen ? 2 : 1) * (1 + gearPct(AMULET_HEAL, 'amulet')); }
 function foodList() {
   const cats = noFarm() ? ['crop', 'animal', 'fish', 'monster'] : ['crop', 'animal', 'fish'];
   return Object.keys(S.inv).filter(id => cats.includes(ITEMS[id].cat) && !S.locked[id] && !KINGS.some(k => k.id === id))
@@ -961,7 +965,7 @@ function tickCombat(dt) {
   }
   while (D.et >= 1.25) {
     D.et -= 1.25;
-    h.hp -= dmg(D.enemy.atk, heroDef());
+    h.hp -= dmg(D.enemy.atk, heroDef()) * leilaGuard();
     if (h.hp <= 0 && P('w_ally') && !(D.allyT > 0)) { h.hp = mhp * 0.3; D.allyT = 300; log(L('🫡 رفيقك وقف قدامك وأنقذك من السقوط!'), 'good'); }
     if (h.hp <= 0) { heroDie(); return; }
   }
@@ -2001,7 +2005,7 @@ function gearPanel() {
 }
 function assess(f) {
   const e = makeEnemy(f), a = heroAtk(), d = heroDef();
-  const hd = Math.max(1, a * a / (a + e.def)) * heroSpeed(), ed = Math.max(1, e.atk * e.atk / (e.atk + d)) / 1.25;
+  const hd = Math.max(1, a * a / (a + e.def)) * heroSpeed(), ed = Math.max(1, e.atk * e.atk / (e.atk + d)) / 1.25 * leilaGuard();
   const tKill = e.mhp / hd, tDie = heroMaxHp() / ed;
   return { r: tDie / (tKill * (e.boss ? 1 : 5)), s: tDie / tKill };
 }

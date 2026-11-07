@@ -273,7 +273,7 @@ const PERKS = [
   { id: 'w_ally', ks: 1, b: 'war', n: L('رفيق المعارك'), e: '🛡️', max: 1, cost: 25, mult: 1, eff: () => L('رفيق يقاتل معك بنصف قوتك، وينقذك من السقوط مرة كل 5 دقائق، ويقبل مهمات الصيد بدالك') },
   { id: 't_deal', ks: 1, b: 'trade', n: L('تاجر الموسم'), e: '🧺', max: 1, cost: 25, mult: 1, eff: () => L('كل موسم يجيك تاجر يشتري محصول من محاصيل الموسم بـ ×3 السعر') },
   { id: 'q_tools', ks: 1, b: 'family', n: L('إرث الأدوات'), e: '🧰', max: 1, cost: 25, mult: 1, start: 1, eff: () => L('أدواتك تنتقل للجيل الجديد بدرجة أقل بدل ما ترجع للصفر') },
-  { id: 'q_twin', ks: 1, b: 'family', n: L('توأم الروح'), e: '🌟', max: 1, cost: 300, mult: 1, eff: () => L('بعد ما يكون عندك زوج وصديق عمر: تقدر تخلي أي أحد من الباقين توأم روحك بـ10 مليون، حتى العمدة. مكافأته ×2.5 وحبه ما يقل أبد') },
+  { id: 'q_twin', ks: 1, b: 'family', n: L('توأم الروح'), e: '🌟', max: 1, cost: 300, mult: 1, eff: () => L('بعد ما يكون عندك زوج وصديق عمر: تختار شخص واحد من الباقين يصير توأم روحك بـ10 مليون، حتى العمدة. مكافأته ×2.5 وحبه ما يقل أبد') },
 ];
 const HEIRLOOMS = [
   { id: 'sword', n: L('سيف الجد'), e: '🗡️', max: 6, eff: l => L`تبدأ كل جيل بسيف ${TIER[l]} • +${l}% ذهب` },
@@ -396,7 +396,7 @@ function canBond(np) { return np.id !== 'mayor' && !!S.gender && np.g === S.gend
    either gender) can become a soul twin for TWIN_COST each, at 10 hearts. Their perk is x2.5 (+15 hearts) and love
    never fades. Starts over every generation, like marriage. */
 const TWIN_COST = 10e6;
-function twinOpen() { return P('q_twin') > 0 && !!S.spouse && !!S.friend; }
+function twinOpen() { return P('q_twin') > 0 && !!S.spouse && !!S.friend && !Object.keys(S.twins || {}).length; } // one soul twin only
 function isTwin(id) { return !!(S.twins && S.twins[id]); }
 function bonded(id) { return S.spouse === id || S.friend === id || isTwin(id); }
 function gv(m, f) { return S.gender === 'f' ? f : m; }
@@ -2062,7 +2062,7 @@ function updMarket() {
 function viewVillage() {
   let h = (typeof weeklyPanel === 'function' ? weeklyPanel() : '') + L`<div class="panel"><div class="ph"><h2>🏘️ أهل وادي الصدى</h2></div>
   <p class="hint">أهدِ كل شخص ما يحبه مرة واحدة يومياً. كل قلبين تقريباً يمنحك مكافأة دائمة (حتى 10 قلوب). اللي يحبونه يتغير كل موسم، ولو ما أهديت أحد لمدة نص موسم يزعل ويقل حبه (الوقت اللي تكون فيه برا اللعبة ما ينحسب).</p>
-  ${P('q_twin') && !twinOpen() ? L('<p class="hint">🌟 توأم الروح ينفتح لما يكون عندك زوج وصديق عمر.</p>') : ''}${!S.gender ? L`<div class="zonebox"><b>🧑 حدد شخصيتك</b> <small class="hint">عشان يظهر لك خيار الزواج وصداقة العمر مع أهل القرية</small>${genderPick('setGender', null)}</div>` : ''}<div class="grid">`;
+  ${P('q_twin') && !(S.spouse && S.friend) ? L('<p class="hint">🌟 توأم الروح ينفتح لما يكون عندك زوج وصديق عمر.</p>') : ''}${!S.gender ? L`<div class="zonebox"><b>🧑 حدد شخصيتك</b> <small class="hint">عشان يظهر لك خيار الزواج وصداقة العمر مع أهل القرية</small>${genderPick('setGender', null)}</div>` : ''}<div class="grid">`;
   for (const np of NPCS) {
     const st = S.npc[np.id] || { pts: 0, gd: 0 }, hr = Math.floor(st.pts / 100), half = st.pts % 100 >= 50, today = st.gd === dayAbs();
     let hs = '';
@@ -2656,6 +2656,9 @@ function migrate(o) {
     h.xp = x; h.xc = 1;
   }
   if (!st.gender && st.spouse && NPC_BY[st.spouse]) st.gender = NPC_BY[st.spouse].g === 'f' ? 'm' : 'f';
+  // 1.5.1: only one soul twin. Saves from 1.4.2 with more keep the first one and get the others' price back.
+  const tw = Object.keys(st.twins || {});
+  if (tw.length > 1) { st.twins = { [tw[0]]: 1 }; st.gold += TWIN_COST * (tw.length - 1); }
   for (const n of NPCS) {
     const x = st.npc[n.id] || (st.npc[n.id] = { pts: 0, gd: 0 });
     x.pts = Math.max(x.pts || 0, 250); // تاريخ الجد: الحب يبدأ من الربع

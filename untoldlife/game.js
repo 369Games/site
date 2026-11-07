@@ -654,7 +654,8 @@ function tickFarm(dt) {
 }
 
 /* ---------------- الحظيرة ---------------- */
-function barnCap() { return 5 + 5 * (S.bld.barn || 0); }
+// Always an even number (6, 10, 16 … 36), so every animal can find a breeding pair.
+function barnCap() { const c = 5 + 5 * (S.bld.barn || 0); return c % 2 ? c + 1 : c; }
 function animalCost(a) { return Math.round(a.cost * Math.pow(a.grow || 1.25, S.barn.n[a.id] || 0) * (1 - 0.1 * P('r_cost')) * Math.max(0.1, 1 - spv('salma', 'cost'))); }
 function animalSpeed(a) { return (0.5 + (S.barn.h[a.id] ?? 100) / 100) * speedMult('ranch'); }
 function grades(id) { const q = S.barn.q[id] || { p: 0, g: 0 }, n = S.barn.n[id] || 0; return { n0: Math.max(0, n - (q.p || 0) - (q.g || 0)), p: q.p || 0, g: q.g || 0 }; }

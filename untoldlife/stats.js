@@ -19,7 +19,8 @@ stSave();
 
 function statsForm() { const c = siteConfig().stats; return c && c.action && c.fields ? c : null; }
 // Search and ad crawlers run the page too; they aren't players.
-const ST_BOT = navigator.webdriver || /bot|crawl|spider|slurp|Mediapartners|Lighthouse|HeadlessChrome|PageSpeed/i.test(navigator.userAgent);
+const ST_BOT = navigator.webdriver || /bot|crawl|spider|slurp|Mediapartners|Lighthouse|HeadlessChrome|PageSpeed/i.test(navigator.userAgent)
+  || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname); // tests on this computer aren't players either
 function statsOn() { return !!statsForm() && !ST.off && !ST_BOT; }
 
 function track(ev, value) {

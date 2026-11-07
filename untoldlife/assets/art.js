@@ -20,6 +20,8 @@ for(let i=0;i<7;i++)ART['glove-'+i]={sheet:'glove',index:i};
 ['goat','goat-p','goat-g','cheese','cheese_g','turkey','turkey-p','turkey-g','meat','meat_g'].forEach((id,index)=>{ART[id]={sheet:'goatturkey',index};});
 /* Camels (مجهم، وضحى، شقحاء) and hashi meat (assets/art/camel-hashi). */
 ['camel','camel-p','camel-g','hashi','hashi_g'].forEach((id,index)=>{ART[id]={sheet:'camel',index};});
+/* Deep ores for selling (assets/art/deep-ores), recoloured from the adamantite crystals. */
+['orichalcum','starmetal'].forEach((id,index)=>{ART[id]={sheet:'deepore',index};});
 /* Salma's portraits: neutral, friendly, joyful (assets/art/salma-portraits). */
 for(let i=0;i<3;i++)ART['npc-salma-'+i]={sheet:'salma',index:i};
 /* Legendary tools from the forge, tier 7 (assets/art/legendary-tools). */

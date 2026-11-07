@@ -24,6 +24,8 @@ for(let i=0;i<7;i++)ART['glove-'+i]={sheet:'glove',index:i};
 ['orichalcum','starmetal'].forEach((id,index)=>{ART[id]={sheet:'deepore',index};});
 /* Batch 1 of missing art (assets/art/missing-v1): special-skill badges, player and companion portraits, UI icons. */
 ['ally','hero-f','hero-m','icon-autobreed','icon-donor','icon-dungeon','icon-floorfit','icon-friend','icon-fund','icon-merchant','perk-f_seeds','perk-m_tnt','perk-q_tools','perk-q_twin','perk-r_twin','perk-t_deal','perk-w_ally'].forEach((id,index)=>{ART[id]={sheet:'missing',index};});
+/* 1.6 fighting gear, tiers 0–6 and the legendary form 7 (assets/art/combat-gear). */
+['helmet','shield','amulet','boots'].forEach((id,p)=>{for(let i=0;i<8;i++)ART[id+'-'+i]={sheet:'gear16',index:p*8+i};});
 /* Emoji in text that now has its own picture (the dungeon used to show copper ore). */
 Object.assign(PX_EMOJI,{'🕳️':'icon-dungeon','🧳':'icon-merchant','⚖️':'icon-floorfit','🤝':'icon-friend','🫡':'ally'});
 /* Salma's portraits: neutral, friendly, joyful (assets/art/salma-portraits). */

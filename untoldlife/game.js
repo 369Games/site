@@ -1046,7 +1046,7 @@ function tickTitles() {
     log(L`🎖️ حصلت على لقب «${t.n}»! ${t.d}. اختر لقبك الجاي من النقابة.`, 'golden'); toast(L`🎖️ لقب جديد: ${t.n}`);
   }
 }
-function titleName() { const T = S.leg.titles, t = T && T.show && TITLES.find(x => x.id === T.show); return t ? t.e + ' ' + t.n : ''; }
+function titleName() { const T = S.leg.titles, t = T && T.show && TITLES.find(x => x.id === T.show); return t ? (ART['title-' + t.id] ? icon('title-' + t.id, 26) : t.e) + ' ' + t.n : ''; }
 function titlePanel() {
   if (!titleOpen()) return '';
   const T = titleData(), n = Object.keys(T.have).length;
@@ -1055,7 +1055,8 @@ function titlePanel() {
     const act = own ? (T.show === t.id ? `<small class="good">${L('✅ معروض جنب اسمك')}</small>` : `<button class="btn ghost sm" data-a="titleShow" data-v="${t.id}">${L('اعرضه جنب اسمك')}</button>`)
       : cur ? `<small>${L`${fmt(T.xp)} / ${fmt(TITLE_XP)} نقطة`}</small><div class="bar"><i style="width:${Math.min(100, T.xp / TITLE_XP * 100)}%"></i></div>`
       : `<button class="btn sm" data-a="titlePick" data-v="${t.id}">${L('افرم هذا اللقب')}</button>`;
-    return `<div class="title-card ${own ? 'own' : ''} ${cur ? 'cur' : ''}"><b>${t.e} ${t.n}</b><small>${t.d}</small>${act}</div>`;
+    const pic = ART['title-' + t.id] ? `<span class="title-pic">${icon('title-' + t.id, 64)}</span>` : '';
+    return `<div class="title-card ${own ? 'own' : ''} ${cur ? 'cur' : ''}">${pic}<b>${pic ? '' : t.e + ' '}${t.n}</b><small>${t.d}</small>${act}</div>`;
   }).join('');
   return L`<div class="panel titles"><div class="ph"><h2>🎖️ ألقاب النقابة</h2><span class="stat">${n} / ${TITLES.length}</span></div>
     <p class="hint">وصلت الرتبة S! اختر لقب، وكل نقاط النقابة اللي تجيبها بعدها تروح له. كل لقب يحتاج ${fmt(TITLE_XP)} نقطة، ولما يكتمل يصير لك للأبد مع زيادته، ويبقى للعائلة كل الأجيال.${T.cur ? '' : L(' <b>ما اخترت لقب للحين، فالنقاط ما تنحسب.</b>')}</p>

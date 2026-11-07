@@ -1426,6 +1426,20 @@ const A = {
   },
   floor: v => { const D = S.dun; const f = clamp(D.floor + (+v), 1, D.max); if (f !== D.floor) { D.floor = f; D.kills = 0; D.enemy = null; } },
   floorMax: () => { S.dun.floor = S.dun.max; S.dun.kills = 0; S.dun.enemy = null; },
+  // Jump to any open floor by number (e.g. back to floor 1 to clear easy floors fast).
+  floorGo: () => {
+    openModal(L`<h2>🔢 روح لطابق</h2><p class="hint">اكتب رقم أي طابق من 1 لين ${S.dun.max}.</p>
+      <input id="floorGoIn" class="txt" type="number" inputmode="numeric" min="1" max="${S.dun.max}" value="${S.dun.floor}" style="width:100%;font-size:18px;padding:10px;margin:8px 0 14px"
+        onkeydown="if(event.key==='Enter')A.floorGoOk()">
+      <div class="row"><button class="btn gold" data-a="floorGoOk" style="flex:1">روح ✔</button><button class="btn ghost" data-a="closeModal">إلغاء</button></div>`);
+    setTimeout(() => { const i = $('floorGoIn'); if (i) { i.focus(); i.select(); } }, 50);
+  },
+  floorGoOk: () => {
+    const i = $('floorGoIn'), n = Math.floor(+(i && i.value)); if (!n) return;
+    const D = S.dun, f = clamp(n, 1, D.max);
+    if (f !== D.floor) { D.floor = f; D.kills = 0; D.enemy = null; }
+    closeModal(); lastSig = ''; toast(L`🔢 رحت للطابق ${f}`);
+  },
   eatNow: () => {
     const r = eat();
     if (r === 'none') toast(L('ما عندك طعام غير مقفل'));
@@ -1933,6 +1947,7 @@ function viewGuild() {
       <button class="btn ghost sm" data-a="floor" data-v="-1" ${D.floor <= 1 ? 'disabled' : ''}>◀ طابق أسهل</button>
       <button class="btn ghost sm" data-a="floor" data-v="1" ${D.floor >= D.max ? 'disabled' : ''}>طابق أصعب ▶</button>
       <button class="btn ghost sm" data-a="floorMax" ${D.floor >= D.max ? 'disabled' : ''}>⏭ الأعلى</button>
+      <button class="btn ghost sm" data-a="floorGo">🔢 روح لطابق</button>
       <button class="btn ghost sm" data-a="floorFit" title="${L('أعلى طابق مفتوح تقدر عليه بقوتك الحين')}">⚖️ طابق يناسبك</button>
     </div>
     <div class="row">

@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.7.5', date: '2026-11-07', big: false, title: L('روح لأي طابق'), items: [
+    L('🔢 في الزنزانة زر «روح لطابق»: اكتب رقم أي طابق مفتوح وتنتقل له على طول، حتى الطابق 1.'),
+  ] },
   { v: '1.7.4', date: '2026-11-07', big: false, title: L('إرث الأدوات والأسطوري'), items: [
     L('🧰 مع «إرث الأدوات»، الأداة الأسطورية صارت تنتقل للجيل الجديد أدامانتيت بدل ميثريل (الأسطوري يعتبر درجة فوق الأدامانتيت). الصياغة نفسها تبدأ من جديد مثل قبل.'),
     L('🔧 اللي تقاعد قبل هالتحديث وأدواته نزلت من أدامانتيت لميثريل، ترجع له أدامانتيت مرة وحدة.'),

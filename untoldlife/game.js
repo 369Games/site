@@ -349,7 +349,7 @@ const PERKS = [
   { id: 't_price', b: 'trade', n: L('مساومة'), e: '🤝', max: 10, cost: 2, mult: 1.6, eff: l => L`+${10 * l}% ذهب من كل المصادر` },
   { id: 't_gold', req: ['t_price', 3], b: 'trade', n: L('رأس مال'), e: '💰', max: 5, cost: 2, mult: 1.9, start: 1, eff: l => L`تبدأ بـ ${fmt(startGold(l))} ذهب` },
   { id: 't_offline', req: ['t_price', 3], b: 'trade', n: L('نوم هانئ'), e: '😴', max: 4, cost: 3, mult: 1.8, eff: l => L`التقدم أثناء الغياب حتى ${12 + 6 * l} ساعة` },
-  { id: 't_stars', req: ['t_offline', 2], b: 'trade', n: L('حكمة الأجيال'), e: '🌟', max: 10, cost: 4, mult: 1.7, eff: l => L`+${10 * l}% نجوم الإرث` },
+  { id: 't_stars', req: ['t_offline', 2], b: 'trade', n: L('حكمة الأجيال'), e: '🌟', max: 10, cost: 4, mult: 1.7, eff: l => L`+${10 * l}% نجوم الإرث وحد النجوم لكل جيل` },
   { id: 'q_workers', req: ['q_hearts', 3], b: 'family', n: L('العمال يتذكرونك'), e: '🧑‍🌾', max: 3, cost: 3, mult: 2.5, start: 1,
     eff: l => ['—', L('تبدأ مع عامل الحصاد وعامل الزراعة (50% من الحقل)'), L('الحصاد والزراعة + صندوق الشحن والرشاشات (50%)'), L('كل ما سبق + الراعي وتخصيص الحقول')][l] },
   { id: 'q_hearts', b: 'family', n: L('سمعة الجد'), e: '💞', max: 5, cost: 2, mult: 1.7, start: 1, eff: l => L`أهل القرية يبدؤون من ${2.5 + l} قلوب` },
@@ -1254,7 +1254,9 @@ function canRetire() { return S.gen.earned >= goldGoal() && S.dun.max >= dunGoal
 // Dungeon stars only count floors climbed this generation, not the free start floor.
 // Stars per retirement have a cap that grows every 5 generations, and the mine gives at most 200 of them.
 const MINE_STAR_CAP = 200;
-function starCap() { const g = S.leg.gen; return g <= 5 ? 300 : g <= 10 ? 500 : g <= 15 ? 800 : g <= 20 ? 1200 : 1800; }
+function starCapBase() { const g = S.leg.gen; return g <= 5 ? 300 : g <= 10 ? 500 : g <= 15 ? 800 : g <= 20 ? 1200 : 1800; }
+// «Wisdom of Generations» raises the per-generation star cap by the same % it adds to the stars (the mine part keeps its own cap).
+function starCap() { return Math.round(starCapBase() * (1 + 0.1 * P('t_stars'))); }
 function starParts() {
   const m = starMult();
   return { gold: 3 * Math.sqrt(S.gen.earned / 1e6) * m, dun: Math.max(0, S.dun.max - Math.max(10, S.gen.dun0 || 1)) / 3 * m,
@@ -2533,7 +2535,7 @@ function updLegacy() {
   $('lg_e').textContent = `${fmt(g.earned)} / ${fmt(gg)}`; $('lg_eb').style.width = Math.min(100, g.earned / gg * 100) + '%';
   $('lg_d').textContent = `${S.dun.max} / ${dg}`; $('lg_db').style.width = Math.min(100, S.dun.max / dg * 100) + '%';
   $('lg_g').textContent = fmt(starsGain());
-  const capT = L`⭐ الحد لهذا الجيل: ${starCap()} نجمة (المنجم لين ${MINE_STAR_CAP})`;
+  const capT = L`⭐ الحد لهذا الجيل: ${starCap()} نجمة (المنجم لين ${MINE_STAR_CAP})` + (P('t_stars') ? L` • 🌳 حكمة الأجيال +${10 * P('t_stars')}% على ${starCapBase()}` : '');
   if ($('lg_cap').textContent !== capT) $('lg_cap').textContent = capT;
   const can = canRetire(); $('lg_btn').disabled = !can; $('lg_why').textContent = can ? '' : L('ما حققت شرط التقاعد بعد');
   const cb = $('lg_chb');

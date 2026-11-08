@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.7.12', date: '2026-11-08', big: false, title: L('حكمة الأجيال ترفع الحد'), items: [
+    L('🌳 «حكمة الأجيال» صارت ترفع حد نجوم الإرث لكل جيل بنفس نسبتها. مثلاً عند المستوى 3 (+30%) حد الجيل 500 يصير 650. حد المنجم (200) ما تغيّر.'),
+  ] },
   { v: '1.7.11', date: '2026-11-08', big: false, title: L('البيض للي يلعب'), items: [
     L('🥚 بيض الحيوانات الأسطورية صار يطيح بس وأنت فاتح اللعبة وتشوفها. لو مسكّرها أو على تبويب ثاني، فرصة البيضة صفر.'),
     L('🐾 الحيوانات اللي عندك تبقى، وتكبر عادي حتى وأنت برا اللعبة.'),

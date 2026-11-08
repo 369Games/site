@@ -282,10 +282,11 @@ function viewFurn() {
 // One furnace or workbench card: recipe, output per second, stock, state, and buy/pause.
 function indMakerCard(r, bench) {
   const u = indFu(r.id), c = indFurnCost(r);
-  const ins = Object.entries(r.in).map(([id, q]) => `${q} ${indIc(id, 22)}`).join(' + ');
+  const ins = Object.entries(r.in).map(([id, q]) => `<span class="ind-q" title="${indName(id)}">${q} ${indIc(id, 22)}</span>`).join(' + ');
   const st = u.n ? indStLine('m:' + r.id, indMakerSt(r)) : '';
   return `<div class="card ind-card"><div class="top"><span class="big">${indIc(r.id, 48)}</span><div class="meta"><b>${indName(r.id)}</b><small>${bench ? L`${u.n} طاولة` : L`${u.n} فرن`}</small></div></div>
-    <div class="kv ind-recipe"><span>${ins}</span><span>→ 1 ${indIc(r.id, 22)}</span></div>
+    <div class="kv ind-recipe"><span>${L('يحتاج')}</span><span>${ins}</span></div>
+    <div class="kv ind-recipe"><span>${L('يعطي')}</span><span class="ind-q">1 ${indIc(r.id, 22)}</span></div>
     <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(u.n * indSpeed(r) / r.t)} بالثانية`}</span></div>
     <div class="kv"><span>${L('عندك')}</span><span><b data-ir="${r.id}">${fmt(Math.floor(ind().r[r.id] || 0))}</b></span></div>${st}
     <div class="row">${costBtn('indFurn', r.id, c, bench ? L`➕ طاولة (${fmt(c)}💰)` : L`➕ فرن (${fmt(c)}💰)`, 'gold', u.n >= IND_FMAX)}${u.n ? `<button class="btn ghost sm" data-a="indFurnOn" data-v="${r.id}">${u.on ? L('⏸️ وقّف') : L('▶️ شغّل')}</button>` : ''}</div></div>`;

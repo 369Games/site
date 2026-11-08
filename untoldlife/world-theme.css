@@ -433,3 +433,5 @@ body.lite #log li.golden,body.lite #log li.egg{box-shadow:none}
 
 /* Industry status line: always takes its row, so cards don't jump when it appears. */
 .ind-st{min-height:1.5em;margin:4px 0}
+.ind-q{white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
+.ind-recipe>span:last-child{text-align:start}

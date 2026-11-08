@@ -40,7 +40,8 @@ const IND_MAKERS = [...IND_RECIPES, ...IND_PROD];
 // Contracts: three at a time, each asks for one or two things you already make. Base amount per material, and the gold
 // a unit is worth (the reward is 1.5× that). Amounts grow 12% per finished contract and never pass 90% of the warehouse.
 const IND_KQ = { clay: 400, stone: 400, wood: 400, coal: 200, brick: 200, block: 200, cu: 60, fe: 50, ag: 40, plank: 80, nails: 40, gear: 15, pipe: 15, machine: 3 };
-const IND_VAL = { clay: 1e5, stone: 1e5, wood: 1e5, coal: 3e5, brick: 5e5, block: 5e5, cu: 2e6, fe: 4e6, ag: 8e6, plank: 6e5, nails: 6e6, gear: 2e7, pipe: 1.2e7, machine: 3e8 };
+// Contracts are the factory's big gold source; the further down the chain, the more a unit pays.
+const IND_VAL = { clay: 3e6, stone: 3e6, wood: 3e6, coal: 1.5e7, brick: 2.5e7, block: 2.5e7, cu: 1e8, fe: 2e8, ag: 4e8, plank: 4.8e7, nails: 4.8e8, gear: 1.6e9, pipe: 1e9, machine: 2.4e10 };
 const IND_KN = 3, IND_KSKIP = 5 * 60 * 1000;
 // Engineer: permanent factory upgrades bought with blueprints and products (10 levels each).
 const IND_ENG = [
@@ -159,7 +160,8 @@ function indNewK(skipAt = 0) {
   return { need, g: Math.round(v * 1.5), bp: n + (prod ? 1 : 0) + Math.floor(t / 10), at: skipAt };
 }
 function indKFill() { const I = ind(); if (!I.k) I.k = []; while (I.k.length < IND_KN) I.k.push(indNewK()); }
-function indKGold(k) { return Math.round(k.g * (1 + 0.1 * indEng('deal'))); }
+// Worked out from what it asks (not stored), so contracts already on the board follow any price change.
+function indKGold(k) { return Math.round(k.need.reduce((a, [id, q]) => a + q * IND_VAL[id], 0) * 1.5 * (1 + 0.1 * indEng('deal'))); }
 function indKCan(k) { return k.need.every(([id, q]) => indHave(id) >= q); }
 function indKReady() { return (ind().k || []).some(indKCan); }
 // The village needs you: the same dots as its tabs, or retirement is ready.

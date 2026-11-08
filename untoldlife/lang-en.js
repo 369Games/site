@@ -1341,6 +1341,8 @@
 "📋 الجولة الماضية: ما ساهمت": "📋 Last round: you didn't take part",
 "📋 الجولة الماضية: مركزك {0} من {1}، والهدف ما اكتمل": "📋 Last round: you placed {0} of {1}, but the goal wasn't reached",
 "📋 الجولة الماضية: مركزك {0} من {1} ← جائزة +{2}%": "📋 Last round: you placed {0} of {1} → prize +{2}%",
+"العقود صارت تجيب فلوس": "Contracts now bring in gold",
+"💰 ذهب العقود صار أكبر بكثير، وكل ما كان الطلب أبعد في السلسلة (سبايك، منتجات، آلات) كانت مكافأته أضخم. العقود اللي عندك الحين تحدّثت مكافآتها بعد.": "💰 Contract gold is much bigger now, and the further down the chain a request is (ingots, products, machines), the bigger its reward. Contracts already on your board have their rewards updated too.",
 "المصنع: الورشة": "Factory: the Workshop",
 "🔧 تبويب جديد في المصنع: الورشة. طاولات تحوّل الطوب والسبايك لمنتجات: ألواح خشب، مسامير، تروس، أنابيب، وآلات تنصنع من الأربعة.": "🔧 A new factory tab: the Workshop. Benches turn bricks and ingots into products: wooden planks, nails, gears, pipes, and machines made from all four.",
 "📜 العقود: 3 طلبات من التجار في نفس الوقت. سلّمها وخذ ذهب و📐 مخططات، وكل عقد تسلّمه يكبّر اللي بعده. عقد ما يناسبك؟ بدّله مرة كل 5 دقايق.": "📜 Contracts: 3 trader requests at a time. Deliver them for gold and 📐 blueprints, and each one you deliver makes the next bigger. Don't like a contract? Swap it once every 5 minutes.",

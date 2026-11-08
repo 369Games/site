@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.10.1', date: '2026-11-08', big: false, title: L('العقود صارت تجيب فلوس'), items: [
+    L('💰 ذهب العقود صار أكبر بكثير، وكل ما كان الطلب أبعد في السلسلة (سبايك، منتجات، آلات) كانت مكافأته أضخم. العقود اللي عندك الحين تحدّثت مكافآتها بعد.'),
+  ] },
   { v: '1.10', date: '2026-11-08', big: true, title: L('المصنع: الورشة'), items: [
     L('🔧 تبويب جديد في المصنع: الورشة. طاولات تحوّل الطوب والسبايك لمنتجات: ألواح خشب، مسامير، تروس، أنابيب، وآلات تنصنع من الأربعة.'),
     L('📜 العقود: 3 طلبات من التجار في نفس الوقت. سلّمها وخذ ذهب و📐 مخططات، وكل عقد تسلّمه يكبّر اللي بعده. عقد ما يناسبك؟ بدّله مرة كل 5 دقايق.'),

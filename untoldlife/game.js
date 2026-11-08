@@ -260,9 +260,9 @@ function petMult(stat) {
 /* Saddle (1.7.17): crafted once for 100M gold and kept by the family. It goes on one pet at a time (moving it is free).
    The saddled pet earns the same combat XP as you and levels up (each level +0.01%), and wakes its second skill:
    dragon: +2 floors per clear and +0.01% attack a level; griffin: double monster materials and +0.01% hit speed a level;
-   unicorn: three titles grow at once and +0.01% defence a level. */
+   unicorn: three active titles next to your name instead of one, and +0.01% defence a level. */
 const SADDLE_COST = 1e8, SADDLE_STEP = 0.0001;
-const SADDLE_SK = { dragon: L('ينزلك طابقين بدل طابق كل ما تخلص طابق'), griffin: L('ضعف مواد الوحوش'), unicorn: L('تفرم 3 ألقاب مع بعض بدل لقب واحد') };
+const SADDLE_SK = { dragon: L('ينزلك طابقين بدل طابق كل ما تخلص طابق'), griffin: L('ضعف مواد الوحوش'), unicorn: L('يفعّل 3 ألقاب جنب اسمك بدل لقب واحد، وكلها يشتغل بفها') };
 const SADDLE_LV = { dragon: L('هجوم'), griffin: L('سرعة الضرب'), unicorn: L('دفاع') };
 function saddled(id) { const sd = S.leg.saddle; return !!(sd && sd.on === id && (S.leg.pets || {})[id]); }
 function saddleLv(id) { const p = (S.leg.pets || {})[id]; return (p && p.sl) || 0; }
@@ -1082,8 +1082,8 @@ function questMult() { return (1 + 0.04 * hearts('raad')) * (1 + 0.25 * P('w_que
 /* Hunt rewards grow with the generation, in step with the gold goal to retire: x1 up to generation 3,
    about x14 at generation 8. Deliveries don't (their reward already follows the item's price). */
 /* Guild titles (1.7.9): once the guild rank is S, guild points also fill the title you picked. Each title needs
-   TITLE_XP points; when it's full the title is yours for good (kept by the family) and its small bonus stays on.
-   You show one title next to your name. */
+   TITLE_XP points; when it's full the title is yours for good (kept by the family).
+   1.8: a title only gives its bonus while it's active next to your name: one title, or three while the unicorn wears the saddle. */
 const TITLE_XP = 50000;
 const TITLES = [
   { id: 'hunt', e: '💰', n: L('صائد الوحوش'), d: L('+10% ذهب الوحوش') },
@@ -1098,7 +1098,10 @@ const TITLES = [
   { id: 'legend', e: '👑', n: L('أسطورة القرية'), d: L('+5% قوة في مهام النقابة') },
 ];
 function titleData() { const T = S.leg.titles || (S.leg.titles = { have: {}, cur: '', xp: 0, show: '' }); T.have = T.have || {}; return T; }
-function hasTitle(id) { return !!((S.leg.titles || {}).have || {})[id]; }
+// Titles active next to your name: the main one, plus two more while the unicorn wears the saddle.
+function titleSide() { const T = titleData(); T.side = (T.side || []).filter(id => T.have[id] && id !== T.show).slice(0, 2); return T.side; }
+function titleActive() { const T = S.leg.titles; if (!T || !T.have) return []; return [T.show, ...(saddled('unicorn') ? titleSide() : [])].filter(id => id && T.have[id]); }
+function hasTitle(id) { return titleActive().includes(id); }
 function titleB(id, v) { return hasTitle(id) ? v : 0; }
 function titleOpen() { return rankIdx() >= RANKS.length - 1; }
 // Called every guild tick: guild points earned since the last tick go to the chosen title once the rank is S.
@@ -1107,36 +1110,32 @@ function tickTitles() {
   const d = g.gp - g.gpT; g.gpT = g.gp;
   if (d <= 0 || !titleOpen()) return;
   const T = titleData();
-  if (saddled('unicorn')) for (const id of titleExtra()) {
-    T.xx[id] = (T.xx[id] || 0) + d;
-    if (T.xx[id] >= TITLE_XP) titleWin(id, () => { T.extra = T.extra.filter(x => x !== id); delete T.xx[id]; });
-  }
   if (!T.cur || T.have[T.cur]) return;
   T.xp += d;
   if (T.xp >= TITLE_XP) {
-    T.xp -= TITLE_XP; titleWin(T.cur, () => { T.cur = ''; });
+    const id = T.cur, t = TITLES.find(x => x.id === id); T.xp -= TITLE_XP; T.have[id] = 1; T.cur = '';
+    // A new title turns on by itself only into a free slot, so it never switches off one you picked.
+    const on = !T.show || !T.have[T.show] ? (T.show = id) : saddled('unicorn') && titleSide().length < 2 ? T.side.push(id) : 0;
+    log(L`🎖️ حصلت على لقب «${t.n}»! ${t.d}. ${on ? L('صار مفعّل جنب اسمك.') : L('فعّله جنب اسمك من النقابة عشان يشتغل بفه.')} اختر لقبك الجاي.`, 'golden'); toast(L`🎖️ لقب جديد: ${t.n}`);
   }
 }
-// Titles growing beside the main one while the unicorn wears the saddle (up to 2 more).
-function titleExtra() { const T = titleData(); T.extra = (T.extra || []).filter(id => !T.have[id] && id !== T.cur); T.xx = T.xx || {}; return T.extra; }
-function titleWin(id, done) {
-  const T = titleData(), t = TITLES.find(x => x.id === id); T.have[id] = 1; T.show = id; done();
-  log(L`🎖️ حصلت على لقب «${t.n}»! ${t.d}. اختر لقبك الجاي من النقابة.`, 'golden'); toast(L`🎖️ لقب جديد: ${t.n}`);
+function titleName() {
+  const T = S.leg.titles, ids = titleActive(); if (!ids.length) return '';
+  return ids.map((id, i) => { const t = TITLES.find(x => x.id === id); return (ART['title-' + id] ? icon('title-' + id, 26) : t.e) + (i ? '' : ' ' + t.n); }).join(' ');
 }
-function titleName() { const T = S.leg.titles, t = T && T.show && TITLES.find(x => x.id === T.show); return t ? (ART['title-' + t.id] ? icon('title-' + t.id, 26) : t.e) + ' ' + t.n : ''; }
 function titlePanel() {
   if (!titleOpen()) return '';
-  const T = titleData(), n = Object.keys(T.have).length, uni = saddled('unicorn');
+  const T = titleData(), n = Object.keys(T.have).length, uni = saddled('unicorn'), on = titleActive(), slots = uni ? 3 : 1;
   const cards = TITLES.map(t => {
-    const own = T.have[t.id], ex = uni && titleExtra().includes(t.id), cur = T.cur === t.id || ex, xp = ex ? T.xx[t.id] || 0 : T.xp;
-    const act = own ? (T.show === t.id ? `<small class="good">${L('✅ معروض جنب اسمك')}</small>` : `<button class="btn ghost sm" data-a="titleShow" data-v="${t.id}">${L('اعرضه جنب اسمك')}</button>`)
-      : cur ? `<small>${L`${fmt(xp)} / ${fmt(TITLE_XP)} نقطة`}</small><div class="bar"><i style="width:${Math.min(100, xp / TITLE_XP * 100)}%"></i></div>` + (ex ? `<button class="btn ghost sm" data-a="titleDrop" data-v="${t.id}">${L('✖ شيله')}</button>` : '')
+    const own = T.have[t.id], cur = T.cur === t.id, act0 = on.includes(t.id);
+    const act = own ? (act0 ? `<small class="good">${L('✅ مفعّل جنب اسمك')}</small>` + (t.id !== T.show ? `<button class="btn ghost sm" data-a="titleDrop" data-v="${t.id}">${L('✖ شيله')}</button>` : '') : `<button class="btn ghost sm" data-a="titleShow" data-v="${t.id}">${L('فعّله جنب اسمك')}</button>`)
+      : cur ? `<small>${L`${fmt(T.xp)} / ${fmt(TITLE_XP)} نقطة`}</small><div class="bar"><i style="width:${Math.min(100, T.xp / TITLE_XP * 100)}%"></i></div>`
       : `<button class="btn sm" data-a="titlePick" data-v="${t.id}">${L('افرم هذا اللقب')}</button>`;
     const pic = ART['title-' + t.id] ? `<span class="title-pic">${icon('title-' + t.id, 64)}</span>` : '';
-    return `<div class="title-card ${own ? 'own' : ''} ${cur ? 'cur' : ''}">${pic}<b>${pic ? '' : t.e + ' '}${t.n}</b><small>${t.d}</small>${act}</div>`;
+    return `<div class="title-card ${own ? 'own' : ''} ${cur || act0 ? 'cur' : ''}">${pic}<b>${pic ? '' : t.e + ' '}${t.n}</b><small>${t.d}</small>${act}</div>`;
   }).join('');
-  return L`<div class="panel titles"><div class="ph"><h2>🎖️ ألقاب النقابة</h2><span class="stat">${n} / ${TITLES.length}</span></div>
-    <p class="hint">وصلت الرتبة S! اختر لقب، وكل نقاط النقابة اللي تجيبها بعدها تروح له. كل لقب يحتاج ${fmt(TITLE_XP)} نقطة، ولما يكتمل يصير لك للأبد مع زيادته، ويبقى للعائلة كل الأجيال.${T.cur ? '' : L(' <b>ما اخترت لقب للحين، فالنقاط ما تنحسب.</b>')}${uni ? L(' 🦄 اليونيكورن عليه السرج: تقدر تفرم 3 ألقاب مع بعض، وكل واحد ياخذ النقاط كاملة.') : ''}</p>
+  return L`<div class="panel titles"><div class="ph"><h2>🎖️ ألقاب النقابة</h2><span class="stat">${n} / ${TITLES.length} • ${L`مفعّل ${on.length} / ${slots}`}</span></div>
+    <p class="hint">وصلت الرتبة S! اختر لقب تفرمه، وكل نقاط النقابة اللي تجيبها بعدها تروح له. كل لقب يحتاج ${fmt(TITLE_XP)} نقطة، ولما يكتمل يصير لك للأبد ويبقى للعائلة كل الأجيال. <b>بف اللقب ما يشتغل إلا إذا كان مفعّل جنب اسمك</b>: لقب واحد، أو 3 ألقاب لو اليونيكورن لابس السرج.${T.cur ? '' : L(' <b>ما اخترت لقب تفرمه للحين، فالنقاط ما تنحسب.</b>')}</p>
     <div class="title-list">${cards}</div></div>`;
 }
 const GUILD_GEN_CAP = 200; // capped so very high generations don't get hunts worth tens of billions (×200 from generation 16)
@@ -1591,14 +1590,14 @@ const A = {
     toast(L`⚖️ الطابق ${f} يناسب قوتك`);
   },
   floor: v => { const D = S.dun; const f = clamp(D.floor + (+v), 1, D.max); if (f !== D.floor) { D.floor = f; D.kills = 0; D.enemy = null; } },
-  titlePick: v => {
-    const T = titleData(); if (T.have[v] || !TITLES.some(t => t.id === v)) return;
-    // With the saddled unicorn a picked title joins the free extra slots (2 beside the main one) before it replaces the main.
-    const ex = titleExtra();
-    if (saddled('unicorn') && T.cur && !T.have[T.cur] && T.cur !== v && ex.length < 2) ex.push(v); else T.cur = v;
+  titlePick: v => { const T = titleData(); if (T.have[v] || !TITLES.some(t => t.id === v)) return; T.cur = v; lastSig = ''; },
+  // Turn a title on next to your name: into a free unicorn slot if there is one, otherwise it replaces the main title.
+  titleShow: v => {
+    const T = titleData(); if (!T.have[v] || titleActive().includes(v)) return;
+    if (T.show && T.have[T.show] && saddled('unicorn') && titleSide().length < 2) T.side.push(v); else T.show = v;
     lastSig = '';
   },
-  titleDrop: v => { const T = titleData(); T.extra = titleExtra().filter(x => x !== v); lastSig = ''; },
+  titleDrop: v => { const T = titleData(); T.side = titleSide().filter(x => x !== v); lastSig = ''; },
   saddleMake: () => {
     if (S.leg.saddle || S.gold < SADDLE_COST || !Object.keys(petData().pets).length) return;
     S.gold -= SADDLE_COST; const first = PETS.find(p => S.leg.pets[p.id]);
@@ -1609,7 +1608,6 @@ const A = {
     const sd = S.leg.saddle; if (!sd || !(S.leg.pets || {})[v] || sd.on === v) return;
     sd.on = v; const P0 = PETS.find(p => p.id === v); toast(L`🏇 حطيت السرج على ${P0.n}`); lastSig = '';
   },
-  titleShow: v => { const T = titleData(); if (T.have[v]) { T.show = v; lastSig = ''; } },
   floorMax: () => { S.dun.floor = S.dun.max; S.dun.kills = 0; S.dun.enemy = null; },
   // Jump to any open floor by number (e.g. back to floor 1 to clear easy floors fast).
   floorGo: () => {
@@ -2713,7 +2711,7 @@ const VIEWS = {
   mine: [viewMine, updMine, () => [S.off, S.mine.miners, S.tools.pick, lgv('pick'), ORES.filter(o => o.depth <= S.mine.max).length]],
   guild: [viewGuild, updGuild, () => {
     const D = S.dun, g = S.guild;
-    return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), S.tools, S.tlg, S.hero.lvl, floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100))), S.leg.saddle && [S.leg.saddle.on, saddleLv(S.leg.saddle.on), Math.floor(((S.leg.pets[S.leg.saddle.on] || {}).sx || 0) / Math.max(1, hxpNeed(saddleLv(S.leg.saddle.on) + 1)) * 20)], S.gold >= SADDLE_COST, S.leg.titles && [S.leg.titles.cur, (S.leg.titles.extra || []).join(), Math.floor(Object.values(S.leg.titles.xx || {}).reduce((a, b) => a + b, 0) / 1000), S.leg.titles.show, Object.keys(S.leg.titles.have || {}).length, Math.floor((S.leg.titles.xp || 0) / 1000)]];
+    return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), S.tools, S.tlg, S.hero.lvl, floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100))), S.leg.saddle && [S.leg.saddle.on, saddleLv(S.leg.saddle.on), Math.floor(((S.leg.pets[S.leg.saddle.on] || {}).sx || 0) / Math.max(1, hxpNeed(saddleLv(S.leg.saddle.on) + 1)) * 20)], S.gold >= SADDLE_COST, S.leg.titles && [S.leg.titles.cur, titleActive().join(), S.leg.titles.show, Object.keys(S.leg.titles.have || {}).length, Math.floor((S.leg.titles.xp || 0) / 1000)]];
   }],
   smith: [viewSmith, updReqs, () => [S.leg.afOwn, S.af && [S.af.t, S.af.n], S.gold >= AF_COST, S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],

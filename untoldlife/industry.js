@@ -24,10 +24,12 @@ const IND_RECIPES = [
   { id: 'ag', in: { silver: 3, coal: 2 }, t: 10, c: 1.2e9 },
 ];
 // City: rails (village miners) and boat (village fishers). Level L: gold 5e8 × 2^(L-1) plus these materials.
+// Each level asks more than the warehouse holds at the start (1,000, doubling per level), so the warehouse paces the climb:
+// level 2 needs warehouse 1, 3 → 2, 4–5 → 3, 6 → 4, 7–8 → 5, 9–10 → 6.
 const IND_BLD_MATS = [
-  [['wood', 500], ['stone', 500]], [['wood', 1500], ['block', 300]], [['brick', 600], ['block', 600]], [['brick', 1500], ['cu', 200]],
-  [['cu', 600], ['fe', 200]], [['fe', 600], ['brick', 3000]], [['fe', 1500], ['block', 3000]], [['ag', 300], ['fe', 2000]],
-  [['ag', 800], ['fe', 3000]], [['ag', 2000], ['fe', 5000]],
+  [['wood', 800], ['stone', 800]], [['wood', 2000], ['block', 1500]], [['brick', 3000], ['block', 4000]], [['brick', 6000], ['cu', 1000]],
+  [['cu', 5000], ['fe', 1500]], [['fe', 5000], ['brick', 15000]], [['fe', 10000], ['block', 30000]], [['ag', 5000], ['fe', 20000]],
+  [['ag', 12000], ['fe', 40000]], [['ag', 30000], ['fe', 60000]],
 ];
 const IND_BLD = [
   { id: 'rails', n: L('سكة الحديد'), e: '🛤️', who: L('عمال المنجم') },
@@ -55,7 +57,7 @@ function indGrowth(b) { return 1.45 - 0.033 * indLv(b); }
 // --- numbers ---
 function indWorkers() { return 1 + ind().hired; }
 function indUsed() { const f = ind().f; return IND_FIELDS.reduce((a, x) => a + f[x.id].w, 0); }
-function indCap() { return 5000 * Math.pow(2, ind().b.store || 0); }
+function indCap() { return 1000 * Math.pow(2, ind().b.store || 0); }
 function indRate(id) { const x = ind().f[id]; return x.w * 0.5 * (1 + 0.5 * x.l); }
 function indHireCost() { return Math.round(5e7 * Math.pow(1.3, ind().hired)); }
 function indFieldCost(l) { return { gold: Math.round(2e8 * Math.pow(2.5, l)), qty: Math.round(200 * Math.pow(2, l)) }; }
@@ -153,6 +155,8 @@ const IND_ACTIONS = {
 };
 
 // --- views ---
+// A warning when a cost is more than the warehouse can hold, so the player knows to expand it first.
+function indTooBig(mats) { const big = Math.max(...mats.map(m => m[1])); return big > indCap() ? `<p class="bad">${L`📦 تحتاج مخزن أكبر: السعة ${fmt(indCap())} وهذا يحتاج ${fmt(big)}`}</p>` : ''; }
 function indReqs(gold, mats) {
   const row = (id, need, got) => `<li class="${got >= need ? 'ok' : 'no'}"><span class="ri">${id === 'gold' ? '💰' : indIc(id, 22)}</span><span class="rn">${id === 'gold' ? L('ذهب') : indName(id)}</span><span class="rq"><b>${fmt(got)}</b> / ${fmt(need)}</span><span class="rs">${got >= need ? '✔' : L`ينقصك ${fmt(need - got)}`}</span></li>`;
   return `<ul class="reqs">${row('gold', gold, S.gold)}${(mats || []).map(([id, q]) => row(id, q, indHave(id))).join('')}</ul>`;
@@ -174,7 +178,7 @@ function viewFields() {
       <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(indRate(f.id))} بالثانية`}</span></div>
       ${full ? `<p class="bad">${L('📦 المخزن مليان، الحقل واقف')}</p>` : ''}
       <div class="row ind-w"><button class="btn ghost sm" data-a="indW" data-v="${f.id}:-1" ${x.w ? '' : 'disabled'}>−</button><b>${L`👷 ${x.w} عامل`}</b><button class="btn ghost sm" data-a="indW" data-v="${f.id}:1" ${used < n ? '' : 'disabled'}>+</button></div>
-      ${x.l < IND_MAXLV ? `<small>${L`⬆️ التطوير: +50% إنتاج لكل عامل`}</small>${indReqs(c.gold, [[f.id, c.qty]])}<div class="row"><button class="btn gold" data-a="indField" data-v="${f.id}" ${indCanPay(c.gold, [[f.id, c.qty]]) ? '' : 'disabled'}>${L('⬆️ طوّر')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
+      ${x.l < IND_MAXLV ? `<small>${L`⬆️ التطوير: +50% إنتاج لكل عامل`}</small>${indReqs(c.gold, [[f.id, c.qty]])}${indTooBig([[f.id, c.qty]])}<div class="row"><button class="btn gold" data-a="indField" data-v="${f.id}" ${indCanPay(c.gold, [[f.id, c.qty]]) ? '' : 'disabled'}>${L('⬆️ طوّر')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
   }
   return h + '</div></div>';
 }
@@ -203,7 +207,7 @@ function viewCity() {
     const l = B[b.id] || 0, c = l < IND_MAXLV ? indBldCost(l) : null;
     h += `<div class="card ind-card ${l ? 'lgcard g' : ''}"><div class="top"><span class="big">${ART['ind-' + b.id] ? icon('ind-' + b.id, 48) : `<span class="ind-e big">${b.e}</span>`}</span><div class="meta"><b>${b.n}</b><small>${L`المستوى ${l} من ${IND_MAXLV}`}</small></div></div>
       <div class="kv"><span>${L`${b.who} في القرية`}</span><span class="good">${L`خصم ${Math.round(indDisc(b.id) * 100)}% • ×${indGrowth(b.id).toFixed(3)}`}</span></div>
-      ${c ? `<small>${L`⬆️ المستوى ${l + 1}: خصم ${Math.round(0.09 * (l + 1) * 100)}% • ×${(1.45 - 0.033 * (l + 1)).toFixed(3)}`}</small>${indReqs(c.gold, c.mats)}<div class="row"><button class="btn gold" data-a="indBld" data-v="${b.id}" ${indCanPay(c.gold, c.mats) ? '' : 'disabled'}>${L('🏗️ ابنِ')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
+      ${c ? `<small>${L`⬆️ المستوى ${l + 1}: خصم ${Math.round(0.09 * (l + 1) * 100)}% • ×${(1.45 - 0.033 * (l + 1)).toFixed(3)}`}</small>${indReqs(c.gold, c.mats)}${indTooBig(c.mats)}<div class="row"><button class="btn gold" data-a="indBld" data-v="${b.id}" ${indCanPay(c.gold, c.mats) ? '' : 'disabled'}>${L('🏗️ ابنِ')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
   }
   const sl = B.store || 0, sc = sl < IND_MAXLV ? indStoreCost(sl) : null;
   h += `<div class="card ind-card"><div class="top"><span class="big"><span class="ind-e big">📦</span></span><div class="meta"><b>${L('المخزن')}</b><small>${L`المستوى ${sl} من ${IND_MAXLV}`}</small></div></div>

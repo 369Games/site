@@ -416,3 +416,4 @@ body.lite #log li.golden,body.lite #log li.egg{box-shadow:none}
 .title-card.cur{border-color:#7fb3ff99;box-shadow:0 0 10px #7fb3ff33}.title-card.own{border-color:#e2bc6c;background:radial-gradient(circle at 50% 30%,#e2bc6c1f,#0000 70%),#1c1914}
 .hero-title{font-size:13px;font-weight:600;color:#e2bc6c;margin-inline-start:6px}
 .title-pic{display:grid;place-items:center;height:68px}.title-card:not(.own) .title-pic .px{filter:grayscale(.6) brightness(.75)}
+.lock .px{width:26px;height:26px}

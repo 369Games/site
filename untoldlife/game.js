@@ -1004,10 +1004,10 @@ function floorCap() { return Math.max(RANK_FLOOR[rankIdx()], (S.gen.dun0 || 1) +
 /* Mercenary skills: only for the guild and the dungeon, and they start over every generation.
    Points: 1 for every 2 combat levels + 2 for every guild rank. Level n of a skill costs n points. */
 const MSK = [
-  { id: 'pow', e: '⚔️', n: L('القوة'), d: l => L`+${10 * l}% هجوم ودفاع` },
-  { id: 'loot', e: '💰', n: L('الغنائم'), d: l => L`فرصة المواد ${Math.round(dropCh(l, 0) * 100)}%` + (l >= 5 ? L(' • نص المرات مادة زيادة') : '') },
-  { id: 'eat', e: '🍽️', n: L('الأكل السريع'), d: l => L`الانتظار بين الأكلات ${EAT_CD[l]}ث • تغيير المهمات ${REF_CD[l]}ث` },
-  { id: 'quest', e: '📜', n: L('المهام'), d: l => L`مهام الصيد أسرع ${10 * l}% • +${20 * l}% نقاط النقابة` + (l >= 3 ? L(' • +1 خانة مهمة') : '') },
+  { id: 'pow', ic: 'power', e: '⚔️', n: L('القوة'), d: l => L`+${10 * l}% هجوم ودفاع` },
+  { id: 'loot', ic: 'loot', e: '💰', n: L('الغنائم'), d: l => L`فرصة المواد ${Math.round(dropCh(l, 0) * 100)}%` + (l >= 5 ? L(' • نص المرات مادة زيادة') : '') },
+  { id: 'eat', ic: 'eat', e: '🍽️', n: L('الأكل السريع'), d: l => L`الانتظار بين الأكلات ${EAT_CD[l]}ث • تغيير المهمات ${REF_CD[l]}ث` },
+  { id: 'quest', ic: 'quests', e: '📜', n: L('المهام'), d: l => L`مهام الصيد أسرع ${10 * l}% • +${20 * l}% نقاط النقابة` + (l >= 3 ? L(' • +1 خانة مهمة') : '') },
 ];
 function gsk(id) { return (S.guild.sk || {})[id] || 0; }
 /* Mastery: opens once every skill above is at level 5. Each level costs MAST_COST points, with no top level,
@@ -2044,8 +2044,8 @@ function viewGuild() {
     ${P('w_ally') ? L('<p class="hint">🛡️ رفيق المعارك يقاتل معك.</p>').replace('🛡️', icon('ally', 32)) : ''}
     <div class="row">
       <button class="btn ${D.active ? 'red' : ''}" data-a="dunToggle">${D.active ? L('🏃 انسحاب') : L('🗡️ دخول الزنزانة')}</button>
-      <button class="btn ghost sm" data-a="floor" data-v="-1" ${D.floor <= 1 ? 'disabled' : ''}>◀ طابق أسهل</button>
-      <button class="btn ghost sm" data-a="floor" data-v="1" ${D.floor >= D.max ? 'disabled' : ''}>طابق أصعب ▶</button>
+      <button class="btn ghost sm" data-a="floor" data-v="-1" ${D.floor <= 1 ? 'disabled' : ''}>${icon('icon-easier', 20)} طابق أسهل</button>
+      <button class="btn ghost sm" data-a="floor" data-v="1" ${D.floor >= D.max ? 'disabled' : ''}>${icon('icon-harder', 20)} طابق أصعب</button>
       <button class="btn ghost sm" data-a="floorMax" ${D.floor >= D.max ? 'disabled' : ''}>⏭ الأعلى</button>
       <button class="btn ghost sm" data-a="floorGo">🔢 روح لطابق</button>
       <button class="btn ghost sm" data-a="floorFit" title="${L('أعلى طابق مفتوح تقدر عليه بقوتك الحين')}">⚖️ طابق يناسبك</button>
@@ -2084,17 +2084,17 @@ function viewGuild() {
   });
   h += `<div class="row"><button class="btn ghost sm" data-a="refreshBoard" id="g_ref"></button></div></div>`;
   const guild = h, pts = mskPts();
-  h = L`<h3>🌟 مهارات المرتزق <small class="stat">نقاط: <b>${pts}</b></small></h3>
+  h = L`<h3>${icon('icon-merc-skills', 24)} مهارات المرتزق <small class="stat">نقاط: <b>${pts}</b></small></h3>
     <p class="hint">تفيد الزنزانة والنقابة بس، وتبدأ من الصفر مع كل جيل. تاخذ نقطة كل مستويين قتال ونقطتين مع كل رتبة نقابة. المستوى رقم ن يكلف ن نقاط.</p>`;
   for (const k of MSK) {
     const l = gsk(k.id), dots = [0, 1, 2, 3, 4].map(i => i < l ? '●' : '○').join('');
-    h += L`<div class="quest"><div class="qi"><b>${k.e} ${k.n} <small>${dots}</small></b><small>${l ? k.d(l) : L('لسا ما طوّرتها')}${l < 5 ? L` ← ${k.d(l + 1)}` : ''}</small></div>
+    h += L`<div class="quest"><div class="qi"><b>${icon('icon-skill-' + k.ic, 22)} ${k.n} <small>${dots}</small></b><small>${l ? k.d(l) : L('لسا ما طوّرتها')}${l < 5 ? L` ← ${k.d(l + 1)}` : ''}</small></div>
       ${l < 5 ? L`<button class="btn sm" data-a="mskUp" data-v="${k.id}" ${pts < l + 1 ? 'disabled' : ''}>طوّر (${l + 1} نقاط)</button>` : L('<span class="chance hi">الأعلى</span>')}</div>`;
   }
   if (mastOpen()) {
     const m = gsk('mast'), can = Math.floor(pts / MAST_COST), raw = dropRaw();
     const drop = L`فرصة المواد ${pctTxt(Math.min(1, raw))}` + (raw > 1 ? L` • مادة زيادة ${pctTxt(extraCh())}` : '');
-    h += L`<div class="quest mast"><div class="qi"><b>🌟 إتقان المرتزق <small>مستوى ${m}</small></b>
+    h += L`<div class="quest mast"><div class="qi"><b>${icon('icon-skill-mastery', 22)} إتقان المرتزق <small>مستوى ${m}</small></b>
       <small>بدون حد: كل مستوى بـ ${MAST_COST} نقاط ويعطي +${pctTxt(MAST_STEP)} هجوم ودفاع وفرصة المواد.</small>
       <small>الحين: +${pctTxt(MAST_STEP * m)} هجوم ودفاع • ${drop}</small></div>
       <div class="row"><button class="btn sm" data-a="mastUp" ${can ? '' : 'disabled'}>طوّر (${MAST_COST} نقاط)</button>${can > 1 ? L`<button class="btn ghost sm" data-a="mastUp" data-v="all">طوّر ×${can}</button>` : ''}</div></div>`;
@@ -2268,7 +2268,7 @@ function viewMarket() {
     h += `<h3>${CAT_NAMES[cat]}</h3><div class="inv">`;
     for (const id of list) {
       const it = ITEMS[id];
-      h += L`<div class="it"><button class="lock" data-a="lock" data-v="${id}" title="قفل/فتح">${S.locked[id] ? '🔒' : '🔓'}</button><span class="e">${icon(it)}</span>
+      h += L`<div class="it"><button class="lock" data-a="lock" data-v="${id}" title="قفل/فتح">${S.locked[id] ? icon('icon-locked', 26) : icon('icon-sellable', 26)}</button><span class="e">${icon(it)}</span>
         <div class="nm"><b>${it.n}</b> × <span id="inv_${id}">${fmt(have(id))}</span><small>${fmt(sellPrice(id))}💰 للواحدة</small></div>
         <input class="mk-q" type="number" min="1" step="1" inputmode="numeric" data-q="${id}" value="${esc(MK_Q[id] || 1)}" aria-label="الكمية"><button class="btn ghost sm" data-a="sellN" data-v="${id}" ${have(id) ? '' : 'disabled'}>بيع</button><button class="btn sm gold" data-a="sellAll" data-v="${id}" ${have(id) ? '' : 'disabled'}>الكل</button></div>`;
     }
@@ -2703,7 +2703,7 @@ function initSiteLinks() {
   // Support button in the top bar: one link goes straight there; with two it opens a small choice.
   const kf = $('kofiBtn'), links = supportLinks();
   if (kf && links.length) {
-    kf.textContent = L('💝 ادعمنا'); kf.classList.remove('hidden');
+    visualText(kf, L('💝 ادعمنا')); kf.classList.remove('hidden');
     if (links.length === 1) kf.href = links[0][0]; else { kf.removeAttribute('href'); kf.removeAttribute('target'); kf.dataset.a = 'support'; }
   }
 }

@@ -2663,7 +2663,9 @@ function render(force) {
   if (!S) return;
   const [view, upd, sig] = VIEWS[tab];
   const s = tab + JSON.stringify(sig());
-  if (force || s !== lastSig) {
+  // Don't rebuild the page under an open dropdown or the auto-forge target box (it would close/clear it).
+  const fe = document.activeElement, busy = !force && fe && $('view').contains(fe) && (fe.tagName === 'SELECT' || fe.dataset.af);
+  if (!busy && (force || s !== lastSig)) {
     lastSig = s;
     $('view').dataset.view = tab;
     $('view').innerHTML = pageSceneMarkup(tab) + pixelHTML(view());

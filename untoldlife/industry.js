@@ -49,7 +49,7 @@ const IND_ENG = [
   { id: 'furn', e: '⚡', a: 'ind-tab-furn', n: L('مراجل أسرع'), d: L('+15% سرعة لكل مستوى لكل المراجل') },
   { id: 'field', e: '⛏️', a: 'ind-tab-fields', n: L('حقول أغزر'), d: L('+15% إنتاج لكل مستوى لكل الحقول') },
   { id: 'bench', e: '🔧', a: 'ind-tab-ws', n: L('ورشة أسرع'), d: L('+15% سرعة لكل مستوى لكل طاولات الورشة') },
-  { id: 'crew', e: '🏠', a: 'ind-housing', n: L('سكن العمال'), d: L('+10 عمال لكل مستوى في الحد الأقصى') },
+  { id: 'crew', e: '🏠', a: 'ind-housing', n: L('سكن العمال'), d: L('+10 لحد عمال حقول المصنع لكل مستوى (من 50 لين 150)') },
   { id: 'deal', e: '🤝', a: 'ind-trader', n: L('تاجر العقود'), d: L('+10% ذهب من العقود لكل مستوى') },
 ];
 const IND_ENG_BP = [1, 2, 3, 4, 6, 8, 10, 13, 16, 20];
@@ -97,7 +97,8 @@ function indEngCost(l) {
   const mats = l < 3 ? [['plank', 50 * (l + 1)], ['nails', 20 * (l + 1)]] : l < 6 ? [['gear', 10 * (l - 2)], ['pipe', 10 * (l - 2)]] : [['machine', 2 * (l - 5)]];
   return { gold: 0, mats: [['bp', IND_ENG_BP[l]], ...mats] };
 }
-function indHireCost() { return Math.round(5e7 * Math.pow(1.3, ind().hired)); }
+// +7% per worker, so every level of workers' housing is worth buying (worker 150 ≈ 1.2T, all 150 ≈ 18T).
+function indHireCost() { return Math.round(5e7 * Math.pow(1.07, ind().hired)); }
 function indFieldCost(l) { return { gold: Math.round(2e8 * Math.pow(2.5, l)), qty: Math.round(200 * Math.pow(2, l)) }; }
 function indFurnCost(r) { return Math.round(r.c * Math.pow(1.6, indFu(r.id).n)); }
 function indStoreCost(l) { return { gold: Math.round(2e8 * Math.pow(3, l)), mats: [['wood', Math.round(1000 * Math.pow(2, l))], ['stone', Math.round(1000 * Math.pow(2, l))]] }; }

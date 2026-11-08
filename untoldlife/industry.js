@@ -124,15 +124,15 @@ function tickInd(dt) {
   for (const f of IND_FIELDS) { const v = I.r[f.id] || 0; if (v < cap) I.r[f.id] = Math.min(cap, v + indRate(f.id) * dt); }
   for (const r of IND_MAKERS) {
     const u = indFu(r.id); u.stall = '';
-    if (!u.n || !u.on) { u.p = 0; continue; }
-    if ((I.r[r.id] || 0) >= cap) { u.stall = 'full'; u.p = 0; continue; }
+    if (!u.n || !u.on) { u.p = 0; u.sz = 0; continue; }
+    if ((I.r[r.id] || 0) >= cap) { u.stall = 'full'; u.p = 0; u.sz = 0; continue; }
     u.p += dt * u.n * indSpeed(r) / r.t;
     let k = Math.floor(u.p); if (!k) continue;
     for (const [id, q] of Object.entries(r.in)) k = Math.min(k, Math.floor(indHave(id) / q));
     k = Math.min(k, Math.floor(cap - (I.r[r.id] || 0)));
-    if (k <= 0) { u.stall = 'in'; u.p = Math.min(u.p, 1); continue; }
+    if (k <= 0) { u.stall = 'in'; u.p = Math.min(u.p, 1); u.sz = (u.sz || 0) + dt; continue; }
     for (const [id, q] of Object.entries(r.in)) indTake(id, q * k);
-    I.r[r.id] = (I.r[r.id] || 0) + k; u.p -= k;
+    I.r[r.id] = (I.r[r.id] || 0) + k; u.p -= k; u.sz = 0;
   }
   indKFill();
   if (offline || dt <= 0) return; // the catch-up's big steps would skew it
@@ -146,9 +146,18 @@ function indNetTxt(id) {
 // Something in the factory needs a look: a field or a furnace is full, or a furnace is out of inputs.
 function indAlert() {
   if (!indOpen()) return false;
-  const cap = indCap();
-  return IND_FIELDS.some(f => ind().f[f.id].w && (ind().r[f.id] || 0) >= cap) || IND_MAKERS.some(r => indFu(r.id).stall) || indKReady();
+  return IND_FIELDS.some(f => indFieldSt(f.id).c) || IND_MAKERS.some(r => indMakerSt(r).c === 'bad') || indKReady();
 }
+// Status lines. Stock hovers right at the cap (furnaces nibble, fields refill), so "full" counts from 99%, and
+// "out of materials" only after 2 seconds of waiting; both are written in place, so the cards never jump.
+function indFull(id) { return (ind().r[id] || 0) >= indCap() * 0.99; }
+function indFieldSt(id) { return ind().f[id].w && indFull(id) ? { c: 'bad', t: L('📦 المخزن مليان، الحقل واقف') } : { c: '', t: '' }; }
+function indMakerSt(r) {
+  const u = indFu(r.id);
+  return !u.n ? { c: '', t: '' } : !u.on ? { c: 'hint', t: L('⏸️ موقف') } : indFull(r.id) ? { c: 'bad', t: L('📦 المخزن مليان') }
+    : (u.sz || 0) >= 2 ? { c: 'bad', t: L('⚠️ واقف: المواد ما تكفي') } : { c: 'good', t: L('⚒️ شغّال') };
+}
+function indStLine(key, st) { return `<p class="ind-st ${st.c}" data-ist="${key}">${st.t}</p>`; }
 
 // --- contracts ---
 // Things you can already make: the three fields, plus every furnace or bench you own.
@@ -254,11 +263,11 @@ function viewFields() {
     <div class="row">${costBtn('indHire', '', indHireCost(), L`👷 وظّف عامل (${fmt(indHireCost())}💰)`, 'gold', I.hired + 1 >= indWMax())}<button class="btn ghost" data-a="indEven">⚖️ وزّع بالتساوي</button></div>`;
   h += indStock() + '<div class="grid ind-grid">';
   for (const f of IND_FIELDS) {
-    const x = I.f[f.id], c = indFieldCost(x.l), full = (I.r[f.id] || 0) >= indCap();
+    const x = I.f[f.id], c = indFieldCost(x.l);
     h += `<div class="card ind-card"><div class="top"><span class="big">${indIc(f.id, 48)}</span><div class="meta"><b>${f.n}</b><small>${L`المستوى ${x.l} من ${IND_MAXLV}`}</small></div></div>
       <div class="kv"><span>${indName(f.id)}</span><span><b data-ir="${f.id}">${fmt(Math.floor(I.r[f.id] || 0))}</b> / ${fmt(indCap())}</span></div>
       <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(indRate(f.id))} بالثانية`}</span></div>
-      ${full ? `<p class="bad">${L('📦 المخزن مليان، الحقل واقف')}</p>` : ''}
+      ${indStLine('f:' + f.id, indFieldSt(f.id))}
       <div class="row ind-w"><button class="btn ghost sm" data-a="indW" data-v="${f.id}:-1" ${x.w ? '' : 'disabled'}>−</button><b>${L`👷 ${x.w} عامل`}</b><button class="btn ghost sm" data-a="indW" data-v="${f.id}:1" ${used < n ? '' : 'disabled'}>+</button></div>
       ${x.l < IND_MAXLV ? `<small>${L`⬆️ التطوير: +50% إنتاج لكل عامل`}</small>${indReqs(c.gold, [[f.id, c.qty]])}${indTooBig([[f.id, c.qty]])}<div class="row"><button class="btn gold" data-a="indField" data-v="${f.id}" ${indCanPay(c.gold, [[f.id, c.qty]]) ? '' : 'disabled'}>${L('⬆️ طوّر')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
   }
@@ -274,7 +283,7 @@ function viewFurn() {
 function indMakerCard(r, bench) {
   const u = indFu(r.id), c = indFurnCost(r);
   const ins = Object.entries(r.in).map(([id, q]) => `${q} ${indIc(id, 22)}`).join(' + ');
-  const st = !u.n ? '' : !u.on ? `<p class="hint">${L('⏸️ موقف')}</p>` : u.stall === 'in' ? `<p class="bad">${L('⚠️ واقف: المواد ما تكفي')}</p>` : u.stall === 'full' ? `<p class="bad">${L('📦 المخزن مليان')}</p>` : `<p class="good">${L('⚒️ شغّال')}</p>`;
+  const st = u.n ? indStLine('m:' + r.id, indMakerSt(r)) : '';
   return `<div class="card ind-card"><div class="top"><span class="big">${indIc(r.id, 48)}</span><div class="meta"><b>${indName(r.id)}</b><small>${bench ? L`${u.n} طاولة` : L`${u.n} فرن`}</small></div></div>
     <div class="kv ind-recipe"><span>${ins}</span><span>→ 1 ${indIc(r.id, 22)}</span></div>
     <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(u.n * indSpeed(r) / r.t)} بالثانية`}</span></div>
@@ -326,13 +335,17 @@ function viewCity() {
 // Numbers that change every frame are written in place; the page itself only redraws when the signature changes.
 function updInd() {
   document.querySelectorAll('[data-ir]').forEach(el => { el.textContent = fmt(Math.floor(ind().r[el.dataset.ir] || 0)); });
+  document.querySelectorAll('[data-ist]').forEach(el => {
+    const [k, id] = el.dataset.ist.split(':'), st = k === 'f' ? indFieldSt(id) : indMakerSt(IND_MAKERS.find(r => r.id === id));
+    if (el.textContent !== st.t) { el.textContent = st.t; el.className = 'ind-st ' + st.c; }
+  });
   document.querySelectorAll('[data-kw]').forEach(el => { el.textContent = indClock(+el.dataset.kw - Date.now()); });
   document.querySelectorAll('[data-inet]').forEach(el => { const n = indNetTxt(el.dataset.inet); el.textContent = n.t; el.className = 'ind-net ' + n.c; });
 }
 function indSig() {
   const I = ind(); if (!I) return [];
   const pay = (g, m) => indCanPay(g, m);
-  return [I.hired, I.f, I.b, I.e, IND_MAKERS.map(r => { const u = indFu(r.id); return [u.n, u.on, u.stall]; }), IND_FIELDS.map(f => (I.r[f.id] || 0) >= indCap()),
+  return [I.hired, I.f, I.b, I.e, IND_MAKERS.map(r => { const u = indFu(r.id); return [u.n, u.on]; }),
     IND_FIELDS.map(f => { const c = indFieldCost(I.f[f.id].l); return pay(c.gold, [[f.id, c.qty]]); }),
     IND_BLD.map(b => (I.b[b.id] || 0) < IND_MAXLV && pay(indBldCost(I.b[b.id] || 0).gold, indBldCost(I.b[b.id] || 0).mats)),
     (I.b.store || 0) < IND_MAXLV && pay(indStoreCost(I.b.store || 0).gold, indStoreCost(I.b.store || 0).mats)];

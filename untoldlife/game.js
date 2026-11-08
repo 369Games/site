@@ -591,7 +591,7 @@ let S = null;
 let tab = 'farm';
 let lastSig = '';
 let offline = false;
-let logs = [];
+let logs = [], indLogs = []; // each world keeps its own event log (industry.js logs with world 'ind')
 let logDirty = true, logDrawT = 0;
 let zoneMode = false;
 function owned(id) { return id === 'miners' ? S.mine.miners > 0 : id === 'fishers' ? S.lake.fishers > 0 : !!S.bld[id]; }
@@ -677,10 +677,11 @@ function clockStr() {
   const h = Math.floor(mins / 60) % 24, m = mins % 60;
   return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
 }
-function log(msg, type = '') {
+function log(msg, type = '', world = 'village') {
   if (offline) return;
-  logs.unshift({ t: clockStr(), msg, type });
-  if (logs.length > 80) logs.pop();
+  const list = world === 'ind' ? indLogs : logs;
+  list.unshift({ t: clockStr(), msg, type });
+  if (list.length > 80) list.pop();
   logDirty = true;
   eventVisual(msg, type);
 }
@@ -1809,7 +1810,7 @@ const A = {
   saveLoadGo: () => saveLoadGo(),
   reset: () => {
     if (!confirm(L('متأكد؟ سيتم حذف كل تقدمك نهائياً!'))) return;
-    localStorage.removeItem(SAVE_KEY); S = newState(); logs = []; logDirty = true; lastSig = ''; showIntro();
+    localStorage.removeItem(SAVE_KEY); S = newState(); logs = []; indLogs = []; logDirty = true; lastSig = ''; showIntro();
   },
   start: () => {
     const nm = ($('nameIn').value || '').trim() || L('المزارع');
@@ -2597,6 +2598,7 @@ function buffGroup(title, src, extra = []) {
     ${extra.map(([n, v]) => `<div class="bfl ex"><span>${n}</span><span>${v}</span></div>`).join('')}</div>`;
 }
 function buffsHtml() {
+  if (inInd()) return indBuffsHtml(); // the factory shows its own (industry.js)
   const g = buffGroup;
   let h = '';
   h += speedGroup(L('🌱 سرعة نمو المحاصيل'), 'grow',
@@ -2799,7 +2801,7 @@ function render(force) {
   renderSide();
   if (logDirty && Date.now() - logDrawT > (LITE ? 2000 : 700)) { // many messages a second at high generations: redraw the list at most this often
     logDirty = false; logDrawT = Date.now();
-    $('log').innerHTML = pixelHTML(logs.map(l => `<li class="${l.type}"><small>${l.t}</small>${logVisualHTML(l.msg)}</li>`).join(''));
+    $('log').innerHTML = pixelHTML((inInd() ? indLogs : logs).map(l => `<li class="${l.type}"><small>${l.t}</small>${logVisualHTML(l.msg)}</li>`).join(''));
   }
 }
 let lastBadge = -1;
@@ -3056,7 +3058,7 @@ function saveLoadGo() {
   if (!pendingSave) return;
   const info = pendingSave;
   try { S = migrate(info.st); } catch (e) { pendingSave = null; return toast(L('❌ هذا ما هو ملف حفظ')); }
-  pendingSave = null; S.last = Date.now(); logs = []; logDirty = true; lastSig = '';
+  pendingSave = null; S.last = Date.now(); logs = []; indLogs = []; logDirty = true; lastSig = '';
   closeModal(); log(L`⬆️ رجعت لحفظ ${esc(S.name)} — الجيل ${S.leg.gen}`, 'season'); toast(L('✅ تم تحميل الحفظ'));
   markMod(info.mod || saveOddity(S)); save();
 }

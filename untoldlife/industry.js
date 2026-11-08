@@ -188,12 +188,13 @@ const IND_ACTIONS = {
   indUnlock: () => {
     if (indOpen() || !indReady()) return;
     S.leg.stars -= IND_COST; S.leg.ind = newInd();
-    log(L('⚙️ فتحت عصر الصناعة! عالم جديد تبنيه من الصفر، ويرخّص عمال القرية. القرية تكمل شغلها وأنت هناك.'), 'golden');
+    log(L('⚙️ فتحت عصر الصناعة! عالم جديد تبنيه من الصفر، ويرخّص عمال القرية. القرية تكمل شغلها وأنت هناك.'), 'golden', 'ind');
     A.world('ind');
   },
   world: v => {
     if (v === 'ind' && !indOpen()) return;
     S.world = v === 'ind' ? 'ind' : 'village'; tab = S.world === 'ind' ? 'fields' : 'farm'; lastSig = ''; renderTabs(); scrollTo(0, 0);
+    logDirty = true; logDrawT = 0; lastBuffs = ''; renderSide(); // the side panel follows the world
   },
   // A new worker goes straight to the field with the fewest workers; move them any time.
   indHire: () => { const c = indHireCost(); if (ind().hired + 1 >= indWMax() || S.gold < c) return; S.gold -= c; ind().hired++; const f = ind().f; IND_FIELDS.map(x => f[x.id]).sort((a, b) => a.w - b.w)[0].w++; },
@@ -217,7 +218,7 @@ const IND_ACTIONS = {
     const c = indBldCost(l); if (!indCanPay(c.gold, c.mats)) return;
     indPay(c.gold, c.mats); B[v] = l + 1;
     const b = IND_BLD.find(x => x.id === v);
-    log(L`${b.e} ${b.n} صارت مستوى ${B[v]}: ${b.who} في القرية أرخص ${Math.round(indDisc(v) * 100)}%`, 'golden');
+    log(L`${b.e} ${b.n} صارت مستوى ${B[v]}: ${b.who} في القرية أرخص ${Math.round(indDisc(v) * 100)}%`, 'golden', 'ind');
   },
   indStore: () => {
     const B = ind().b, l = B.store || 0; if (l >= IND_MAXLV) return;
@@ -229,7 +230,7 @@ const IND_ACTIONS = {
     k.need.forEach(([id, q]) => indTake(id, q));
     const g = indKGold(k); S.gold += g; I.r.bp = (I.r.bp || 0) + k.bp; I.kd = (I.kd || 0) + 1;
     I.k[+v] = { at: Date.now() + IND_KWAIT };
-    log(L`📜 سلّمت عقد: +${fmt(g)}💰 و+${k.bp} 📐`, 'golden');
+    log(L`📜 سلّمت عقد: +${fmt(g)}💰 و+${k.bp} 📐`, 'golden', 'ind');
   },
   // Swap a contract you don't want for a new one, free and any time.
   indKSkip: v => {
@@ -241,7 +242,7 @@ const IND_ACTIONS = {
     const I = ind(), l = indEng(v); if (l >= IND_MAXLV) return;
     const c = indEngCost(l); if (!indCanPay(0, c.mats)) return;
     indPay(0, c.mats); I.e = I.e || {}; I.e[v] = l + 1;
-    log(L`👷 المهندس طوّر ${g.e} ${g.n} لمستوى ${l + 1}`, 'golden');
+    log(L`👷 المهندس طوّر ${g.e} ${g.n} لمستوى ${l + 1}`, 'golden', 'ind');
   },
 };
 
@@ -362,6 +363,23 @@ const IND_VIEWS = {
   }],
 };
 
+// The factory's own buffs panel: what speeds each part up, and what the factory gives the village.
+function indBuffsHtml() {
+  const g = buffGroup, I = ind(), B = I.b, cnt = list => list.reduce((a, r) => a + indFu(r.id).n, 0);
+  const row = (n, v) => [n, v];
+  // Info-only card (no multiplier line).
+  const info = (title, rows) => `<div class="bf"><div class="bfh"><b>${title}</b></div>${rows.map(([n, v]) => `<div class="bfl ex"><span>${n}</span><span>${v}</span></div>`).join('')}</div>`;
+  let h = '';
+  h += g(L('⛰️ إنتاج الحقول'), [[L('⛏️ حقول أغزر (المهندس)'), 1 + 0.15 * indEng('field')]],
+    [row(L('👷 العمال'), `${indWorkers()} / ${indWMax()}`), ...IND_FIELDS.map(f => row(`${f.n} (${L`مستوى ${I.f[f.id].l}`})`, L`${indNum(indRate(f.id))} بالثانية`))]);
+  h += g(L('🏭 سرعة المراجل'), [[L('⚡ مراجل أسرع (المهندس)'), 1 + 0.15 * indEng('furn')]], [row(L('🏭 عدد الأفران'), cnt(IND_RECIPES))]);
+  h += g(L('🔧 سرعة الورشة'), [[L('🔧 ورشة أسرع (المهندس)'), 1 + 0.15 * indEng('bench')]], [row(L('🪚 عدد الطاولات'), cnt(IND_PROD))]);
+  h += g(L('📜 ذهب العقود'), [[L('🤝 تاجر العقود (المهندس)'), 1 + 0.1 * indEng('deal')]],
+    [row(L('✅ عقود مسلّمة'), fmt(I.kd || 0)), row(L('📈 حجم الطلب الجاي'), '×' + (1 + 0.12 * (I.kd || 0)).toFixed(2)), row(L('📐 مخططاتك'), fmt(I.r.bp || 0))]);
+  h += info(L('🏘️ للقرية'), IND_BLD.map(b => row(`${b.e} ${b.n} (${L`مستوى ${B[b.id] || 0}`})`, L`${b.who}: خصم ${Math.round(indDisc(b.id) * 100)}% • ×${indGrowth(b.id).toFixed(3)}`)).concat([row(L('👷 حد العمال في القرية'), VILLAGE_WMAX)]));
+  h += info(L('📦 المخزن'), [row(L`السعة لكل مادة (مستوى ${B.store || 0})`, fmt(indCap()))]);
+  return h;
+}
 // The teaser / unlock card at the top of the legacy tab (from generation 7).
 function indLegacyCard() {
   if (S.leg.gen < IND_TEASE) return '';

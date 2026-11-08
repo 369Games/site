@@ -68,6 +68,8 @@ function indHave(id) { return IND_RES[id] ? ind().r[id] || 0 : have(id); }
 function indTake(id, q) { if (IND_RES[id]) ind().r[id] = (ind().r[id] || 0) - q; else take(id, q); }
 function indCanPay(gold, mats) { return S.gold >= gold && (mats || []).every(([id, q]) => indHave(id) >= q); }
 function indPay(gold, mats) { S.gold -= gold; (mats || []).forEach(([id, q]) => indTake(id, q)); }
+// Small rates keep their decimals (0.33/s, not 0).
+function indNum(n) { return n < 10 ? String(+n.toFixed(2)) : fmt(n); }
 function indName(id) { return IND_RES[id] ? IND_RES[id].n : (ITEMS[id] || {}).n || id; }
 function indIc(id, n = 24) { return ART['ind-' + id] ? icon('ind-' + id, n) : IND_RES[id] ? `<span class="ind-e">${IND_RES[id].e}</span>` : icon(ITEMS[id], n); }
 
@@ -159,7 +161,7 @@ function viewFields() {
     const x = I.f[f.id], c = indFieldCost(x.l), full = (I.r[f.id] || 0) >= indCap();
     h += `<div class="card ind-card"><div class="top"><span class="big">${indIc(f.id, 48)}</span><div class="meta"><b>${f.n}</b><small>${L`المستوى ${x.l} من ${IND_MAXLV}`}</small></div></div>
       <div class="kv"><span>${indName(f.id)}</span><span><b data-ir="${f.id}">${fmt(Math.floor(I.r[f.id] || 0))}</b> / ${fmt(indCap())}</span></div>
-      <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${fmt(indRate(f.id))} بالثانية`}</span></div>
+      <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(indRate(f.id))} بالثانية`}</span></div>
       ${full ? `<p class="bad">${L('📦 المخزن مليان، الحقل واقف')}</p>` : ''}
       <div class="row ind-w"><button class="btn ghost sm" data-a="indW" data-v="${f.id}:-1" ${x.w ? '' : 'disabled'}>−</button><b>${L`👷 ${x.w} عامل`}</b><button class="btn ghost sm" data-a="indW" data-v="${f.id}:1" ${used < n ? '' : 'disabled'}>+</button></div>
       ${x.l < IND_MAXLV ? `<small>${L`⬆️ التطوير: +50% إنتاج لكل عامل`}</small>${indReqs(c.gold, [[f.id, c.qty]])}<div class="row"><button class="btn gold" data-a="indField" data-v="${f.id}" ${indCanPay(c.gold, [[f.id, c.qty]]) ? '' : 'disabled'}>${L('⬆️ طوّر')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
@@ -176,7 +178,7 @@ function viewFurn() {
     const st = !u.n ? '' : !u.on ? `<p class="hint">${L('⏸️ موقف')}</p>` : u.stall === 'in' ? `<p class="bad">${L('⚠️ واقف: المواد ما تكفي')}</p>` : u.stall === 'full' ? `<p class="bad">${L('📦 المخزن مليان')}</p>` : `<p class="good">${L('⚒️ شغّال')}</p>`;
     h += `<div class="card ind-card"><div class="top"><span class="big">${indIc(r.id, 48)}</span><div class="meta"><b>${indName(r.id)}</b><small>${L`${u.n} فرن`}</small></div></div>
       <div class="kv ind-recipe"><span>${ins}</span><span>→ 1 ${indIc(r.id, 22)}</span></div>
-      <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${fmt(u.n / r.t)} بالثانية`}</span></div>
+      <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(u.n / r.t)} بالثانية`}</span></div>
       <div class="kv"><span>${L('عندك')}</span><span><b data-ir="${r.id}">${fmt(Math.floor(ind().r[r.id] || 0))}</b></span></div>${st}
       <div class="row">${costBtn('indFurn', r.id, c, L`➕ فرن (${fmt(c)}💰)`, 'gold', u.n >= IND_FMAX)}${u.n ? `<button class="btn ghost sm" data-a="indFurnOn" data-v="${r.id}">${u.on ? L('⏸️ وقّف') : L('▶️ شغّل')}</button>` : ''}</div></div>`;
   }

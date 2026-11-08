@@ -1964,6 +1964,7 @@ function renderTabs() {
   tabAlertSig = Object.keys(al).join() + unlSig() + worldSig();
   // In the Industrial Age the tabs swap for the factory's; the last button goes back (with a dot when the other world needs you).
   const iw = inInd(), list = iw ? IND_TABS : TABS;
+  document.documentElement.classList.toggle('ind-world', iw); // the factory's own colours (world-theme.css)
   if (!list.some(t => t[0] === tab)) { tab = list[0][0]; lastSig = ''; }
   const sw = indOpen() ? `<button data-a="world" data-v="${iw ? 'village' : 'ind'}" class="world-btn"><span class="nav-emblem" aria-hidden="true">${icon(iw ? indArt('village', 'village') : indArt('factory', 'icon-auto-forge'), 40)}${(iw ? villageAlert() : indAlert()) ? '<i class="tab-dot"></i>' : ''}</span><span>${iw ? L('القرية') : L('المصنع')}</span></button>` : '';
   $('tabs').innerHTML = tabsMarkup(list, iw ? {} : badge, tab, iw ? {} : locked) + sw;

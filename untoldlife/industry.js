@@ -259,7 +259,7 @@ function indReqs(gold, mats) {
 }
 function indStock(ids = IND_BASE) {
   const cap = indCap();
-  return `<div class="ind-stock">${ids.map(id => `<span class="ind-chip">${indIc(id, 20)} <b data-ir="${id}">${fmt(Math.floor(ind().r[id] || 0))}</b><small class="ind-net" data-inet="${id}"></small></span>`).join('')}<span class="ind-chip ghost">${L`📦 السعة ${fmt(cap)}`}</span><span class="ind-chip ghost">${L('📈 الرقم الملوّن: الصافي بالثانية بعد اللي تاكله المراجل')}</span></div>`;
+  return `<div class="ind-stock">${ids.map(id => `<span class="ind-chip">${indIc(id, 20)} <b data-ir="${id}">${fmt(Math.floor(ind().r[id] || 0))}</b><small class="ind-net" data-inet="${id}"></small></span>`).join('')}<span class="ind-chip ghost">${L`📦 السعة ${fmt(cap)}`}</span><span class="ind-chip ghost wide">${L('📈 الرقم الملوّن: الصافي بالثانية بعد اللي تاكله المراجل')}</span></div>`;
 }
 function viewFields() {
   const I = ind(), n = indWorkers(), used = indUsed();

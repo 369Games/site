@@ -3101,6 +3101,8 @@ function migrate(o) {
     }
     st.leg.kFix = 1;
   }
+  // 1.10.6: in 1.10.5 delivered contracts paid no blueprints (and weren't counted); a one-time 15 📐 to make up for it.
+  if (st.leg.ind && !st.leg.bpGift) { const r = st.leg.ind.r || (st.leg.ind.r = {}); r.bp = (r.bp || 0) + 15; st.leg.bpGift = 1; }
   if (!st.gender && st.spouse && NPC_BY[st.spouse]) st.gender = NPC_BY[st.spouse].g === 'f' ? 'm' : 'f';
   // 1.5.1: only one soul twin. Saves from 1.4.2 with more keep the first one and get the others' price back.
   const tw = Object.keys(st.twins || {});

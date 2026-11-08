@@ -232,7 +232,8 @@ const IND_ACTIONS = {
   indK: v => {
     const I = ind(), k = (I.k || [])[+v]; if (!k || !indKCan(k)) return;
     k.need.forEach(([id, q]) => indTake(id, q));
-    const g = indKGold(k); addGold(g); // counted as earned, like any other gold I.r.bp = (I.r.bp || 0) + k.bp; I.kd = (I.kd || 0) + 1;
+    const g = indKGold(k); addGold(g); // gold from contracts counts as earned, like any other gold
+    I.r.bp = (I.r.bp || 0) + k.bp; I.kd = (I.kd || 0) + 1;
     I.k[+v] = { at: Date.now() + IND_KWAIT };
     log(L`📜 سلّمت عقد: +${fmt(g)}💰 و+${k.bp} 📐`, 'golden', 'ind');
   },

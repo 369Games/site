@@ -1480,7 +1480,10 @@ function simulate(total, step = 1) {
 
 /* ---------------- الأوامر ---------------- */
 const A = {
-  tab: v => { tab = v; lastSig = ''; if (v === 'guild') S.leg.eggNew = 0; const y = $('wrap').getBoundingClientRect().top + scrollY - $('tabs').offsetHeight - 16; if (scrollY > y) scrollTo(0, Math.max(0, y)); },
+  tab: v => {
+    if (!tabOpen(v)) return toast(L`🔒 «${tabName(v)}» يفتح لما: ${TAB_UNLOCK[v].why}`);
+    if ((S.unl || {})[v] === 2) S.unl[v] = 1;
+    tab = v; lastSig = ''; if (v === 'guild') S.leg.eggNew = 0; const y = $('wrap').getBoundingClientRect().top + scrollY - $('tabs').offsetHeight - 16; if (scrollY > y) scrollTo(0, Math.max(0, y)); },
   seed: v => { S.farm.seed = v; },
   plot: v => {
     const i = +v, p = S.farm.plots[i];
@@ -1590,6 +1593,7 @@ const A = {
     toast(L`⚖️ الطابق ${f} يناسب قوتك`);
   },
   floor: v => { const D = S.dun; const f = clamp(D.floor + (+v), 1, D.max); if (f !== D.floor) { D.floor = f; D.kills = 0; D.enemy = null; } },
+  unlockGo: v => { closeModal(); A.tab(v); },
   titlePick: v => { const T = titleData(); if (T.have[v] || !TITLES.some(t => t.id === v)) return; T.cur = v; lastSig = ''; },
   // Turn a title on next to your name: into a free unicorn slot if there is one, otherwise it replaces the main title.
   titleShow: v => {
@@ -1894,6 +1898,43 @@ const TABS = [
   ['farm', L('🌱 المزرعة')], ['barn', L('🐄 الحظيرة')], ['mine', L('⛏️ المنجم')], ['lake', L('🎣 البحيرة')], ['guild', L('⚔️ النقابة')],
   ['smith', L('🔨 الحداد')], ['market', L('🛒 السوق')], ['village', L('🏘️ القرية')], ['legacy', L('🌳 الإرث')], ['settings', L('⚙️ المزيد')],
 ];
+/* Tabs open step by step in the first generation, so a new player isn't flooded with ten tabs at once.
+   A locked tab shows dimmed with a lock and says what opens it; when it opens, a small window says what it's for.
+   From generation 2 everything is open. Opened tabs are kept in S.unl (1 = seen, 2 = new, still shows ✦). */
+const TAB_UNLOCK = {
+  village: { ok: () => S.stats.earned > 0, why: L('بِع أول محصول في السوق'),
+    what: L('هنا أهل القرية والمباني. وظّف عمال يشتغلون عنك حتى وأنت مسكّر اللعبة، واعطِ أهل القرية هدايا عشان تكسب صداقتهم وبفاتهم.') },
+  barn: { ok: () => (S.bld.harvester || 0) > 0, why: L('وظّف أول عامل حصاد في القرية'),
+    what: L('اشترِ دجاج وأبقار وخرفان تنتج لك بيض وحليب وصوف لحالها. أول دجاجة بـ150 ذهب بس.') },
+  mine: { ok: () => S.stats.earned >= 1000, why: L('اكسب 1,000 ذهب'),
+    what: L('احفر الصخور واجمع النحاس والحديد والمعادن الأغلى. المعادن تبيعها، أو تاخذها للحداد عشان يطوّر أدواتك.') },
+  smith: { ok: () => S.stats.blocks >= 20, why: L('اكسر 20 صخرة في المنجم'),
+    what: L('قاسم الحداد يطوّر أدواتك بالذهب والمعادن: معزقة تسرّع الزرع، فأس يحفر أقوى، وسيف ودرع للقتال.') },
+  guild: { ok: () => TOOLS.some(t => (S.tools[t.id] || 0) > 0), why: L('طوّر أي أداة عند الحداد'),
+    what: L('ادخل الزنزانة وقاتل الوحوش عشان الذهب والمواد والخبرة، وخذ مهام صيد من النقابة عشان ترفع رتبتك.') },
+  legacy: { ok: () => S.stats.earned >= 25000 || canRetire(), why: L('اكسب 25,000 ذهب'),
+    what: L('هنا هدف جيلك. لما توصل له تتقاعد ويكمّل حفيدك المزرعة بنجوم إرث تخليه أقوى من البداية.') },
+  lake: { ok: () => S.leg.gen >= 2, why: L('تفتح في الجيل الثاني'), what: L('اصطد السمك في البحيرة والنهر والبحر، وجمّع ألبوم الصيد.') },
+};
+let UNL_Q = [];
+function tabOpen(id) { return S.leg.gen > 1 || !TAB_UNLOCK[id] || !!(S.unl || {})[id]; }
+function tabName(id) { const t = TABS.find(x => x[0] === id); return t ? t[1].replace(/^\S+\s/, '') : id; }
+function unlSig() { return S.leg.gen > 1 ? 'all' : Object.entries(S.unl || {}).join(); }
+// Checked every frame. The first time a save sees this (S.unl missing), what's already earned opens quietly.
+function checkUnlocks() {
+  if (S.leg.gen > 1) return;
+  const first = !S.unl; if (first) S.unl = {};
+  for (const id in TAB_UNLOCK) {
+    if (S.unl[id] || !TAB_UNLOCK[id].ok()) continue;
+    S.unl[id] = first || !S.started ? 1 : 2;
+    if (!first && S.started) { UNL_Q.push(id); log(L`🎉 فتحت تبويب «${tabName(id)}»!`, 'golden'); }
+  }
+  if (UNL_Q.length && $('modal').classList.contains('hidden')) {
+    const id = UNL_Q.shift(), u = TAB_UNLOCK[id];
+    openModal(L`<div class="unlock-pop"><div class="unlock-ic">${icon(NAV_ART[id], 96)}</div><h2>🎉 فتحت ${tabName(id)}!</h2><p>${u.what}</p>
+      <div class="row"><button class="btn gold" data-a="unlockGo" data-v="${id}" style="flex:1">${L('روح له الحين')}</button><button class="btn ghost" data-a="closeModal">${L('بعدين')}</button></div></div>`);
+  }
+}
 /* Red dots on the tabs: something there is waiting for the player.
    Village: someone can get a gift today (or a royal gift this season). Guild: a delivery you can hand in, or a free
    quest slot with a quest you'd most likely win. Smith: you can afford the next level of a tool. */
@@ -1914,8 +1955,10 @@ function renderTabs() {
   const ready = S.farm.plots.filter(isReady).length;
   const badge = { farm: ready, legacy: canRetire() ? '⭐' : 0 }, al = tabAlerts();
   for (const k in al) if (!badge[k]) badge[k] = 'dot';
-  tabAlertSig = Object.keys(al).join();
-  $('tabs').innerHTML = tabsMarkup(TABS,badge,tab);
+  const locked = {};
+  for (const id in TAB_UNLOCK) { if (!tabOpen(id)) { locked[id] = 1; delete badge[id]; } else if ((S.unl || {})[id] === 2) badge[id] = 'new'; }
+  tabAlertSig = Object.keys(al).join() + unlSig();
+  $('tabs').innerHTML = tabsMarkup(TABS,badge,tab,locked);
 }
 function skillBar(k) {
   return `<div class="skill"><span>${SKILL_N[k]} <b id="sk_${k}_l"></b></span><div class="bar xp"><i id="sk_${k}_b"></i></div><small id="sk_${k}_t"></small></div>`;
@@ -2761,7 +2804,8 @@ function renderHeader() {
   if (cc) visualText(hc, `${icon('challenge-' + cc.id)} ${cc.n}: ${S.gen.chDone ? L('✅ أنجزته') : Math.floor(Math.min(1, chValue(cc) / chGoal(cc)) * 100) + '%'}`);
   renderSky();
   const ready = S.farm.plots.filter((p, i) => isReady(p) && !covers('harvester', i)).length + (canRetire() ? 1000 : 0);
-  if (ready !== lastBadge || Object.keys(tabAlerts()).join() !== tabAlertSig) { lastBadge = ready; renderTabs(); }
+  checkUnlocks();
+  if (ready !== lastBadge || Object.keys(tabAlerts()).join() + unlSig() !== tabAlertSig) { lastBadge = ready; renderTabs(); }
 }
 
 /* ---------------- السماء: الشمس والقمر ---------------- */

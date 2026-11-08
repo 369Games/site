@@ -85,6 +85,6 @@ Object.assign(PX_EMOJI,{'⏹️':'icon-stop','⏸️':'icon-pause','💝':'icon-
 for(const k of ['sun','water'])delete SIMPLE_ICONS[k]; // drawn from the painted icons below instead of the line glyphs
 ART.sun=ART['icon-sunny'];ART.water=ART['icon-water-all'];ART.help=ART['icon-help'];ART.check=ART['icon-check'];
 const NAV_ART={farm:'sprout',barn:'cow',mine:'pick',lake:'rod',guild:'sword',smith:'anvil',market:'chest',village:'village',legacy:'legacy-tree',settings:'gear'};
-function tabsMarkup(list,badges,current){
- return list.map(([id,label])=>`<button data-a="tab" data-v="${id}" class="${current===id?'on':''}" aria-current="${current===id?'page':'false'}"><span class="nav-emblem nav-${id}" aria-hidden="true">${artMarkup(NAV_ART[id],40,'',true)}${badges[id]==='dot'?'<i class="tab-dot"></i>':''}</span><span>${label.replace(/^\S+\s/,'')}</span>${badges[id]&&badges[id]!=='dot'?`<span class="badge">${typeof badges[id]==='number'?badges[id]:'✦'}</span>`:''}</button>`).join('');
+function tabsMarkup(list,badges,current,locked={}){
+ return list.map(([id,label])=>`<button data-a="tab" data-v="${id}" class="${current===id?'on':''}${locked[id]?' locked':''}" aria-current="${current===id?'page':'false'}"><span class="nav-emblem nav-${id}" aria-hidden="true">${artMarkup(NAV_ART[id],40,'',true)}${badges[id]==='dot'?'<i class="tab-dot"></i>':''}${locked[id]?`<i class="tab-lock">${artMarkup('icon-locked',18,'',true)}</i>`:''}</span><span>${label.replace(/^\S+\s/,'')}</span>${badges[id]&&badges[id]!=='dot'?`<span class="badge">${typeof badges[id]==='number'?badges[id]:'✦'}</span>`:''}</button>`).join('');
 }

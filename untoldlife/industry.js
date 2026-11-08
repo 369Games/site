@@ -74,9 +74,12 @@ function indName(id) { return IND_RES[id] ? IND_RES[id].n : (ITEMS[id] || {}).n 
 function indIc(id, n = 24) { return ART['ind-' + id] ? icon('ind-' + id, n) : IND_RES[id] ? `<span class="ind-e">${IND_RES[id].e}</span>` : icon(ITEMS[id], n); }
 
 // --- ticking (both worlds always run, so this is called from tick() whatever tab is open) ---
+// Net change per second of every material (made minus used), smoothed over a few seconds; shown next to the stock.
+const IND_NET = {};
 function tickInd(dt) {
   if (!indOpen()) return;
-  const I = ind(), cap = indCap();
+  const I = ind(), cap = indCap(), before = {};
+  for (const id in IND_RES) before[id] = I.r[id] || 0;
   for (const f of IND_FIELDS) { const v = I.r[f.id] || 0; if (v < cap) I.r[f.id] = Math.min(cap, v + indRate(f.id) * dt); }
   for (const r of IND_RECIPES) {
     const u = indFu(r.id); u.stall = '';
@@ -90,6 +93,13 @@ function tickInd(dt) {
     for (const [id, q] of Object.entries(r.in)) indTake(id, q * k);
     I.r[r.id] = (I.r[r.id] || 0) + k; u.p -= k;
   }
+  if (offline || dt <= 0) return; // the catch-up's big steps would skew it
+  const a = Math.min(1, dt / 3);
+  for (const id in IND_RES) IND_NET[id] = (IND_NET[id] || 0) * (1 - a) + ((I.r[id] || 0) - before[id]) / dt * a;
+}
+function indNetTxt(id) {
+  const v = IND_NET[id] || 0, z = Math.abs(v) < 0.005;
+  return { t: z ? '±0' : (v > 0 ? '+' : '−') + indNum(Math.abs(v)), c: z ? 'z' : v > 0 ? 'up' : 'down' };
 }
 // Something in the factory needs a look: a field or a furnace is full, or a furnace is out of inputs.
 function indAlert() {
@@ -149,7 +159,7 @@ function indReqs(gold, mats) {
 }
 function indStock() {
   const cap = indCap();
-  return `<div class="ind-stock">${Object.keys(IND_RES).map(id => `<span class="ind-chip">${indIc(id, 20)} <b data-ir="${id}">${fmt(Math.floor(ind().r[id] || 0))}</b></span>`).join('')}<span class="ind-chip ghost">${L`📦 السعة ${fmt(cap)}`}</span></div>`;
+  return `<div class="ind-stock">${Object.keys(IND_RES).map(id => `<span class="ind-chip">${indIc(id, 20)} <b data-ir="${id}">${fmt(Math.floor(ind().r[id] || 0))}</b><small class="ind-net" data-inet="${id}"></small></span>`).join('')}<span class="ind-chip ghost">${L`📦 السعة ${fmt(cap)}`}</span><span class="ind-chip ghost">${L('📈 الرقم الملوّن: الصافي بالثانية بعد اللي تاكله المراجل')}</span></div>`;
 }
 function viewFields() {
   const I = ind(), n = indWorkers(), used = indUsed();
@@ -202,7 +212,10 @@ function viewCity() {
   return h + '</div></div>';
 }
 // Numbers that change every frame are written in place; the page itself only redraws when the signature changes.
-function updInd() { document.querySelectorAll('[data-ir]').forEach(el => { el.textContent = fmt(Math.floor(ind().r[el.dataset.ir] || 0)); }); }
+function updInd() {
+  document.querySelectorAll('[data-ir]').forEach(el => { el.textContent = fmt(Math.floor(ind().r[el.dataset.ir] || 0)); });
+  document.querySelectorAll('[data-inet]').forEach(el => { const n = indNetTxt(el.dataset.inet); el.textContent = n.t; el.className = 'ind-net ' + n.c; });
+}
 function indSig() {
   const I = ind(); if (!I) return [];
   const pay = (g, m) => indCanPay(g, m);

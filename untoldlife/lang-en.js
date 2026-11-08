@@ -1141,6 +1141,7 @@
 "⚙️ فتحت عصر الصناعة! عالم جديد تبنيه من الصفر، ويرخّص عمال القرية. القرية تكمل شغلها وأنت هناك.": "⚙️ You opened the Industrial Age! A new world you build from nothing, and it makes village workers cheaper. The village keeps working while you're there.",
 "{0} {1} صارت مستوى {2}: {3} في القرية أرخص {4}%": "{0} {1} reached level {2}: {3} in the village are {4}% cheaper",
 "📦 السعة {0}": "📦 Capacity {0}",
+"📈 الرقم الملوّن: الصافي بالثانية بعد اللي تاكله المراجل": "📈 Coloured number: net per second after what the furnaces use",
 "👷 وظّف عامل ({0}💰)": "👷 Hire a worker ({0}💰)",
 "<div class=\"panel\"><div class=\"ph\"><h2>⛰️ الحقول</h2><span class=\"stat\">👷 {0} / {1} عامل</span></div>\n    <p class=\"hint\">العمال يجمعون الخام لحالهم. وزّعهم على الحقول حسب اللي تحتاجه، وغيّر التوزيع متى ما تبي ببلاش.</p>\n    <div class=\"row\">{2}<button class=\"btn ghost\" data-a=\"indEven\">⚖️ وزّع بالتساوي</button></div>": "<div class=\"panel\"><div class=\"ph\"><h2>⛰️ Fields</h2><span class=\"stat\">👷 {0} / {1} workers</span></div>\n    <p class=\"hint\">Workers gather raw materials by themselves. Spread them over the fields as you need, and move them for free any time.</p>\n    <div class=\"row\">{2}<button class=\"btn ghost\" data-a=\"indEven\">⚖️ Spread evenly</button></div>",
 "المستوى {0} من {1}": "Level {0} of {1}",

@@ -10,7 +10,12 @@ const IND_RES = {
   clay: { n: L('طين'), e: '🟤' }, stone: { n: L('حجر'), e: '🪨' }, wood: { n: L('خشب'), e: '🪵' },
   coal: { n: L('فحم'), e: '⚫' }, brick: { n: L('طوب'), e: '🧱' }, block: { n: L('حجر مصقول'), e: '🧊' },
   cu: { n: L('سبيكة نحاس'), e: '🟠' }, fe: { n: L('سبيكة حديد'), e: '🔗' }, ag: { n: L('سبيكة فضة'), e: '💿' },
+  // Workshop products (phase 2) and the blueprints contracts pay with.
+  plank: { n: L('ألواح خشب'), e: '📏' }, nails: { n: L('مسامير'), e: '📌' }, gear: { n: L('ترس'), e: '⚙️' },
+  pipe: { n: L('أنبوب'), e: '🚰' }, machine: { n: L('آلة'), e: '🛠️' }, bp: { n: L('مخطط'), e: '📐' },
 };
+// The raw and furnace materials, shown on the fields, furnaces and city pages.
+const IND_BASE = ['clay', 'stone', 'wood', 'coal', 'brick', 'block', 'cu', 'fe', 'ag'];
 const IND_FIELDS = [
   { id: 'clay', n: L('حفرة الطين') }, { id: 'stone', n: L('جبل الحجر') }, { id: 'wood', n: L('الغابة') },
 ];
@@ -23,6 +28,29 @@ const IND_RECIPES = [
   { id: 'fe', in: { iron: 3, coal: 2 }, t: 8, c: 6e8 },
   { id: 'ag', in: { silver: 3, coal: 2 }, t: 10, c: 1.2e9 },
 ];
+// Workshop benches: the same mechanics as furnaces (their own count, pause, warehouse cap), making products.
+const IND_PROD = [
+  { id: 'plank', in: { wood: 4 }, t: 3, c: 1e8 },
+  { id: 'nails', in: { fe: 1, coal: 1 }, t: 4, c: 3e8 },
+  { id: 'gear', in: { fe: 2, cu: 1 }, t: 8, c: 6e8 },
+  { id: 'pipe', in: { cu: 2, brick: 2 }, t: 8, c: 6e8 },
+  { id: 'machine', in: { gear: 3, pipe: 2, plank: 6, nails: 8 }, t: 30, c: 2e9 },
+];
+const IND_MAKERS = [...IND_RECIPES, ...IND_PROD];
+// Contracts: three at a time, each asks for one or two things you already make. Base amount per material, and the gold
+// a unit is worth (the reward is 1.5× that). Amounts grow 12% per finished contract and never pass 90% of the warehouse.
+const IND_KQ = { clay: 400, stone: 400, wood: 400, coal: 200, brick: 200, block: 200, cu: 60, fe: 50, ag: 40, plank: 80, nails: 40, gear: 15, pipe: 15, machine: 3 };
+const IND_VAL = { clay: 1e5, stone: 1e5, wood: 1e5, coal: 3e5, brick: 5e5, block: 5e5, cu: 2e6, fe: 4e6, ag: 8e6, plank: 6e5, nails: 6e6, gear: 2e7, pipe: 1.2e7, machine: 3e8 };
+const IND_KN = 3, IND_KSKIP = 5 * 60 * 1000;
+// Engineer: permanent factory upgrades bought with blueprints and products (10 levels each).
+const IND_ENG = [
+  { id: 'furn', e: '⚡', n: L('مراجل أسرع'), d: L('+15% سرعة لكل مستوى لكل المراجل') },
+  { id: 'field', e: '⛏️', n: L('حقول أغزر'), d: L('+15% إنتاج لكل مستوى لكل الحقول') },
+  { id: 'bench', e: '🔧', n: L('ورشة أسرع'), d: L('+15% سرعة لكل مستوى لكل طاولات الورشة') },
+  { id: 'crew', e: '🏠', n: L('سكن العمال'), d: L('+10 عمال لكل مستوى في الحد الأقصى') },
+  { id: 'deal', e: '🤝', n: L('تاجر العقود'), d: L('+10% ذهب من العقود لكل مستوى') },
+];
+const IND_ENG_BP = [1, 2, 3, 4, 6, 8, 10, 13, 16, 20];
 // City: rails (village miners) and boat (village fishers). Level L: gold 5e8 × 2^(L-1) plus these materials.
 // Each level asks more than the warehouse holds at the start (1,000, doubling per level), so the warehouse paces the climb:
 // level 2 needs warehouse 1, 3 → 2, 4–5 → 3, 6 → 4, 7–8 → 5, 9–10 → 6.
@@ -36,10 +64,10 @@ const IND_BLD = [
   { id: 'boat', n: L('القارب'), e: '⛵', who: L('الصيادين') },
 ];
 const IND_MAXLV = 10, IND_WMAX = 50, IND_FMAX = 20, VILLAGE_WMAX = 200;
-const IND_TABS = [['fields', L('⛰️ الحقول')], ['furn', L('🏭 المراجل')], ['city', L('🏙️ المدينة')], ['settings', L('⚙️ المزيد')]];
+const IND_TABS = [['fields', L('⛰️ الحقول')], ['furn', L('🏭 المراجل')], ['ws', L('🔧 الورشة')], ['city', L('🏙️ المدينة')], ['settings', L('⚙️ المزيد')]];
 // Tab emblems: the painted ones once art/industry is in, stand-ins until then.
 const indArt = (k, alt) => ART['ind-tab-' + k] ? 'ind-tab-' + k : alt;
-Object.assign(NAV_ART, { fields: indArt('fields', 'rock'), furn: indArt('furn', 'anvil'), city: indArt('city', 'icon-map') });
+Object.assign(NAV_ART, { fields: indArt('fields', 'rock'), furn: indArt('furn', 'anvil'), ws: indArt('ws', 'icon-auto-forge'), city: indArt('city', 'icon-map') });
 
 function newInd() {
   return { hired: 0, f: { clay: { w: 0, l: 0 }, stone: { w: 0, l: 0 }, wood: { w: 1, l: 0 } }, r: {}, fu: {}, b: { rails: 0, boat: 0, store: 0 } };
@@ -58,7 +86,15 @@ function indGrowth(b) { return 1.45 - 0.033 * indLv(b); }
 function indWorkers() { return 1 + ind().hired; }
 function indUsed() { const f = ind().f; return IND_FIELDS.reduce((a, x) => a + f[x.id].w, 0); }
 function indCap() { return 1000 * Math.pow(2, ind().b.store || 0); }
-function indRate(id) { const x = ind().f[id]; return x.w * 0.5 * (1 + 0.5 * x.l); }
+function indRate(id) { const x = ind().f[id]; return x.w * 0.5 * (1 + 0.5 * x.l) * (1 + 0.15 * indEng('field')); }
+function indEng(id) { const e = ind().e; return e ? e[id] || 0 : 0; }
+function indWMax() { return IND_WMAX + 10 * indEng('crew'); }
+// Furnaces and benches speed up with their engineer upgrade.
+function indSpeed(r) { return 1 + 0.15 * indEng(IND_PROD.includes(r) ? 'bench' : 'furn'); }
+function indEngCost(l) {
+  const mats = l < 3 ? [['plank', 50 * (l + 1)], ['nails', 20 * (l + 1)]] : l < 6 ? [['gear', 10 * (l - 2)], ['pipe', 10 * (l - 2)]] : [['machine', 2 * (l - 5)]];
+  return { gold: 0, mats: [['bp', IND_ENG_BP[l]], ...mats] };
+}
 function indHireCost() { return Math.round(5e7 * Math.pow(1.3, ind().hired)); }
 function indFieldCost(l) { return { gold: Math.round(2e8 * Math.pow(2.5, l)), qty: Math.round(200 * Math.pow(2, l)) }; }
 function indFurnCost(r) { return Math.round(r.c * Math.pow(1.6, indFu(r.id).n)); }
@@ -83,11 +119,11 @@ function tickInd(dt) {
   const I = ind(), cap = indCap(), before = {};
   for (const id in IND_RES) before[id] = I.r[id] || 0;
   for (const f of IND_FIELDS) { const v = I.r[f.id] || 0; if (v < cap) I.r[f.id] = Math.min(cap, v + indRate(f.id) * dt); }
-  for (const r of IND_RECIPES) {
+  for (const r of IND_MAKERS) {
     const u = indFu(r.id); u.stall = '';
     if (!u.n || !u.on) { u.p = 0; continue; }
     if ((I.r[r.id] || 0) >= cap) { u.stall = 'full'; u.p = 0; continue; }
-    u.p += dt * u.n / r.t;
+    u.p += dt * u.n * indSpeed(r) / r.t;
     let k = Math.floor(u.p); if (!k) continue;
     for (const [id, q] of Object.entries(r.in)) k = Math.min(k, Math.floor(indHave(id) / q));
     k = Math.min(k, Math.floor(cap - (I.r[r.id] || 0)));
@@ -95,6 +131,7 @@ function tickInd(dt) {
     for (const [id, q] of Object.entries(r.in)) indTake(id, q * k);
     I.r[r.id] = (I.r[r.id] || 0) + k; u.p -= k;
   }
+  indKFill();
   if (offline || dt <= 0) return; // the catch-up's big steps would skew it
   const a = Math.min(1, dt / 3);
   for (const id in IND_RES) IND_NET[id] = (IND_NET[id] || 0) * (1 - a) + ((I.r[id] || 0) - before[id]) / dt * a;
@@ -107,8 +144,24 @@ function indNetTxt(id) {
 function indAlert() {
   if (!indOpen()) return false;
   const cap = indCap();
-  return IND_FIELDS.some(f => ind().f[f.id].w && (ind().r[f.id] || 0) >= cap) || IND_RECIPES.some(r => indFu(r.id).stall);
+  return IND_FIELDS.some(f => ind().f[f.id].w && (ind().r[f.id] || 0) >= cap) || IND_MAKERS.some(r => indFu(r.id).stall) || indKReady();
 }
+
+// --- contracts ---
+// Things you can already make: the three fields, plus every furnace or bench you own.
+function indPool() { return [...IND_FIELDS.map(f => f.id), ...IND_MAKERS.filter(r => indFu(r.id).n).map(r => r.id)]; }
+function indNewK(skipAt = 0) {
+  const t = ind().kd || 0, pool = indPool(), n = t >= 3 && pool.length > 1 ? 2 : 1, max = Math.floor(indCap() * 0.9), need = [];
+  // The newest things you make turn up a bit more often than raw materials.
+  const pick = () => pool[Math.min(pool.length - 1, Math.floor(Math.pow(Math.random(), 0.7) * pool.length))];
+  while (need.length < n) { const id = pick(); if (!need.some(x => x[0] === id)) need.push([id, Math.max(1, Math.min(max, Math.round(IND_KQ[id] * (1 + 0.12 * t))))]); }
+  const v = need.reduce((a, [id, q]) => a + q * IND_VAL[id], 0), prod = need.some(([id]) => IND_PROD.some(p => p.id === id));
+  return { need, g: Math.round(v * 1.5), bp: n + (prod ? 1 : 0) + Math.floor(t / 10), at: skipAt };
+}
+function indKFill() { const I = ind(); if (!I.k) I.k = []; while (I.k.length < IND_KN) I.k.push(indNewK()); }
+function indKGold(k) { return Math.round(k.g * (1 + 0.1 * indEng('deal'))); }
+function indKCan(k) { return k.need.every(([id, q]) => indHave(id) >= q); }
+function indKReady() { return (ind().k || []).some(indKCan); }
 // The village needs you: the same dots as its tabs, or retirement is ready.
 function villageAlert() { return Object.keys(tabAlerts()).length > 0 || canRetire(); }
 
@@ -125,7 +178,7 @@ const IND_ACTIONS = {
     S.world = v === 'ind' ? 'ind' : 'village'; tab = S.world === 'ind' ? 'fields' : 'farm'; lastSig = ''; renderTabs(); scrollTo(0, 0);
   },
   // A new worker goes straight to the field with the fewest workers; move them any time.
-  indHire: () => { const c = indHireCost(); if (ind().hired + 1 >= IND_WMAX || S.gold < c) return; S.gold -= c; ind().hired++; const f = ind().f; IND_FIELDS.map(x => f[x.id]).sort((a, b) => a.w - b.w)[0].w++; },
+  indHire: () => { const c = indHireCost(); if (ind().hired + 1 >= indWMax() || S.gold < c) return; S.gold -= c; ind().hired++; const f = ind().f; IND_FIELDS.map(x => f[x.id]).sort((a, b) => a.w - b.w)[0].w++; },
   indW: v => {
     const [id, d] = v.split(':'), f = ind().f[id]; if (!f) return;
     if (+d > 0 && indUsed() < indWorkers()) f.w++; else if (+d < 0 && f.w > 0) f.w--;
@@ -137,7 +190,7 @@ const IND_ACTIONS = {
     indPay(c.gold, mats); f.l++;
   },
   indFurn: v => {
-    const r = IND_RECIPES.find(x => x.id === v); if (!r) return; const u = indFu(v), c = indFurnCost(r);
+    const r = IND_MAKERS.find(x => x.id === v); if (!r) return; const u = indFu(v), c = indFurnCost(r);
     if (u.n >= IND_FMAX || S.gold < c) return; S.gold -= c; u.n++;
   },
   indFurnOn: v => { const u = indFu(v); u.on = u.on ? 0 : 1; },
@@ -152,6 +205,26 @@ const IND_ACTIONS = {
     const B = ind().b, l = B.store || 0; if (l >= IND_MAXLV) return;
     const c = indStoreCost(l); if (!indCanPay(c.gold, c.mats)) return; indPay(c.gold, c.mats); B.store = l + 1;
   },
+  // Deliver a contract: the materials go, gold and blueprints come, and a new contract takes its place.
+  indK: v => {
+    const I = ind(), k = (I.k || [])[+v]; if (!k || !indKCan(k)) return;
+    k.need.forEach(([id, q]) => indTake(id, q));
+    const g = indKGold(k); S.gold += g; I.r.bp = (I.r.bp || 0) + k.bp; I.kd = (I.kd || 0) + 1;
+    I.k[+v] = indNewK();
+    log(L`📜 سلّمت عقد: +${fmt(g)}💰 و+${k.bp} 📐`, 'golden');
+  },
+  // Swap a contract you don't want for a new one (each slot once every 5 minutes).
+  indKSkip: v => {
+    const I = ind(), k = (I.k || [])[+v]; if (!k || Date.now() < k.at) return;
+    I.k[+v] = indNewK(Date.now() + IND_KSKIP);
+  },
+  indEng: v => {
+    const g = IND_ENG.find(x => x.id === v); if (!g) return;
+    const I = ind(), l = indEng(v); if (l >= IND_MAXLV) return;
+    const c = indEngCost(l); if (!indCanPay(0, c.mats)) return;
+    indPay(0, c.mats); I.e = I.e || {}; I.e[v] = l + 1;
+    log(L`👷 المهندس طوّر ${g.e} ${g.n} لمستوى ${l + 1}`, 'golden');
+  },
 };
 
 // --- views ---
@@ -159,17 +232,17 @@ const IND_ACTIONS = {
 function indTooBig(mats) { const big = Math.max(...mats.map(m => m[1])); return big > indCap() ? `<p class="bad">${L`📦 تحتاج مخزن أكبر: السعة ${fmt(indCap())} وهذا يحتاج ${fmt(big)}`}</p>` : ''; }
 function indReqs(gold, mats) {
   const row = (id, need, got) => `<li class="${got >= need ? 'ok' : 'no'}"><span class="ri">${id === 'gold' ? '💰' : indIc(id, 22)}</span><span class="rn">${id === 'gold' ? L('ذهب') : indName(id)}</span><span class="rq"><b>${fmt(got)}</b> / ${fmt(need)}</span><span class="rs">${got >= need ? '✔' : L`ينقصك ${fmt(need - got)}`}</span></li>`;
-  return `<ul class="reqs">${row('gold', gold, S.gold)}${(mats || []).map(([id, q]) => row(id, q, indHave(id))).join('')}</ul>`;
+  return `<ul class="reqs">${gold ? row('gold', gold, S.gold) : ''}${(mats || []).map(([id, q]) => row(id, q, indHave(id))).join('')}</ul>`;
 }
-function indStock() {
+function indStock(ids = IND_BASE) {
   const cap = indCap();
-  return `<div class="ind-stock">${Object.keys(IND_RES).map(id => `<span class="ind-chip">${indIc(id, 20)} <b data-ir="${id}">${fmt(Math.floor(ind().r[id] || 0))}</b><small class="ind-net" data-inet="${id}"></small></span>`).join('')}<span class="ind-chip ghost">${L`📦 السعة ${fmt(cap)}`}</span><span class="ind-chip ghost">${L('📈 الرقم الملوّن: الصافي بالثانية بعد اللي تاكله المراجل')}</span></div>`;
+  return `<div class="ind-stock">${ids.map(id => `<span class="ind-chip">${indIc(id, 20)} <b data-ir="${id}">${fmt(Math.floor(ind().r[id] || 0))}</b><small class="ind-net" data-inet="${id}"></small></span>`).join('')}<span class="ind-chip ghost">${L`📦 السعة ${fmt(cap)}`}</span><span class="ind-chip ghost">${L('📈 الرقم الملوّن: الصافي بالثانية بعد اللي تاكله المراجل')}</span></div>`;
 }
 function viewFields() {
   const I = ind(), n = indWorkers(), used = indUsed();
   let h = L`<div class="panel"><div class="ph"><h2>⛰️ الحقول</h2><span class="stat">👷 ${used} / ${n} عامل</span></div>
     <p class="hint">العمال يجمعون الخام لحالهم. وزّعهم على الحقول حسب اللي تحتاجه، وغيّر التوزيع متى ما تبي ببلاش.</p>
-    <div class="row">${costBtn('indHire', '', indHireCost(), L`👷 وظّف عامل (${fmt(indHireCost())}💰)`, 'gold', I.hired + 1 >= IND_WMAX)}<button class="btn ghost" data-a="indEven">⚖️ وزّع بالتساوي</button></div>`;
+    <div class="row">${costBtn('indHire', '', indHireCost(), L`👷 وظّف عامل (${fmt(indHireCost())}💰)`, 'gold', I.hired + 1 >= indWMax())}<button class="btn ghost" data-a="indEven">⚖️ وزّع بالتساوي</button></div>`;
   h += indStock() + '<div class="grid ind-grid">';
   for (const f of IND_FIELDS) {
     const x = I.f[f.id], c = indFieldCost(x.l), full = (I.r[f.id] || 0) >= indCap();
@@ -185,16 +258,42 @@ function viewFields() {
 function viewFurn() {
   let h = L`<div class="panel"><div class="ph"><h2>🏭 المراجل</h2></div>
     <p class="hint">المراجل تحوّل الخام لمواد صناعة. كل فرن يشتغل لحاله ما دام عنده مواد. النحاس والحديد والفضة تنسحب من مخزون القرية مباشرة، والفحم وقود أغلب الوصفات.</p>`;
-  h += indStock() + '<div class="grid ind-grid">';
-  for (const r of IND_RECIPES) {
-    const u = indFu(r.id), c = indFurnCost(r);
-    const ins = Object.entries(r.in).map(([id, q]) => `${q} ${indIc(id, 22)}`).join(' + ');
-    const st = !u.n ? '' : !u.on ? `<p class="hint">${L('⏸️ موقف')}</p>` : u.stall === 'in' ? `<p class="bad">${L('⚠️ واقف: المواد ما تكفي')}</p>` : u.stall === 'full' ? `<p class="bad">${L('📦 المخزن مليان')}</p>` : `<p class="good">${L('⚒️ شغّال')}</p>`;
-    h += `<div class="card ind-card"><div class="top"><span class="big">${indIc(r.id, 48)}</span><div class="meta"><b>${indName(r.id)}</b><small>${L`${u.n} فرن`}</small></div></div>
-      <div class="kv ind-recipe"><span>${ins}</span><span>→ 1 ${indIc(r.id, 22)}</span></div>
-      <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(u.n / r.t)} بالثانية`}</span></div>
-      <div class="kv"><span>${L('عندك')}</span><span><b data-ir="${r.id}">${fmt(Math.floor(ind().r[r.id] || 0))}</b></span></div>${st}
-      <div class="row">${costBtn('indFurn', r.id, c, L`➕ فرن (${fmt(c)}💰)`, 'gold', u.n >= IND_FMAX)}${u.n ? `<button class="btn ghost sm" data-a="indFurnOn" data-v="${r.id}">${u.on ? L('⏸️ وقّف') : L('▶️ شغّل')}</button>` : ''}</div></div>`;
+  h += indStock() + '<div class="grid ind-grid">' + IND_RECIPES.map(r => indMakerCard(r, false)).join('');
+  return h + '</div></div>';
+}
+// One furnace or workbench card: recipe, output per second, stock, state, and buy/pause.
+function indMakerCard(r, bench) {
+  const u = indFu(r.id), c = indFurnCost(r);
+  const ins = Object.entries(r.in).map(([id, q]) => `${q} ${indIc(id, 22)}`).join(' + ');
+  const st = !u.n ? '' : !u.on ? `<p class="hint">${L('⏸️ موقف')}</p>` : u.stall === 'in' ? `<p class="bad">${L('⚠️ واقف: المواد ما تكفي')}</p>` : u.stall === 'full' ? `<p class="bad">${L('📦 المخزن مليان')}</p>` : `<p class="good">${L('⚒️ شغّال')}</p>`;
+  return `<div class="card ind-card"><div class="top"><span class="big">${indIc(r.id, 48)}</span><div class="meta"><b>${indName(r.id)}</b><small>${bench ? L`${u.n} طاولة` : L`${u.n} فرن`}</small></div></div>
+    <div class="kv ind-recipe"><span>${ins}</span><span>→ 1 ${indIc(r.id, 22)}</span></div>
+    <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(u.n * indSpeed(r) / r.t)} بالثانية`}</span></div>
+    <div class="kv"><span>${L('عندك')}</span><span><b data-ir="${r.id}">${fmt(Math.floor(ind().r[r.id] || 0))}</b></span></div>${st}
+    <div class="row">${costBtn('indFurn', r.id, c, bench ? L`➕ طاولة (${fmt(c)}💰)` : L`➕ فرن (${fmt(c)}💰)`, 'gold', u.n >= IND_FMAX)}${u.n ? `<button class="btn ghost sm" data-a="indFurnOn" data-v="${r.id}">${u.on ? L('⏸️ وقّف') : L('▶️ شغّل')}</button>` : ''}</div></div>`;
+}
+// The workshop: products on benches, contracts, and the engineer, on one page.
+function viewWs() {
+  const I = ind(), now = Date.now();
+  let h = L`<div class="panel"><div class="ph"><h2>🔧 الورشة</h2><span class="stat">📐 ${fmt(I.r.bp || 0)} مخطط</span></div>
+    <p class="hint">طاولات الورشة تحوّل الطوب والسبايك لمنتجات. المنتجات تسلّمها في العقود، والمهندس يحتاجها مع المخططات عشان يطوّر المصنع.</p>`;
+  h += indStock([...IND_BASE, ...IND_PROD.map(p => p.id), 'bp']) + '<div class="grid ind-grid">' + IND_PROD.map(r => indMakerCard(r, true)).join('') + '</div></div>';
+  h += L`<div class="panel"><div class="ph"><h2>📜 العقود</h2><span class="stat">✅ ${fmt(I.kd || 0)} عقد</span></div>
+    <p class="hint">التجار يطلبون أشياء تسويها. سلّمها وخذ ذهب ومخططات 📐. كل عقد تسلّمه يكبّر الطلبات اللي بعده ومكافآتها. عقد ما يناسبك؟ بدّله (مرة كل 5 دقايق لكل خانة).</p><div class="grid ind-grid">`;
+  (I.k || []).forEach((k, i) => {
+    const wait = Math.max(0, k.at - now);
+    h += `<div class="card ind-card ind-k ${indKCan(k) ? 'lgcard g' : ''}"><div class="top"><span class="big"><span class="ind-e big">📜</span></span><div class="meta"><b>${L`عقد ${i + 1}`}</b><small>${L`المكافأة: ${fmt(indKGold(k))}💰 + ${k.bp} 📐`}</small></div></div>
+      ${indReqs(0, k.need)}
+      <div class="row"><button class="btn gold" data-a="indK" data-v="${i}" ${indKCan(k) ? '' : 'disabled'}>${L('📦 سلّم')}</button><button class="btn ghost sm" data-a="indKSkip" data-v="${i}" ${wait ? 'disabled' : ''}>${wait ? L`🔄 بعد ${Math.ceil(wait / 60000)} د` : L('🔄 بدّل')}</button></div></div>`;
+  });
+  h += '</div></div>';
+  h += L`<div class="panel"><div class="ph"><h2>👷 المهندس</h2></div>
+    <p class="hint">المهندس يطوّر المصنع للأبد بالمخططات والمنتجات. أول المستويات تحتاج ألواح ومسامير، بعدها تروس وأنابيب، وآخرها آلات.</p><div class="grid ind-grid">`;
+  for (const g of IND_ENG) {
+    const l = indEng(g.id), c = l < IND_MAXLV ? indEngCost(l) : null;
+    h += `<div class="card ind-card ${l ? 'lgcard g' : ''}"><div class="top"><span class="big"><span class="ind-e big">${g.e}</span></span><div class="meta"><b>${g.n}</b><small>${L`المستوى ${l} من ${IND_MAXLV}`}</small></div></div>
+      <p class="hint">${g.d}</p>
+      ${c ? `${indReqs(0, c.mats)}${indTooBig(c.mats.filter(m => m[0] !== 'bp'))}<div class="row"><button class="btn gold" data-a="indEng" data-v="${g.id}" ${indCanPay(0, c.mats) ? '' : 'disabled'}>${L('⬆️ طوّر')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
   }
   return h + '</div></div>';
 }
@@ -223,7 +322,7 @@ function updInd() {
 function indSig() {
   const I = ind(); if (!I) return [];
   const pay = (g, m) => indCanPay(g, m);
-  return [I.hired, I.f, I.b, IND_RECIPES.map(r => { const u = indFu(r.id); return [u.n, u.on, u.stall]; }), IND_FIELDS.map(f => (I.r[f.id] || 0) >= indCap()),
+  return [I.hired, I.f, I.b, I.e, IND_MAKERS.map(r => { const u = indFu(r.id); return [u.n, u.on, u.stall]; }), IND_FIELDS.map(f => (I.r[f.id] || 0) >= indCap()),
     IND_FIELDS.map(f => { const c = indFieldCost(I.f[f.id].l); return pay(c.gold, [[f.id, c.qty]]); }),
     IND_BLD.map(b => (I.b[b.id] || 0) < IND_MAXLV && pay(indBldCost(I.b[b.id] || 0).gold, indBldCost(I.b[b.id] || 0).mats)),
     (I.b.store || 0) < IND_MAXLV && pay(indStoreCost(I.b.store || 0).gold, indStoreCost(I.b.store || 0).mats)];
@@ -232,6 +331,11 @@ const IND_VIEWS = {
   fields: [viewFields, updInd, indSig],
   furn: [viewFurn, updInd, indSig],
   city: [viewCity, updInd, indSig],
+  ws: [viewWs, updInd, () => {
+    const I = ind(), now = Date.now();
+    return [indSig(), I.kd, (I.k || []).map(k => [k.g, indKCan(k), Math.ceil(Math.max(0, k.at - now) / 60000)]),
+      IND_ENG.map(g => indEng(g.id) < IND_MAXLV && indCanPay(0, indEngCost(indEng(g.id)).mats)), Math.floor(I.r.bp || 0)];
+  }],
 };
 
 // The teaser / unlock card at the top of the legacy tab (from generation 7).

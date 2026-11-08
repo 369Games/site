@@ -573,6 +573,7 @@ function newState() {
     lake: { prog: 0, fishers: 0, last: null, spot: 'lake', bait: 0, autoBait: false },
     hero: { lvl: 1, xp: 0, hp: 60, xc: 1 },
     af: null, // auto-forge job { t, goal, n }
+    world: 'village', // which world's tabs are showing (industry.js)
     wk: null, // the weekly challenge and village goal (weekly.js)
     wv: 1,
     dun: { active: false, floor: 1, max: 1, kills: 0, enemy: null, auto: true, autoEat: true, resting: false, ht: 0, et: 0, retry: 0, eatCd: 0 },
@@ -898,7 +899,8 @@ function tickRanch(dt) {
 /* ---------------- المنجم ---------------- */
 function mineMult() { return speedMult('mine'); }
 function hardness() { const d = S.mine.depth; return 4 + d * 0.8 + d * d * 0.01; }
-function minerCost() { return Math.round(250 * Math.pow(1.45, S.mine.miners)); }
+// Rails in the Industrial Age cut the price and its growth (×1.45 → ×1.12), so 200 miners are reachable.
+function minerCost() { return Math.round(250 * Math.pow(indGrowth('rails'), S.mine.miners) * (1 - indDisc('rails'))); }
 function minerRate() { return S.mine.miners * 0.4 * mineMult(); }
 function oresAt(d) { return ORES.filter(o => o.depth <= d); }
 function dig(amount) {
@@ -1233,13 +1235,14 @@ function tick(dt) {
   tickGuild(dt);
   tickPets(dt);
   tickForge(dt);
+  tickInd(dt);
   checkChallenge();
 }
 
 /* ---------------- البحيرة ---------------- */
 function fishPower() { return speedMult('fish'); }
 function biteNeed() { return 6 + S.skills.fish.l * 0.5; }
-function fisherCost() { return Math.round(400 * Math.pow(1.45, S.lake.fishers)); }
+function fisherCost() { return Math.round(400 * Math.pow(indGrowth('boat'), S.lake.fishers) * (1 - indDisc('boat'))); }
 function fisherRate() { return S.lake.fishers * 0.35 * fishPower(); }
 function fish(amount) {
   S.lake.prog += amount;
@@ -1549,8 +1552,8 @@ const A = {
   spot: v => { const s = SPOTS.find(x => x.id === v); if (s && S.skills.fish.l >= s.lvl) { S.lake.spot = v; S.lake.prog = 0; } },
   bait: v => { if (makeBait(v)) log(L`🪱 جهّزت طُعم من ${ITEMS[v].e} ${ITEMS[v].n}: +${BAIT_USES} صيدة`); },
   autoBait: () => { S.lake.autoBait = !S.lake.autoBait; },
-  hireFisher: () => { if (inCh('noworkers')) return toast(L('🚫 ممنوع في تحدي بدون عمال')); const c = fisherCost(); if (S.gold < c) return; S.gold -= c; S.lake.fishers++; log(L`🎣 وظّفت صياداً (${S.lake.fishers})`); },
-  hireMiner: () => { if (inCh('noworkers')) return toast(L('🚫 ممنوع في تحدي بدون عمال')); const c = minerCost(); if (S.gold < c) return; S.gold -= c; S.mine.miners++; log(L`👷 وظّفت عامل منجم (${S.mine.miners})`); },
+  hireFisher: () => { if (inCh('noworkers')) return toast(L('🚫 ممنوع في تحدي بدون عمال')); const c = fisherCost(); if (S.gold < c || S.lake.fishers >= VILLAGE_WMAX) return; S.gold -= c; S.lake.fishers++; log(L`🎣 وظّفت صياداً (${S.lake.fishers})`); },
+  hireMiner: () => { if (inCh('noworkers')) return toast(L('🚫 ممنوع في تحدي بدون عمال')); const c = minerCost(); if (S.gold < c || S.mine.miners >= VILLAGE_WMAX) return; S.gold -= c; S.mine.miners++; log(L`👷 وظّفت عامل منجم (${S.mine.miners})`); },
   mineUp: () => { if (S.mine.depth > 1) { S.mine.depth--; S.mine.prog = 0; } },
   mineDown: () => { if (S.mine.depth < S.mine.max) { S.mine.depth++; S.mine.prog = 0; } },
   mineDeep: () => { S.mine.depth = S.mine.max; S.mine.prog = 0; },
@@ -1919,6 +1922,7 @@ const TAB_UNLOCK = {
 let UNL_Q = [];
 function tabOpen(id) { return S.leg.gen > 1 || !TAB_UNLOCK[id] || !!(S.unl || {})[id]; }
 function tabName(id) { const t = TABS.find(x => x[0] === id); return t ? t[1].replace(/^\S+\s/, '') : id; }
+function worldSig() { return indOpen() ? S.world + (inInd() ? villageAlert() : indAlert()) : ''; }
 function unlSig() { return S.leg.gen > 1 ? 'all' : Object.entries(S.unl || {}).join(); }
 // Checked every frame. The first time a save sees this (S.unl missing), what's already earned opens quietly.
 function checkUnlocks() {
@@ -1957,8 +1961,12 @@ function renderTabs() {
   for (const k in al) if (!badge[k]) badge[k] = 'dot';
   const locked = {};
   for (const id in TAB_UNLOCK) { if (!tabOpen(id)) { locked[id] = 1; delete badge[id]; } else if ((S.unl || {})[id] === 2) badge[id] = 'new'; }
-  tabAlertSig = Object.keys(al).join() + unlSig();
-  $('tabs').innerHTML = tabsMarkup(TABS,badge,tab,locked);
+  tabAlertSig = Object.keys(al).join() + unlSig() + worldSig();
+  // In the Industrial Age the tabs swap for the factory's; the last button goes back (with a dot when the other world needs you).
+  const iw = inInd(), list = iw ? IND_TABS : TABS;
+  if (!list.some(t => t[0] === tab)) { tab = list[0][0]; lastSig = ''; }
+  const sw = indOpen() ? `<button data-a="world" data-v="${iw ? 'village' : 'ind'}" class="world-btn"><span class="nav-emblem" aria-hidden="true">${icon(iw ? indArt('village', 'village') : indArt('factory', 'icon-auto-forge'), 40)}${(iw ? villageAlert() : indAlert()) ? '<i class="tab-dot"></i>' : ''}</span><span>${iw ? L('القرية') : L('المصنع')}</span></button>` : '';
+  $('tabs').innerHTML = tabsMarkup(list, iw ? {} : badge, tab, iw ? {} : locked) + sw;
 }
 function skillBar(k) {
   return `<div class="skill"><span>${SKILL_N[k]} <b id="sk_${k}_l"></b></span><div class="bar xp"><i id="sk_${k}_b"></i></div><small id="sk_${k}_t"></small></div>`;
@@ -2132,7 +2140,7 @@ function viewMine() {
     <div class="kv"><span>التقدم نحو الطابق التالي</span><span id="m_blocks"></span></div>
     <div class="kv"><span>قوة الضربة</span><span id="m_click"></span></div>
     <div class="kv"><span>${icon('worker-miner',24)} العمال: ${S.mine.miners}</span><span id="m_rate"></span></div>
-    <div class="row">${costBtn('hireMiner', undefined, minerCost(), L`${icon('worker-miner',24)} وظّف عامل (${fmt(minerCost())}💰)`)}${owned('miners') ? togBtn('miners') : ''}</div>
+    <div class="row">${S.mine.miners >= VILLAGE_WMAX ? L`<button class="btn" disabled>✅ وصلت الحد (${VILLAGE_WMAX})</button>` : costBtn('hireMiner', undefined, minerCost(), L`${icon('worker-miner',24)} وظّف عامل (${fmt(minerCost())}💰)`)}${owned('miners') ? togBtn('miners') : ''}</div>${indLv('rails') ? `<p class="hint">${L`🛤️ سكة الحديد (مستوى ${indLv('rails')}): العمال أرخص ${Math.round(indDisc('rails') * 100)}%`}</p>` : ''}
     <div class="row"><button class="btn ghost sm" data-a="mineUp" id="m_up">⬆️ اصعد</button><button class="btn ghost sm" data-a="mineDown" id="m_down">⬇️ انزل</button></div>
     <div class="mine-jump"><small class="hint">🧭 انتقل لطابق:</small><div class="row">
       <button class="btn ghost sm" data-a="mineTo" data-v="1">⏫ الأعلى</button>
@@ -2633,7 +2641,7 @@ function viewLake() {
     <div class="kv"><span>آخر صيدة</span><span id="lk_last"></span></div>
     <div class="kv"><span>قوة الرمية</span><span id="lk_pow"></span></div>
     <div class="kv"><span>${icon('worker-fisher',24)} الصيادون: ${S.lake.fishers}</span><span id="lk_rate"></span></div>
-    <div class="row">${costBtn('hireFisher', undefined, fisherCost(), L`${icon('worker-fisher',24)} وظّف صياد (${fmt(fisherCost())}💰)`)}${owned('fishers') ? togBtn('fishers') : ''}</div>
+    <div class="row">${S.lake.fishers >= VILLAGE_WMAX ? L`<button class="btn" disabled>✅ وصلت الحد (${VILLAGE_WMAX})</button>` : costBtn('hireFisher', undefined, fisherCost(), L`${icon('worker-fisher',24)} وظّف صياد (${fmt(fisherCost())}💰)`)}${owned('fishers') ? togBtn('fishers') : ''}</div>${indLv('boat') ? `<p class="hint">${L`⛵ القارب (مستوى ${indLv('boat')}): الصيادين أرخص ${Math.round(indDisc('boat') * 100)}%`}</p>` : ''}
     <div class="kv"><span>فرصة النادرة / الأسطورية</span><span id="lk_ch"></span></div>
   </div></div>
   <div class="baitbox"><div class="kv"><span>🪱 الطُّعم: <b id="lk_bait"></b> صيدة</span><span class="hint">يضاعف فرصة النادرة والأسطورية</span></div>
@@ -2690,6 +2698,7 @@ function viewLegacy() {
     <button class="btn gold" data-a="retire" id="lg_btn">🌅 التقاعد وتسليم المزرعة</button><small class="hint" id="lg_why"></small></div></div>
   ${ch ? L`<div class="chbox"><b>${icon(ch)} تحدي هذا الجيل: ${ch.n}</b> — ${ch.rule}<div class="kv"><span>🎯 ${goalText(ch)}</span><span id="lg_chp"></span></div><div class="bar gp"><i id="lg_chb"></i></div></div>` : ''}
   </div>`;
+  h += indLegacyCard();
   h += L`<div class="panel"><h2>🗺️ ما تفتحه الأجيال</h2><div class="road">${ROADMAP.map(([g, t]) => L`<div class="rstep ${LG.gen >= g ? 'done' : ''}"><b>${LG.gen >= g ? '✅' : '🔒'} الجيل ${g}</b><span>${t}</span></div>`).join('')}</div></div>`;
   h += L`<div class="panel"><div class="ph"><h2>${icon("legacy-tree",32)} شجرة الإرث</h2><span class="stat starchip">${icon("legacy-crown",24)} ${fmt(LG.stars)}</span></div><p class="hint">ابدأ من أول مهارة في كل فرع: كل 3 مستويات تفتح لك فرع جديد، ولما تصرف ${KS_NEED} مستويات في فرع تنفتح مهارته الخاصة ⭐. المهارات المعلّمة بـ 🌱 تطبق من بداية الجيل القادم، إلا لو اشتريتها في أول يومين من الجيل فتطبق عليك فوراً. الباقي يشتغل فوراً دائماً.</p>
   <div class="row"><button class="btn ghost sm" data-a="respec" ${S.gen.respec || !perkSpent() ? 'disabled' : ''}>↺ إعادة توزيع النقاط</button><small class="hint">${S.gen.respec ? L('استخدمتها في هذا الجيل') : L('مجانية، مرة وحدة كل جيل')}</small></div>`;
@@ -2764,6 +2773,7 @@ const VIEWS = {
   settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0]],
 };
 
+Object.assign(VIEWS, IND_VIEWS); Object.assign(A, IND_ACTIONS); // Industrial Age (industry.js, loaded before this file)
 function render(force) {
   if (!S) return;
   const [view, upd, sig] = VIEWS[tab];
@@ -2805,7 +2815,7 @@ function renderHeader() {
   renderSky();
   const ready = S.farm.plots.filter((p, i) => isReady(p) && !covers('harvester', i)).length + (canRetire() ? 1000 : 0);
   checkUnlocks();
-  if (ready !== lastBadge || Object.keys(tabAlerts()).join() + unlSig() !== tabAlertSig) { lastBadge = ready; renderTabs(); }
+  if (ready !== lastBadge || Object.keys(tabAlerts()).join() + unlSig() + worldSig() !== tabAlertSig) { lastBadge = ready; renderTabs(); }
 }
 
 /* ---------------- السماء: الشمس والقمر ---------------- */

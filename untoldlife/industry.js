@@ -42,14 +42,15 @@ const IND_MAKERS = [...IND_RECIPES, ...IND_PROD];
 const IND_KQ = { clay: 400, stone: 400, wood: 400, coal: 200, brick: 200, block: 200, cu: 60, fe: 50, ag: 40, plank: 80, nails: 40, gear: 15, pipe: 15, machine: 3 };
 // Contracts are the factory's big gold source; the further down the chain, the more a unit pays.
 const IND_VAL = { clay: 3e6, stone: 3e6, wood: 3e6, coal: 1.5e7, brick: 2.5e7, block: 2.5e7, cu: 1e8, fe: 2e8, ag: 4e8, plank: 4.8e7, nails: 4.8e8, gear: 1.6e9, pipe: 1e9, machine: 2.4e10 };
-const IND_KN = 3, IND_KSKIP = 5 * 60 * 1000;
+// A delivered contract's slot stays empty for 3 minutes; swapping one you don't want is free and instant.
+const IND_KN = 3, IND_KWAIT = 3 * 60 * 1000;
 // Engineer: permanent factory upgrades bought with blueprints and products (10 levels each).
 const IND_ENG = [
-  { id: 'furn', e: '⚡', n: L('مراجل أسرع'), d: L('+15% سرعة لكل مستوى لكل المراجل') },
-  { id: 'field', e: '⛏️', n: L('حقول أغزر'), d: L('+15% إنتاج لكل مستوى لكل الحقول') },
-  { id: 'bench', e: '🔧', n: L('ورشة أسرع'), d: L('+15% سرعة لكل مستوى لكل طاولات الورشة') },
-  { id: 'crew', e: '🏠', n: L('سكن العمال'), d: L('+10 عمال لكل مستوى في الحد الأقصى') },
-  { id: 'deal', e: '🤝', n: L('تاجر العقود'), d: L('+10% ذهب من العقود لكل مستوى') },
+  { id: 'furn', e: '⚡', a: 'ind-tab-furn', n: L('مراجل أسرع'), d: L('+15% سرعة لكل مستوى لكل المراجل') },
+  { id: 'field', e: '⛏️', a: 'ind-tab-fields', n: L('حقول أغزر'), d: L('+15% إنتاج لكل مستوى لكل الحقول') },
+  { id: 'bench', e: '🔧', a: 'ind-tab-ws', n: L('ورشة أسرع'), d: L('+15% سرعة لكل مستوى لكل طاولات الورشة') },
+  { id: 'crew', e: '🏠', a: 'ind-housing', n: L('سكن العمال'), d: L('+10 عمال لكل مستوى في الحد الأقصى') },
+  { id: 'deal', e: '🤝', a: 'ind-trader', n: L('تاجر العقود'), d: L('+10% ذهب من العقود لكل مستوى') },
 ];
 const IND_ENG_BP = [1, 2, 3, 4, 6, 8, 10, 13, 16, 20];
 // City: rails (village miners) and boat (village fishers). Level L: gold 5e8 × 2^(L-1) plus these materials.
@@ -108,6 +109,7 @@ function indTake(id, q) { if (IND_RES[id]) ind().r[id] = (ind().r[id] || 0) - q;
 function indCanPay(gold, mats) { return S.gold >= gold && (mats || []).every(([id, q]) => indHave(id) >= q); }
 function indPay(gold, mats) { S.gold -= gold; (mats || []).forEach(([id, q]) => indTake(id, q)); }
 // Small rates keep their decimals (0.33/s, not 0).
+function indClock(ms) { const t = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); }
 function indNum(n) { return n < 10 ? String(+n.toFixed(2)) : fmt(n); }
 function indName(id) { return IND_RES[id] ? IND_RES[id].n : (ITEMS[id] || {}).n || id; }
 function indIc(id, n = 24) { return ART['ind-' + id] ? icon('ind-' + id, n) : IND_RES[id] ? `<span class="ind-e">${IND_RES[id].e}</span>` : icon(ITEMS[id], n); }
@@ -151,18 +153,23 @@ function indAlert() {
 // --- contracts ---
 // Things you can already make: the three fields, plus every furnace or bench you own.
 function indPool() { return [...IND_FIELDS.map(f => f.id), ...IND_MAKERS.filter(r => indFu(r.id).n).map(r => r.id)]; }
-function indNewK(skipAt = 0) {
+function indNewK() {
   const t = ind().kd || 0, pool = indPool(), n = t >= 3 && pool.length > 1 ? 2 : 1, max = Math.floor(indCap() * 0.9), need = [];
   // The newest things you make turn up a bit more often than raw materials.
   const pick = () => pool[Math.min(pool.length - 1, Math.floor(Math.pow(Math.random(), 0.7) * pool.length))];
   while (need.length < n) { const id = pick(); if (!need.some(x => x[0] === id)) need.push([id, Math.max(1, Math.min(max, Math.round(IND_KQ[id] * (1 + 0.12 * t))))]); }
   const v = need.reduce((a, [id, q]) => a + q * IND_VAL[id], 0), prod = need.some(([id]) => IND_PROD.some(p => p.id === id));
-  return { need, g: Math.round(v * 1.5), bp: n + (prod ? 1 : 0) + Math.floor(t / 10), at: skipAt };
+  return { need, g: Math.round(v * 1.5), bp: n + (prod ? 1 : 0) + Math.floor(t / 10) };
 }
-function indKFill() { const I = ind(); if (!I.k) I.k = []; while (I.k.length < IND_KN) I.k.push(indNewK()); }
+// An empty slot ({ at }) gets its new contract once the wait is over.
+function indKFill() {
+  const I = ind(), now = Date.now(); if (!I.k) I.k = [];
+  while (I.k.length < IND_KN) I.k.push(indNewK());
+  I.k.forEach((k, i) => { if (!k.need && now >= k.at) I.k[i] = indNewK(); });
+}
 // Worked out from what it asks (not stored), so contracts already on the board follow any price change.
 function indKGold(k) { return Math.round(k.need.reduce((a, [id, q]) => a + q * IND_VAL[id], 0) * 1.5 * (1 + 0.1 * indEng('deal'))); }
-function indKCan(k) { return k.need.every(([id, q]) => indHave(id) >= q); }
+function indKCan(k) { return !!k.need && k.need.every(([id, q]) => indHave(id) >= q); }
 function indKReady() { return (ind().k || []).some(indKCan); }
 // The village needs you: the same dots as its tabs, or retirement is ready.
 function villageAlert() { return Object.keys(tabAlerts()).length > 0 || canRetire(); }
@@ -212,13 +219,13 @@ const IND_ACTIONS = {
     const I = ind(), k = (I.k || [])[+v]; if (!k || !indKCan(k)) return;
     k.need.forEach(([id, q]) => indTake(id, q));
     const g = indKGold(k); S.gold += g; I.r.bp = (I.r.bp || 0) + k.bp; I.kd = (I.kd || 0) + 1;
-    I.k[+v] = indNewK();
+    I.k[+v] = { at: Date.now() + IND_KWAIT };
     log(L`📜 سلّمت عقد: +${fmt(g)}💰 و+${k.bp} 📐`, 'golden');
   },
-  // Swap a contract you don't want for a new one (each slot once every 5 minutes).
+  // Swap a contract you don't want for a new one, free and any time.
   indKSkip: v => {
-    const I = ind(), k = (I.k || [])[+v]; if (!k || Date.now() < k.at) return;
-    I.k[+v] = indNewK(Date.now() + IND_KSKIP);
+    const I = ind(), k = (I.k || [])[+v]; if (!k || !k.need) return;
+    I.k[+v] = indNewK();
   },
   indEng: v => {
     const g = IND_ENG.find(x => x.id === v); if (!g) return;
@@ -280,20 +287,20 @@ function viewWs() {
   let h = L`<div class="panel"><div class="ph"><h2>🔧 الورشة</h2><span class="stat">📐 ${fmt(I.r.bp || 0)} مخطط</span></div>
     <p class="hint">طاولات الورشة تحوّل الطوب والسبايك لمنتجات. المنتجات تسلّمها في العقود، والمهندس يحتاجها مع المخططات عشان يطوّر المصنع.</p>`;
   h += indStock([...IND_BASE, ...IND_PROD.map(p => p.id), 'bp']) + '<div class="grid ind-grid">' + IND_PROD.map(r => indMakerCard(r, true)).join('') + '</div></div>';
-  h += L`<div class="panel"><div class="ph"><h2>📜 العقود</h2><span class="stat">✅ ${fmt(I.kd || 0)} عقد</span></div>
-    <p class="hint">التجار يطلبون أشياء تسويها. سلّمها وخذ ذهب ومخططات 📐. كل عقد تسلّمه يكبّر الطلبات اللي بعده ومكافآتها. عقد ما يناسبك؟ بدّله (مرة كل 5 دقايق لكل خانة).</p><div class="grid ind-grid">`;
+  h += L`<div class="panel"><div class="ph"><h2>${indIc('contract', 28)} العقود</h2><span class="stat">✅ ${fmt(I.kd || 0)} عقد</span></div>
+    <p class="hint">التجار يطلبون أشياء تسويها. سلّمها وخذ ذهب ومخططات 📐. كل عقد تسلّمه يكبّر الطلبات اللي بعده ومكافآتها. بعد ما تسلّم عقد، التجار يحتاجون 3 دقايق يجهّزون طلب جديد. عقد ما يناسبك؟ بدّله ببلاش.</p><div class="grid ind-grid">`;
   (I.k || []).forEach((k, i) => {
-    const wait = Math.max(0, k.at - now);
-    h += `<div class="card ind-card ind-k ${indKCan(k) ? 'lgcard g' : ''}"><div class="top"><span class="big"><span class="ind-e big">📜</span></span><div class="meta"><b>${L`عقد ${i + 1}`}</b><small>${L`المكافأة: ${fmt(indKGold(k))}💰 + ${k.bp} 📐`}</small></div></div>
+    if (!k.need) { h += `<div class="card ind-card ind-k ind-kwait"><div class="top"><span class="big">${indIc('contract', 48)}</span><div class="meta"><b>${L`عقد ${i + 1}`}</b><small>${L('التجار يجهّزون طلب جديد')}</small></div></div><p class="hint">${L`⏳ عقد جديد بعد <b data-kw="${k.at}">${indClock(k.at - now)}</b>`}</p></div>`; return; }
+    h += `<div class="card ind-card ind-k ${indKCan(k) ? 'lgcard g' : ''}"><div class="top"><span class="big">${indIc('contract', 48)}</span><div class="meta"><b>${L`عقد ${i + 1}`}</b><small>${L`المكافأة: ${fmt(indKGold(k))}💰 + ${k.bp} 📐`}</small></div></div>
       ${indReqs(0, k.need)}
-      <div class="row"><button class="btn gold" data-a="indK" data-v="${i}" ${indKCan(k) ? '' : 'disabled'}>${L('📦 سلّم')}</button><button class="btn ghost sm" data-a="indKSkip" data-v="${i}" ${wait ? 'disabled' : ''}>${wait ? L`🔄 بعد ${Math.ceil(wait / 60000)} د` : L('🔄 بدّل')}</button></div></div>`;
+      <div class="row"><button class="btn gold" data-a="indK" data-v="${i}" ${indKCan(k) ? '' : 'disabled'}>${L('📦 سلّم')}</button><button class="btn ghost sm" data-a="indKSkip" data-v="${i}">${L('🔄 بدّل')}</button></div></div>`;
   });
   h += '</div></div>';
-  h += L`<div class="panel"><div class="ph"><h2>👷 المهندس</h2></div>
+  h += L`<div class="panel"><div class="ph"><h2>${indIc('engineer', 28)} المهندس</h2></div>
     <p class="hint">المهندس يطوّر المصنع للأبد بالمخططات والمنتجات. أول المستويات تحتاج ألواح ومسامير، بعدها تروس وأنابيب، وآخرها آلات.</p><div class="grid ind-grid">`;
   for (const g of IND_ENG) {
     const l = indEng(g.id), c = l < IND_MAXLV ? indEngCost(l) : null;
-    h += `<div class="card ind-card ${l ? 'lgcard g' : ''}"><div class="top"><span class="big"><span class="ind-e big">${g.e}</span></span><div class="meta"><b>${g.n}</b><small>${L`المستوى ${l} من ${IND_MAXLV}`}</small></div></div>
+    h += `<div class="card ind-card ${l ? 'lgcard g' : ''}"><div class="top"><span class="big">${ART[g.a] ? icon(g.a, 48) : `<span class="ind-e big">${g.e}</span>`}</span><div class="meta"><b>${g.n}</b><small>${L`المستوى ${l} من ${IND_MAXLV}`}</small></div></div>
       <p class="hint">${g.d}</p>
       ${c ? `${indReqs(0, c.mats)}${indTooBig(c.mats.filter(m => m[0] !== 'bp'))}<div class="row"><button class="btn gold" data-a="indEng" data-v="${g.id}" ${indCanPay(0, c.mats) ? '' : 'disabled'}>${L('⬆️ طوّر')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
   }
@@ -319,6 +326,7 @@ function viewCity() {
 // Numbers that change every frame are written in place; the page itself only redraws when the signature changes.
 function updInd() {
   document.querySelectorAll('[data-ir]').forEach(el => { el.textContent = fmt(Math.floor(ind().r[el.dataset.ir] || 0)); });
+  document.querySelectorAll('[data-kw]').forEach(el => { el.textContent = indClock(+el.dataset.kw - Date.now()); });
   document.querySelectorAll('[data-inet]').forEach(el => { const n = indNetTxt(el.dataset.inet); el.textContent = n.t; el.className = 'ind-net ' + n.c; });
 }
 function indSig() {
@@ -334,8 +342,8 @@ const IND_VIEWS = {
   furn: [viewFurn, updInd, indSig],
   city: [viewCity, updInd, indSig],
   ws: [viewWs, updInd, () => {
-    const I = ind(), now = Date.now();
-    return [indSig(), I.kd, (I.k || []).map(k => [k.g, indKCan(k), Math.ceil(Math.max(0, k.at - now) / 60000)]),
+    const I = ind();
+    return [indSig(), I.kd, (I.k || []).map(k => k.need ? [k.need, indKCan(k)] : 0),
       IND_ENG.map(g => indEng(g.id) < IND_MAXLV && indCanPay(0, indEngCost(indEng(g.id)).mats)), Math.floor(I.r.bp || 0)];
   }],
 };

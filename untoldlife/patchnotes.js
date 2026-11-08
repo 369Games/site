@@ -3,6 +3,10 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.10.2', date: '2026-11-08', big: false, title: L('رسومات الورشة وانتظار العقود'), items: [
+    L('🎨 رسومات للمنتجات والمخططات وتبويب الورشة والعقود والمهندس وتطويراته.'),
+    L('⏳ بعد ما تسلّم عقد، خانته تنتظر 3 دقايق لين يجي عقد جديد. وتبديل العقد صار ببلاش ومتى ما تبي، بدون انتظار.'),
+  ] },
   { v: '1.10.1', date: '2026-11-08', big: false, title: L('العقود صارت تجيب فلوس'), items: [
     L('💰 ذهب العقود صار أكبر بكثير، وكل ما كان الطلب أبعد في السلسلة (سبايك، منتجات، آلات) كانت مكافأته أضخم. العقود اللي عندك الحين تحدّثت مكافآتها بعد.'),
   ] },

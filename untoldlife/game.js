@@ -1612,7 +1612,7 @@ const A = {
     const old = lgv(v);
     if (old >= 60 && !confirm(L`عندك ${LEG_TOOLS[v]} بقوة +${old}%. الصياغة الجديدة تستبدلها حتى لو طلعت أقل. أكيد؟`)) return;
     const r = lgDo(v), k = LEG_RAR[lgTier(r)];
-    log(L`🔥 الحداد قاسم صاغ ${LEG_TOOLS[v]}: +${r}% قوة (${k.n})`, lgTier(r) >= 2 ? 'golden' : 'good');
+    log(L`⚒️ الحداد قاسم صاغ ${LEG_TOOLS[v]}: +${r}% قوة (${k.n})`, lgTier(r) >= 2 ? 'golden' : 'good');
     toast(L`✨ ${LEG_TOOLS[v]}: +${r}% (${k.n})`);
   },
   afBuy: () => {
@@ -2265,13 +2265,15 @@ function viewSmith() {
   h += L('<h3>⚔️ عدة القتال (النقابة)</h3>') + '<div class="grid">' + shown.filter(t => t.guild).map(toolCard).join('') + '</div>';
   return h + '</div>';
 }
+// The tool's own legendary picture (adamantite one until its legendary art exists).
+function afPic(id) { const t = TOOLS.find(x => x.id === id) || {}, k = ART[id + '-7'] || PX[id + '-7'] ? id + '-7' : t.art || id + '-6'; return icon(k, 26); }
 // The auto-forge box: buy it, or pick a tool and a target and let it run.
 function afBox() {
   let h = L('<div class="lgbox afbox"><b>🤖 الصياغة التلقائية</b>');
   if (!S.leg.afOwn) return h + L`<small>اختر أداة أسطورية والنسبة اللي تبيها، وقاسم يعيد الصياغة بنفسه لين توصل لها أو تخلص الخامات. تُشترى مرة وحدة وتبقى للعائلة كل الأجيال.</small>
     <div class="row">${costBtn('afBuy', '', AF_COST, L`🤖 اشترِ (${fmt(AF_COST)}💰)`)}</div></div>`;
   const j = S.af;
-  if (j) return h + L`<div class="kv"><span>🔥 ${LEG_TOOLS[j.t]}</span><span>+${lgv(j.t)}% ← الهدف ${j.goal}%</span></div>
+  if (j) return h + L`<div class="kv"><span>${afPic(j.t)} ${LEG_TOOLS[j.t]}</span><span>+${lgv(j.t)}% ← الهدف ${j.goal}%</span></div>
     <div class="kv"><span>المحاولات</span><span>${fmt(j.n)}</span></div>
     <div class="row"><button class="btn red" data-a="afStop">⏹️ أوقف</button></div></div>`;
   const ts = afTools();
@@ -2299,11 +2301,11 @@ function toolCard(t) {
         ${reqList([['gold', c.gold], [c.ore, c.qty]])}
         <div class="row"><button class="btn gold" data-a="upgrade" data-v="${t.id}" ${ok ? '' : 'disabled'}>🔨 طوّر</button></div>`;
     } else {
-      h += L`<div class="lgbox"><b>🔥 الصياغة الأسطورية: ${LEG_TOOLS[t.id]}</b>
+      h += L`<div class="lgbox"><b>⚒️ الصياغة الأسطورية: ${LEG_TOOLS[t.id]}</b>
         <small>${lv ? L('إعادة الصياغة بـ10% من السعر، وتعطي نسبة جديدة مكان القديمة.') : L('تصير أداة أسطورية بقوة زيادة من 5% لين 100% على تأثيرها.')} تنعاد للأدامانتيت مع الجيل الجديد.</small>
         <small class="lgodds"><span class="lgv w">⚪ 5–29% (58%)</span> <span class="lgv b">🔵 30–59% (22%)</span> <span class="lgv p">🟣 60–99% (19.5%)</span> <span class="lgv g">🟡 100% (0.5%)</span></small>
         ${reqList(lgCost(t.id))}
-        <div class="row"><button class="btn gold" data-a="forge" data-v="${t.id}" ${lgCanPay(t.id) ? '' : 'disabled'}>${lv ? L('🔥 أعد الصياغة') : L('🔥 صياغة أسطورية')}</button></div></div>`;
+        <div class="row"><button class="btn gold" data-a="forge" data-v="${t.id}" ${lgCanPay(t.id) ? '' : 'disabled'}>${lv ? L('⚒️ أعد الصياغة') : L('⚒️ صياغة أسطورية')}</button></div></div>`;
     }
     h += '</div>';
   }

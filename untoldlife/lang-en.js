@@ -1364,6 +1364,8 @@
 "📋 الجولة الماضية: ما ساهمت": "📋 Last round: you didn't take part",
 "📋 الجولة الماضية: مركزك {0} من {1}، والهدف ما اكتمل": "📋 Last round: you placed {0} of {1}, but the goal wasn't reached",
 "📋 الجولة الماضية: مركزك {0} من {1} ← جائزة +{2}%": "📋 Last round: you placed {0} of {1} → prize +{2}%",
+"إصلاح ختم «معدّل»": "“Edited” stamp fix",
+"🧪 ذهب العقود ما كان ينحسب من أرباحك، فاللعبة كانت تظن إن الحفظ معدّل من برّا وتحط عليه الختم. انصلح، وانشال الختم عن كل حفظ أخذه بسبب العقود.": "🧪 Contract gold wasn't counted in your earnings, so the game thought the save had been edited from outside and stamped it. Fixed, and the stamp is removed from every save that got it because of contracts.",
 "المخزن ما عاد يطلب سعته كاملة": "The warehouse no longer asks for its full capacity",
 "📦 ما فيه تطوير يطلب كمية تساوي سعة المخزن بالضبط (المراجل تاكل منه وما يوصل الحد أبداً). توسيع المخزن يطلب الحين أقل من سعته الحالية بشوي، مثلاً 30,000 بدل 32,000، ونفس الشي لسكة الحديد والقارب.": "📦 No upgrade asks for exactly the warehouse capacity any more (furnaces keep eating from it, so it never reaches the cap). Expanding the warehouse now asks a little less than its current capacity, for example 30,000 instead of 32,000, and the same goes for the rails and the boat.",
 "عمال المصنع أرخص": "Cheaper factory workers",

@@ -3092,6 +3092,15 @@ function migrate(o) {
     if (pt && (st.leg.perks || {}).q_tools) for (const t in st.tools) if (pt[t] >= 6 && st.tools[t] === 5) st.tools[t] = 6;
     st.leg.tlFix = 1;
   }
+  // 1.10.5: contract gold (1.10 to 1.10.4) wasn't counted as earned, so holding it looked like an edited save
+  // (gold above everything earned) and the save got the "edited" stamp. Count it now and take the wrong stamp off.
+  if (!st.leg.kFix) {
+    if (st.leg.ind && st.gen && st.stats) {
+      st.gen.earned = Math.max(st.gen.earned || 0, st.gold || 0); st.stats.earned = Math.max(st.stats.earned || 0, st.gen.earned);
+      if (st.leg.mod && st.leg.mod.r === 'gold') delete st.leg.mod;
+    }
+    st.leg.kFix = 1;
+  }
   if (!st.gender && st.spouse && NPC_BY[st.spouse]) st.gender = NPC_BY[st.spouse].g === 'f' ? 'm' : 'f';
   // 1.5.1: only one soul twin. Saves from 1.4.2 with more keep the first one and get the others' price back.
   const tw = Object.keys(st.twins || {});

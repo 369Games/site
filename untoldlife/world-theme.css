@@ -418,3 +418,4 @@ body.lite #log li.golden,body.lite #log li.egg{box-shadow:none}
 .title-pic{display:grid;place-items:center;height:68px}.title-card:not(.own) .title-pic .px{filter:grayscale(.6) brightness(.75)}
 .lock .px{width:26px;height:26px}
 .afbox{margin-bottom:12px}.afrow{align-items:center;gap:8px;flex-wrap:wrap}.afrow select{min-height:38px;border-radius:8px;padding:4px 8px;background:var(--soft);color:var(--ink);border:1px solid var(--line);font:inherit;max-width:100%}.afrow label{display:inline-flex;align-items:center;gap:6px}.afrow .mk-q{width:64px}
+.saddle-box{margin:8px 0 12px}.saddle-sk{display:grid;gap:4px;margin-top:8px;padding-top:8px;border-top:1px dashed #c9a35a55;text-align:center}.saddle-sk.on small:first-child{color:#e2bc6c;font-weight:600}.pet-card.sad{border-color:#e2bc6c;box-shadow:0 0 0 1px #e2bc6c55,0 0 18px #e2bc6c33}

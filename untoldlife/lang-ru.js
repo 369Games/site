@@ -761,6 +761,7 @@
 "<div class=\"card {0}\"><div class=\"top\"><span class=\"big\">{1}</span>\n      <div class=\"meta\"><b>{2}</b> × {3}<small>تنتج {4} {5} ({6}💰) كل {7}</small></div></div>": "<div class=\"card {0}\"><div class=\"top\"><span class=\"big\">{1}</span>\n      <div class=\"meta\"><b>{2}</b> × {3}<small>Даёт {4} {5} ({6}💰) каждые {7}</small></div></div>",
 "<p class=\"hint\">يتطلب مستوى رعي {0}</p>": "<p class=\"hint\">Нужен уровень животноводства {0}</p>",
 "<div class=\"kv\"><span>الإنتاج</span><span id=\"an_tt_{0}\"></span></div><div class=\"bar\"><i id=\"an_t_{1}\"></i></div>\n        <div class=\"kv\"><span>السعادة</span><span id=\"an_hh_{2}\"></span></div><div class=\"bar joy\"><i id=\"an_h_{3}\"></i></div>": "<div class=\"kv\"><span>Производство</span><span id=\"an_tt_{0}\"></span></div><div class=\"bar\"><i id=\"an_t_{1}\"></i></div>\n        <div class=\"kv\"><span>Счастье</span><span id=\"an_hh_{2}\"></span></div><div class=\"bar joy\"><i id=\"an_h_{3}\"></i></div>",
+"<button class=\"btn\" disabled>✅ وصلت الحد ({0})</button>": "<button class=\"btn\" disabled>✅ Предел достигнут ({0})</button>",
 "شراء ({0}💰)": "Купить ({0}💰)",
 "🔢 كمية": "🔢 Количество",
 "<button class=\"btn ghost\" data-a=\"pet\" data-v=\"{0}\">🤲 دلّل</button>": "<button class=\"btn ghost\" data-a=\"pet\" data-v=\"{0}\">🤲 Погладить</button>",

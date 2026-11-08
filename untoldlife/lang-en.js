@@ -761,6 +761,7 @@
 "<div class=\"card {0}\"><div class=\"top\"><span class=\"big\">{1}</span>\n      <div class=\"meta\"><b>{2}</b> × {3}<small>تنتج {4} {5} ({6}💰) كل {7}</small></div></div>": "<div class=\"card {0}\"><div class=\"top\"><span class=\"big\">{1}</span>\n      <div class=\"meta\"><b>{2}</b> × {3}<small>Makes {4} {5} ({6}💰) every {7}</small></div></div>",
 "<p class=\"hint\">يتطلب مستوى رعي {0}</p>": "<p class=\"hint\">Requires Ranching level {0}</p>",
 "<div class=\"kv\"><span>الإنتاج</span><span id=\"an_tt_{0}\"></span></div><div class=\"bar\"><i id=\"an_t_{1}\"></i></div>\n        <div class=\"kv\"><span>السعادة</span><span id=\"an_hh_{2}\"></span></div><div class=\"bar joy\"><i id=\"an_h_{3}\"></i></div>": "<div class=\"kv\"><span>Production</span><span id=\"an_tt_{0}\"></span></div><div class=\"bar\"><i id=\"an_t_{1}\"></i></div>\n        <div class=\"kv\"><span>Happiness</span><span id=\"an_hh_{2}\"></span></div><div class=\"bar joy\"><i id=\"an_h_{3}\"></i></div>",
+"<button class=\"btn\" disabled>✅ وصلت الحد ({0})</button>": "<button class=\"btn\" disabled>✅ Max reached ({0})</button>",
 "شراء ({0}💰)": "Buy ({0}💰)",
 "🔢 كمية": "🔢 Quantity",
 "<button class=\"btn ghost\" data-a=\"pet\" data-v=\"{0}\">🤲 دلّل</button>": "<button class=\"btn ghost\" data-a=\"pet\" data-v=\"{0}\">🤲 Pet</button>",

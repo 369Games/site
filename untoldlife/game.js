@@ -1920,7 +1920,8 @@ function viewBarn() {
       if (n && BREEDABLE.includes(a.id)) { const g = grades(a.id); h += L`<div class="grades"><span class="g-norm">${icon(a,40)}<b>${gName(a, 'n0')}</b><em>×${g.n0}</em></span><span class="g-prem">${icon(a.id+'-p',40)}${gradeBadge('p')}<b>${gName(a, 'p')}</b><em>×${g.p}</em></span><span class="g-gold">${icon(a.id+'-g',40)}${gradeBadge('g')}<b>${gName(a, 'g')}</b><em>×${g.g}</em></span></div>`; }
       if (n) h += L`<div class="kv"><span>الإنتاج</span><span id="an_tt_${a.id}"></span></div><div class="bar"><i id="an_t_${a.id}"></i></div>
         <div class="kv"><span>السعادة</span><span id="an_hh_${a.id}"></span></div><div class="bar joy"><i id="an_h_${a.id}"></i></div>`;
-      h += `<div class="row">${costBtn('buyAnimal', a.id, c, L`شراء (${fmt(c)}💰)`, 'gold', n >= barnCap())}<button class="btn ghost sm" data-a="buyAnimalAsk" data-v="${a.id}" ${n >= barnCap() ? 'disabled' : ''}>${L('🔢 كمية')}</button>
+      h += `<div class="row">${n >= barnCap() ? L`<button class="btn" disabled>✅ وصلت الحد (${barnCap()})</button>` // full: no price to confuse anyone
+        : costBtn('buyAnimal', a.id, c, L`شراء (${fmt(c)}💰)`, 'gold') + `<button class="btn ghost sm" data-a="buyAnimalAsk" data-v="${a.id}">${L('🔢 كمية')}</button>`}
         ${n && !on('rancher') ? L`<button class="btn ghost" data-a="pet" data-v="${a.id}">🤲 دلّل</button>` : ''}</div>`;
     }
     h += '</div>';

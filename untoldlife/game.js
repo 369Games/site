@@ -734,7 +734,16 @@ function tickFarm(dt) {
 /* ---------------- الحظيرة ---------------- */
 // Always an even number (6, 10, 16 … 36), so every animal can find a breeding pair.
 function barnCap() { const c = 5 + 5 * (S.bld.barn || 0); return c % 2 ? c + 1 : c; }
-function animalCost(a) { return Math.round(a.cost * Math.pow(a.grow || 1.25, S.barn.n[a.id] || 0) * (1 - 0.1 * P('r_cost')) * Math.max(0.1, 1 - spv('salma', 'cost'))); }
+function animalCostAt(a, n) { return Math.round(a.cost * Math.pow(a.grow || 1.25, n) * (1 - 0.1 * P('r_cost')) * Math.max(0.1, 1 - spv('salma', 'cost'))); }
+function animalCost(a) { return animalCostAt(a, S.barn.n[a.id] || 0); }
+// Buying several at once: each one costs a bit more than the last, the same as buying them one by one.
+function animalCostN(a, k) { const n = S.barn.n[a.id] || 0; let t = 0; for (let i = 0; i < k; i++) t += animalCostAt(a, n + i); return t; }
+function animalMaxBuy(a) { const n = S.barn.n[a.id] || 0, room = Math.max(0, barnCap() - n); let k = 0, t = 0; while (k < room && t + animalCostAt(a, n + k) <= S.gold) { t += animalCostAt(a, n + k); k++; } return k; }
+function animalBuyCalc(id) {
+  const a = ANIMALS.find(x => x.id === id), i = $('buyAnN'), o = $('buyAnT'); if (!a || !i || !o) return;
+  const k = Math.max(0, Math.floor(+i.value || 0)), room = Math.max(0, barnCap() - (S.barn.n[id] || 0)), c = animalCostN(a, Math.min(k, room));
+  o.innerHTML = k > room ? L`ما فيه مكان إلا لـ${room}` : L`المبلغ: <b>${fmt(c)}💰</b>` + (c > S.gold ? L` • ينقصك ${fmt(c - S.gold)}` : '');
+}
 function animalSpeed(a) { return (0.5 + (S.barn.h[a.id] ?? 100) / 100) * speedMult('ranch'); }
 function grades(id) { const q = S.barn.q[id] || { p: 0, g: 0 }, n = S.barn.n[id] || 0; return { n0: Math.max(0, n - (q.p || 0) - (q.g || 0)), p: q.p || 0, g: q.g || 0 }; }
 /* Breeding: put two animals of the same grade in a house and the result comes at once.
@@ -1431,6 +1440,26 @@ const A = {
     S.gold -= c; S.barn.n[v] = n + 1; if (S.barn.h[v] === undefined) S.barn.h[v] = 100;
     log(L`${a.e} اشتريت ${a.n}! (${n + 1})`);
   },
+  buyAnimalAsk: v => {
+    const a = ANIMALS.find(x => x.id === v); if (!a) return;
+    const n = S.barn.n[v] || 0, room = Math.max(0, barnCap() - n), mx = animalMaxBuy(a);
+    openModal(L`<h2>${a.e} شراء ${a.n}</h2><p class="hint">عندك ${n}، والمكان يكفي ${room} زيادة. كل واحد أغلى شوي من اللي قبله. تقدر تشتري لين ${mx} بذهبك الحين.</p>
+      <input id="buyAnN" class="txt" type="number" inputmode="numeric" min="1" max="${room}" value="${Math.max(1, mx)}" style="width:100%;font-size:18px;padding:10px;margin:8px 0 6px"
+        oninput="animalBuyCalc('${v}')" onkeydown="if(event.key==='Enter')A.buyAnimalN('${v}')">
+      <p id="buyAnT" class="hint" style="margin:0 0 12px"></p>
+      <div class="row"><button class="btn gold" data-a="buyAnimalN" data-v="${v}" style="flex:1">شراء ✔</button><button class="btn ghost" data-a="buyAnimalMax" data-v="${v}">الأقصى (${mx})</button><button class="btn ghost" data-a="closeModal">إلغاء</button></div>`);
+    animalBuyCalc(v); setTimeout(() => { const i = $('buyAnN'); if (i) { i.focus(); i.select(); } }, 50);
+  },
+  buyAnimalMax: v => { const i = $('buyAnN'), a = ANIMALS.find(x => x.id === v); if (i && a) { i.value = animalMaxBuy(a); animalBuyCalc(v); } },
+  buyAnimalN: v => {
+    const a = ANIMALS.find(x => x.id === v), i = $('buyAnN'); if (!a || !i) return;
+    if (noFarm()) return toast(L('🚫 ممنوع في تحدي هذا الجيل'));
+    const n = S.barn.n[v] || 0, k = Math.min(Math.max(0, Math.floor(+i.value || 0)), Math.max(0, barnCap() - n));
+    if (!k || S.skills.ranch.l < a.lvl) return;
+    const c = animalCostN(a, k); if (S.gold < c) return toast(L`ما عندك ذهب كافي (تحتاج ${fmt(c)}💰)`);
+    S.gold -= c; S.barn.n[v] = n + k; if (S.barn.h[v] === undefined) S.barn.h[v] = 100;
+    log(L`${a.e} اشتريت ${k} ${a.n} بـ${fmt(c)}💰 (صار عندك ${n + k})`); closeModal(); lastSig = '';
+  },
   breed: v => {
     const [id, to] = v.split(':'), a = ANIMALS.find(x => x.id === id);
     if (!a || !GRADE[to] || !BREEDABLE.includes(id) || breedBlock(a, to)) return;
@@ -1891,7 +1920,7 @@ function viewBarn() {
       if (n && BREEDABLE.includes(a.id)) { const g = grades(a.id); h += L`<div class="grades"><span class="g-norm">${icon(a,40)}<b>${gName(a, 'n0')}</b><em>×${g.n0}</em></span><span class="g-prem">${icon(a.id+'-p',40)}${gradeBadge('p')}<b>${gName(a, 'p')}</b><em>×${g.p}</em></span><span class="g-gold">${icon(a.id+'-g',40)}${gradeBadge('g')}<b>${gName(a, 'g')}</b><em>×${g.g}</em></span></div>`; }
       if (n) h += L`<div class="kv"><span>الإنتاج</span><span id="an_tt_${a.id}"></span></div><div class="bar"><i id="an_t_${a.id}"></i></div>
         <div class="kv"><span>السعادة</span><span id="an_hh_${a.id}"></span></div><div class="bar joy"><i id="an_h_${a.id}"></i></div>`;
-      h += `<div class="row">${costBtn('buyAnimal', a.id, c, L`شراء (${fmt(c)}💰)`, 'gold', n >= barnCap())}
+      h += `<div class="row">${costBtn('buyAnimal', a.id, c, L`شراء (${fmt(c)}💰)`, 'gold', n >= barnCap())}<button class="btn ghost sm" data-a="buyAnimalAsk" data-v="${a.id}" ${n >= barnCap() ? 'disabled' : ''}>${L('🔢 كمية')}</button>
         ${n && !on('rancher') ? L`<button class="btn ghost" data-a="pet" data-v="${a.id}">🤲 دلّل</button>` : ''}</div>`;
     }
     h += '</div>';

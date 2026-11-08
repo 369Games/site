@@ -213,6 +213,27 @@ function lgRoll() { return Math.random() < 0.005 ? 100 : Math.round(5 + 94 * Mat
 // The first forge costs the full price; forging again costs 10% of it. Qasim's discount (hearts) and season buff both cut it.
 function lgCost(t) { const k = Math.max(0.1, (1 - spv('smith', 'forge')) * (1 - 0.03 * hearts('smith'))); return LEG_COST.map(([id, q]) => [id, Math.ceil((lgv(t) ? q / 10 : q) * k)]); }
 function lgCanPay(t) { return lgCost(t).every(([id, q]) => have(id) >= q); }
+// One forge roll: pay, roll, store. Returns the new roll.
+function lgDo(v) { lgCost(v).forEach(([id, q]) => take(id, q)); const r = lgRoll(); (S.tlg || (S.tlg = {}))[v] = r; return r; }
+/* Auto-forge (1.7.16): a one-time 1B gold upgrade at Qasim's (kept for the family). Pick a tool and a target %,
+   and it reforges by itself (5 tries a second) until the roll reaches the target or the ores run out. */
+const AF_COST = 1e9, AF_RATE = 5;
+const AF_UI = { t: '', goal: 60 };
+function afTools() { return TOOLS.filter(t => (S.tools[t.id] || 0) >= 6 && !(t.id === 'rod' && S.leg.gen < 2)); }
+function afStop(msg, cls) { const j = S.af; S.af = null; if (msg) { log(msg, cls); toast(msg); } return j; }
+function tickForge(dt) {
+  const j = S.af; if (!j) return;
+  const t = TOOLS.find(x => x.id === j.t);
+  if (!S.leg.afOwn || !t || (S.tools[j.t] || 0) < 6) return afStop();
+  j.acc = (j.acc || 0) + dt * AF_RATE;
+  while (j.acc >= 1) {
+    j.acc--;
+    if (lgv(j.t) >= j.goal) return afStop(L`🤖 الصياغة التلقائية: ${LEG_TOOLS[j.t]} وصلت +${lgv(j.t)}% بعد ${fmt(j.n)} محاولة`, 'golden');
+    if (!lgCanPay(j.t)) return afStop(L`🤖 الصياغة التلقائية وقفت: خلصت الخامات (${LEG_TOOLS[j.t]} +${lgv(j.t)}% بعد ${fmt(j.n)} محاولة)`, 'bad');
+    lgDo(j.t); j.n++;
+  }
+  if (lgv(j.t) >= j.goal) afStop(L`🤖 الصياغة التلقائية: ${LEG_TOOLS[j.t]} وصلت +${lgv(j.t)}% بعد ${fmt(j.n)} محاولة`, 'golden');
+}
 /* Pets (1.7): a very rare egg can drop when you clear a dungeon floor, at the same chance as a king fish (0.08%).
    The egg hatches after 30 minutes into a griffin, a dragon or a unicorn (one you don't have yet), and the pet grows
    with every floor you clear: baby → teen → adult. Dragon: attack, unicorn: defence, griffin: power (guild hunts).
@@ -518,6 +539,7 @@ function newState() {
     tools: { hoe: 0, can: 0, pick: 0, sword: 0, armor: 0, rod: 0, crook: 0, glove: 0, helmet: 0, shield: 0, amulet: 0, boots: 0 }, tlg: {},
     lake: { prog: 0, fishers: 0, last: null, spot: 'lake', bait: 0, autoBait: false },
     hero: { lvl: 1, xp: 0, hp: 60, xc: 1 },
+    af: null, // auto-forge job { t, goal, n }
     wk: null, // the weekly challenge and village goal (weekly.js)
     wv: 1,
     dun: { active: false, floor: 1, max: 1, kills: 0, enemy: null, auto: true, autoEat: true, resting: false, ht: 0, et: 0, retry: 0, eatCd: 0 },
@@ -1166,6 +1188,7 @@ function tick(dt) {
   tickCombat(dt);
   tickGuild(dt);
   tickPets(dt);
+  tickForge(dt);
   checkChallenge();
 }
 
@@ -1588,12 +1611,26 @@ const A = {
     const t = TOOLS.find(x => x.id === v); if (!t || (S.tools[v] || 0) < 6 || !lgCanPay(v)) return;
     const old = lgv(v);
     if (old >= 60 && !confirm(L`عندك ${LEG_TOOLS[v]} بقوة +${old}%. الصياغة الجديدة تستبدلها حتى لو طلعت أقل. أكيد؟`)) return;
-    lgCost(v).forEach(([id, q]) => take(id, q));
-    const r = lgRoll(), k = LEG_RAR[lgTier(r)];
-    (S.tlg || (S.tlg = {}))[v] = r;
+    const r = lgDo(v), k = LEG_RAR[lgTier(r)];
     log(L`🔥 الحداد قاسم صاغ ${LEG_TOOLS[v]}: +${r}% قوة (${k.n})`, lgTier(r) >= 2 ? 'golden' : 'good');
     toast(L`✨ ${LEG_TOOLS[v]}: +${r}% (${k.n})`);
   },
+  afBuy: () => {
+    if (S.leg.afOwn || S.gold < AF_COST) return;
+    S.gold -= AF_COST; S.leg.afOwn = 1;
+    log(L('🤖 اشتريت الصياغة التلقائية من قاسم! تبقى للعائلة كل الأجيال.'), 'golden');
+  },
+  afStart: () => {
+    if (!S.leg.afOwn || S.af) return;
+    const ts = afTools(), t = ts.find(x => x.id === AF_UI.t) || ts[0];
+    if (!t) return toast(L('❌ ما عندك أداة أدامانتيت للصياغة'));
+    const goal = Math.round(+AF_UI.goal);
+    if (!(goal >= 5 && goal <= 100)) return toast(L('❌ اكتب نسبة من 5 إلى 100'));
+    if (lgv(t.id) >= goal) return toast(L`✅ ${LEG_TOOLS[t.id]} أصلاً +${lgv(t.id)}%`);
+    if (!lgCanPay(t.id)) return toast(L('❌ ما عندك خامات تكفي محاولة وحدة'));
+    S.af = { t: t.id, goal, n: 0, acc: 1 };
+  },
+  afStop: () => { const j = afStop(); if (j) toast(L`⏹️ وقفت الصياغة التلقائية بعد ${fmt(j.n)} محاولة`); },
   sell1: v => { sellItem(v, 1); },
   // Sell the amount typed next to the item (more than you have sells everything).
   sellN: v => { const n = Math.floor(+(MK_Q[v] || 1)); if (!(n > 0)) return toast(L('❌ اكتب كمية صحيحة')); const g = sellItem(v, n); if (g) toast(`+${fmt(g)}💰`); },
@@ -2221,11 +2258,30 @@ function updReqs() {
 function viewSmith() {
   let h = L`<div class="panel"><div class="ph"><h2>🔨 ورشة الحداد قاسم</h2><span class="stat">خصم الصداقة ${3 * hearts('smith')}%</span></div>
   <p class="hint">كل تطوير يحتاج ذهباً ومعدناً من المنجم. المعادن مقفلة 🔒 في السوق افتراضياً حتى لا تبيعها بالخطأ.</p><div class="smith-scene" aria-hidden="true">${icon("npc-smith-1",64)}${icon("anvil",64)}${icon("iron",64)}</div>`;
+  h += afBox();
   // Two groups: work tools, and the guild's fighting gear (sword and armour; more will join later, marked guild: 1).
   const shown = TOOLS.filter(t => !(t.id === 'rod' && S.leg.gen < 2));
   h += L('<h3>🧰 أدوات العمل</h3>') + '<div class="grid">' + shown.filter(t => !t.guild).map(toolCard).join('') + '</div>';
   h += L('<h3>⚔️ عدة القتال (النقابة)</h3>') + '<div class="grid">' + shown.filter(t => t.guild).map(toolCard).join('') + '</div>';
   return h + '</div>';
+}
+// The auto-forge box: buy it, or pick a tool and a target and let it run.
+function afBox() {
+  let h = L('<div class="lgbox afbox"><b>🤖 الصياغة التلقائية</b>');
+  if (!S.leg.afOwn) return h + L`<small>اختر أداة أسطورية والنسبة اللي تبيها، وقاسم يعيد الصياغة بنفسه لين توصل لها أو تخلص الخامات. تُشترى مرة وحدة وتبقى للعائلة كل الأجيال.</small>
+    <div class="row">${costBtn('afBuy', '', AF_COST, L`🤖 اشترِ (${fmt(AF_COST)}💰)`)}</div></div>`;
+  const j = S.af;
+  if (j) return h + L`<div class="kv"><span>🔥 ${LEG_TOOLS[j.t]}</span><span>+${lgv(j.t)}% ← الهدف ${j.goal}%</span></div>
+    <div class="kv"><span>المحاولات</span><span>${fmt(j.n)}</span></div>
+    <div class="row"><button class="btn red" data-a="afStop">⏹️ أوقف</button></div></div>`;
+  const ts = afTools();
+  if (!ts.length) return h + L('<small>طوّر أداة إلى أدامانتيت أول عشان تقدر تصيغها.</small></div>');
+  if (!ts.some(t => t.id === AF_UI.t)) AF_UI.t = ts[0].id;
+  const opts = ts.map(t => `<option value="${t.id}" ${t.id === AF_UI.t ? 'selected' : ''}>${LEG_TOOLS[t.id]}${lgv(t.id) ? ` (+${lgv(t.id)}%)` : ''}</option>`).join('');
+  return h + L`<small>كل محاولة بسعر إعادة الصياغة العادي. توقف لحالها إذا وصلت النسبة أو خلصت الخامات.</small>
+    <div class="row afrow"><select data-af="t" aria-label="الأداة">${opts}</select>
+    <label>الهدف <input class="mk-q" type="number" min="5" max="100" step="1" inputmode="numeric" data-af="goal" value="${esc(AF_UI.goal)}">%</label></div>
+    <div class="row"><button class="btn gold" data-a="afStart">▶️ ابدأ</button></div></div>`;
 }
 function toolCard(t) {
   let h = '';
@@ -2288,7 +2344,8 @@ function oreShop() {
 }
 // The amount typed in each market row, kept while the market redraws.
 const MK_Q = {};
-document.addEventListener('input', e => { const q = e.target.dataset && e.target.dataset.q; if (q) MK_Q[q] = e.target.value; });
+document.addEventListener('input', e => { const d = e.target.dataset || {}; if (d.q) MK_Q[d.q] = e.target.value; if (d.af) AF_UI[d.af] = e.target.value; });
+document.addEventListener('change', e => { const d = e.target.dataset || {}; if (d.af) AF_UI[d.af] = e.target.value; });
 document.addEventListener('keydown', e => {
   const q = e.key === 'Enter' && e.target.dataset && e.target.dataset.q;
   if (q) { const b = document.querySelector(`[data-a=sellN][data-v="${q}"]`); if (b && !b.disabled) b.click(); }
@@ -2594,7 +2651,7 @@ const VIEWS = {
     const D = S.dun, g = S.guild;
     return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), S.tools, S.tlg, S.hero.lvl, floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100))), S.leg.titles && [S.leg.titles.cur, S.leg.titles.show, Object.keys(S.leg.titles.have || {}).length, Math.floor((S.leg.titles.xp || 0) / 1000)]];
   }],
-  smith: [viewSmith, updReqs, () => [S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
+  smith: [viewSmith, updReqs, () => [S.leg.afOwn, S.af && [S.af.t, S.af.n], S.gold >= AF_COST, S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
   village: [viewVillage, () => { if (typeof wkUpd === 'function') wkUpd(); }, () => [typeof wkSig === 'function' ? wkSig() : 0, dayAbs(), S.bld, S.npc, S.off, S.spouse, S.friend, S.twins, P('q_twin'), S.gender, S.leg.gen, donLv(), donorOn(), S.leg.donorAuto, Math.floor(Math.log2(Math.max(1, S.gold / DON_BASE))), NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, Math.min(S.skills.fish.l, 30), S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],

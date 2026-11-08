@@ -57,7 +57,7 @@ const IND_ENG_BP = [1, 2, 3, 4, 6, 8, 10, 13, 16, 20];
 // Each level asks more than the warehouse holds at the start (1,000, doubling per level), so the warehouse paces the climb:
 // level 2 needs warehouse 1, 3 → 2, 4–5 → 3, 6 → 4, 7–8 → 5, 9–10 → 6.
 const IND_BLD_MATS = [
-  [['wood', 800], ['stone', 800]], [['wood', 2000], ['block', 1500]], [['brick', 3000], ['block', 4000]], [['brick', 6000], ['cu', 1000]],
+  [['wood', 800], ['stone', 800]], [['wood', 1900], ['block', 1500]], [['brick', 3000], ['block', 3800]], [['brick', 6000], ['cu', 1000]],
   [['cu', 5000], ['fe', 1500]], [['fe', 5000], ['brick', 15000]], [['fe', 10000], ['block', 30000]], [['ag', 5000], ['fe', 20000]],
   [['ag', 12000], ['fe', 40000]], [['ag', 30000], ['fe', 60000]],
 ];
@@ -101,7 +101,10 @@ function indEngCost(l) {
 function indHireCost() { return Math.round(5e7 * Math.pow(1.07, ind().hired)); }
 function indFieldCost(l) { return { gold: Math.round(2e8 * Math.pow(2.5, l)), qty: Math.round(200 * Math.pow(2, l)) }; }
 function indFurnCost(r) { return Math.round(r.c * Math.pow(1.6, indFu(r.id).n)); }
-function indStoreCost(l) { return { gold: Math.round(2e8 * Math.pow(3, l)), mats: [['wood', Math.round(1000 * Math.pow(2, l))], ['stone', Math.round(1000 * Math.pow(2, l))]] }; }
+// Never ask for a full warehouse: furnaces keep nibbling at the stock, so it would sit a few short of the cap forever.
+// The expansion asks 15/16 of the current capacity, rounded to two digits (32K → 30K).
+function indSig2(n) { const p = Math.pow(10, Math.max(0, Math.floor(Math.log10(n)) - 1)); return Math.round(n / p) * p; }
+function indStoreCost(l) { const q = indSig2(1000 * Math.pow(2, l) * 15 / 16); return { gold: Math.round(2e8 * Math.pow(3, l)), mats: [['wood', q], ['stone', q]] }; }
 function indBldCost(l) { return { gold: Math.round(5e8 * Math.pow(2, l)), mats: IND_BLD_MATS[l] }; } // l = current level (0..9)
 function indFu(id) { const fu = ind().fu; return fu[id] || (fu[id] = { n: 0, on: 1, p: 0 }); }
 // A resource can be an industry one (S.leg.ind.r) or a village ore (S.inv).

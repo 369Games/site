@@ -1364,6 +1364,8 @@
 "📋 الجولة الماضية: ما ساهمت": "📋 Last round: you didn't take part",
 "📋 الجولة الماضية: مركزك {0} من {1}، والهدف ما اكتمل": "📋 Last round: you placed {0} of {1}, but the goal wasn't reached",
 "📋 الجولة الماضية: مركزك {0} من {1} ← جائزة +{2}%": "📋 Last round: you placed {0} of {1} → prize +{2}%",
+"المخزن ما عاد يطلب سعته كاملة": "The warehouse no longer asks for its full capacity",
+"📦 ما فيه تطوير يطلب كمية تساوي سعة المخزن بالضبط (المراجل تاكل منه وما يوصل الحد أبداً). توسيع المخزن يطلب الحين أقل من سعته الحالية بشوي، مثلاً 30,000 بدل 32,000، ونفس الشي لسكة الحديد والقارب.": "📦 No upgrade asks for exactly the warehouse capacity any more (furnaces keep eating from it, so it never reaches the cap). Expanding the warehouse now asks a little less than its current capacity, for example 30,000 instead of 32,000, and the same goes for the rails and the boat.",
 "عمال المصنع أرخص": "Cheaper factory workers",
 "👷 سعر عامل الحقول في المصنع صار يزيد 7% مع كل عامل بدل 30%. كذا توصل 50 عامل وتستفيد من سكن العمال لين 150.": "👷 A factory field worker's price now rises 7% per worker instead of 30%. You can reach 50 workers and make use of workers' housing up to 150.",
 "رسومات الورشة وانتظار العقود": "Workshop art and contract wait",

@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.10.4', date: '2026-11-08', big: false, title: L('المخزن ما عاد يطلب سعته كاملة'), items: [
+    L('📦 ما فيه تطوير يطلب كمية تساوي سعة المخزن بالضبط (المراجل تاكل منه وما يوصل الحد أبداً). توسيع المخزن يطلب الحين أقل من سعته الحالية بشوي، مثلاً 30,000 بدل 32,000، ونفس الشي لسكة الحديد والقارب.'),
+  ] },
   { v: '1.10.3', date: '2026-11-08', big: false, title: L('عمال المصنع أرخص'), items: [
     L('👷 سعر عامل الحقول في المصنع صار يزيد 7% مع كل عامل بدل 30%. كذا توصل 50 عامل وتستفيد من سكن العمال لين 150.'),
   ] },

@@ -1066,6 +1066,7 @@ function titlePanel() {
 const GUILD_GEN_CAP = 200; // capped so very high generations don't get hunts worth tens of billions (×200 from generation 16)
 function guildGen() { return Math.min(GUILD_GEN_CAP, Math.max(1, goldGoal() / 1e6)); }
 function qGold(q) { return Math.round(q.gold * questMult() * (q.type === 'deliver' ? 1 : guildGen() * (1 + titleB('quest', 0.1)))); }
+function questBasePower() { return heroPower() / (petMult('pow') * (1 + titleB('legend', 0.05))); }
 function chanceOf(q) { return clamp(Math.pow(heroPower() / q.req, 2), 0.05, 1); }
 function genQuest() {
   const r = rankIdx(), g = S.guild; g.qid++;
@@ -1076,11 +1077,15 @@ function genQuest() {
     return { id: g.qid, type: 'deliver', item: id, qty, gold: Math.round(it.price * qty * 1.7), gp: 20, exp: 480 };
   }
   const dur = pick([45, 90, 180, 360, 600]);
-  const req = Math.round(25 * Math.pow(2, r) * R(0.6, 1.4) * (0.8 + dur / 1200));
+  // Rewards still follow the rank-based size (so they don't jump with your power).
+  const base = Math.round(25 * Math.pow(2, r) * R(0.6, 1.4) * (0.8 + dur / 1200));
+  // 1.7.13: the power a hunt needs is 50%–150% of your own power without the griffin and the «Village Legend» title,
+  // so those two make hunts easier and the rest stays a real choice.
+  const req = Math.max(base, Math.round(questBasePower() * R(0.5, 1.5)));
   return {
     id: g.qid, type: 'hunt', n: pick(HUNT_NAMES), dur, req,
-    gold: Math.round(req * dur / 25 * (1 + r * 0.3)), gp: Math.max(2, Math.round(QUEST_GP[r] * dur / 90)),
-    xp: Math.round(req * dur / 90), exp: 480,
+    gold: Math.round(base * dur / 25 * (1 + r * 0.3)), gp: Math.max(2, Math.round(QUEST_GP[r] * dur / 90)),
+    xp: Math.round(base * dur / 90), exp: 480,
   };
 }
 const ALLY_MIN = 0.75;

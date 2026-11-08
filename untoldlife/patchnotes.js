@@ -3,6 +3,10 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.7.13', date: '2026-11-08', big: false, title: L('مهام الصيد صارت تحدي'), items: [
+    L('⚔️ القوة المطلوبة لمهام الصيد صارت من 50% لين 150% من قوتك، بدل رقم صغير ثابت حسب الرتبة. يعني بعض المهام 100% وبعضها تحتاج تختار.'),
+    L('🦅 قوتك هنا تنحسب بدون الغريفين ولقب «أسطورة القرية»، فهم يخلّون المهام أسهل فعلاً. الجوائز ما تغيّرت.'),
+  ] },
   { v: '1.7.12', date: '2026-11-08', big: false, title: L('حكمة الأجيال ترفع الحد'), items: [
     L('🌳 «حكمة الأجيال» صارت ترفع حد نجوم الإرث لكل جيل بنفس نسبتها. مثلاً عند المستوى 3 (+30%) حد الجيل 500 يصير 650. حد المنجم (200) ما تغيّر.'),
   ] },

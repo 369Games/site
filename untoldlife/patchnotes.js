@@ -3,6 +3,10 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.7.11', date: '2026-11-08', big: false, title: L('البيض للي يلعب'), items: [
+    L('🥚 بيض الحيوانات الأسطورية صار يطيح بس وأنت فاتح اللعبة وتشوفها. لو مسكّرها أو على تبويب ثاني، فرصة البيضة صفر.'),
+    L('🐾 الحيوانات اللي عندك تبقى، وتكبر عادي حتى وأنت برا اللعبة.'),
+  ] },
   { v: '1.7.10', date: '2026-11-07', big: false, title: L('سقف جوائز الصيد'), items: [
     L('📈 مضاعف جوائز مهام الصيد يكبر مع الجيل لين ×200 بس (يوصله الجيل 16)، بدل ما يكبر بلا حد. الأجيال العالية كانت توصل مهماتها لعشرات المليارات.'),
   ] },

@@ -250,7 +250,8 @@ function petFloor(f) {
     const p = d.pets[id], s = petStage(p.xp); p.xp += g;
     if (petStage(p.xp) > s) { const P0 = PETS.find(x => x.id === id); log(L`${P0.e} ${P0.n} كبر وصار ${PET_STAGE[petStage(p.xp)].n}! +${Math.round(PET_STAGE[petStage(p.xp)].b * 100)}% ${P0.sn}`, 'season'); }
   }
-  if (Math.random() < PET_EGG_CH * petEggX(hearts('leila')) * (1 + titleB('tamer', 0.25))) { d.eggs.push(PET_HATCH); d.eggNew = 1; log(L('🥚 طاحت لك بيضة أسطورية بعد ما خلصت الطابق! تلقاها في النقابة ← «🐾 الحيوانات الأسطورية» تحت العدّة، وتفقس بعد 30 دقيقة.'), 'egg'); toast(L('🥚 طاحت لك بيضة أسطورية! تلقاها في النقابة تحت العدّة')); }
+  // Eggs only drop while you're watching: never in the time away from the game (offline) or with the tab hidden.
+  if (!offline && !document.hidden && Math.random() < PET_EGG_CH * petEggX(hearts('leila')) * (1 + titleB('tamer', 0.25))) { d.eggs.push(PET_HATCH); d.eggNew = 1; log(L('🥚 طاحت لك بيضة أسطورية بعد ما خلصت الطابق! تلقاها في النقابة ← «🐾 الحيوانات الأسطورية» تحت العدّة، وتفقس بعد 30 دقيقة.'), 'egg'); toast(L('🥚 طاحت لك بيضة أسطورية! تلقاها في النقابة تحت العدّة')); }
 }
 function hatchEgg() {
   const d = petData(), free = PETS.filter(p => !d.pets[p.id]);
@@ -282,7 +283,7 @@ function petPanel() {
     const prog = nx ? `<small>${L`${fmt(me.xp - PET_STAGE[s].xp)} / ${fmt(nx.xp - PET_STAGE[s].xp)} طابق لين يصير ${nx.n}`}</small><div class="bar"><i style="width:${Math.round((me.xp - PET_STAGE[s].xp) / (nx.xp - PET_STAGE[s].xp) * 100)}%"></i></div>` : `<small>${L('وصل أقصى قوته')}</small>`;
     return `<div class="pet-card st${s}">${petIcon(p, s, 64)}<b>${p.n} • ${PET_STAGE[s].n}</b><span class="good">+${Math.round(PET_STAGE[s].b * 100)}% ${p.sn}</span>${prog}</div>`;
   }).join('');
-  return L`<div class="panel pets"><div class="ph"><h2>🐾 الحيوانات الأسطورية</h2><span class="stat">بيضة نادرة جداً تطيح لما تخلص طابق في الزنزانة</span></div>
+  return L`<div class="panel pets"><div class="ph"><h2>🐾 الحيوانات الأسطورية</h2><span class="stat">بيضة نادرة جداً تطيح لما تخلص طابق وأنت فاتح اللعبة</span></div>
     <p class="hint">البيضة تفقس بعد 30 دقيقة: تنين (+هجوم)، يونيكورن (+دفاع)، أو غريفين (+قوة في مهام النقابة). يكبر لما تخلص طوابق تتحداك: السهل ما يحسب إلا لو كان أعلى طابق وصلته في هالجيل، المناسب بطابق، الصعب بطابقين، الصعب جداً بـ4، والقاتل بـ6. رضيع +10%، مراهق +25%، بالغ +50%. الحيوانات للعائلة وتبقى معك كل الأجيال.</p>
     ${Object.keys(d.pets).length ? `<p class="hint">${L`🌱 الطابق ${S.dun.floor} يكبّر حيواناتك: ${[L('ولا شي (سهل)'), S.dun.floor >= S.dun.max && assess(S.dun.floor).r >= 1.5 ? L('طابق واحد (سهل، بس أعلى طابق وصلته)') : L('طابق واحد (مناسب)'), L('طابقين (صعب)'), '', L('4 طوابق (صعب جداً)'), '', L('6 طوابق (قاتل)')][petGrow(S.dun.floor)]}`}</p>` : ''}
     <div class="pet-list">${eggs}${cards}</div></div>`;

@@ -312,7 +312,7 @@ function tickPets(dt) {
 }
 function petIcon(p, stage, size, sad) {
   const key = sad && stage === 2 && ART['pet-' + p.id + '-saddle'] ? 'pet-' + p.id + '-saddle' : 'pet-' + p.id + '-' + stage;
-  return ART[key] ? `<span class="pet-pic">${icon(key, [70, 86, 100][stage] || size)}</span>` : `<span class="pet-emoji s${stage}">${p.e}</span>`;
+  return ART[key] ? `<span class="pet-pic">${icon(key, [84, 104, 124][stage] || size)}</span>` : `<span class="pet-emoji s${stage}">${p.e}</span>`;
 }
 function petPanel() {
   const d = petData();
@@ -327,7 +327,7 @@ function petPanel() {
   }).join('');
   return L`<div class="panel pets"><div class="ph"><h2>🐾 الحيوانات الأسطورية</h2><span class="stat">بيضة نادرة جداً تطيح لما تخلص طابق وأنت فاتح اللعبة</span></div>
     <p class="hint">البيضة تفقس بعد 30 دقيقة: تنين (+هجوم)، يونيكورن (+دفاع)، أو غريفين (+قوة في مهام النقابة). يكبر لما تخلص طوابق تتحداك: السهل ما يحسب إلا لو كان أعلى طابق وصلته في هالجيل، المناسب بطابق، الصعب بطابقين، الصعب جداً بـ4، والقاتل بـ6. رضيع +10%، مراهق +25%، بالغ +50%. الحيوانات للعائلة وتبقى معك كل الأجيال.</p>
-    ${Object.keys(d.pets).length ? `<p class="hint">${L`🌱 الطابق ${S.dun.floor} يكبّر حيواناتك: ${[L('ولا شي (سهل)'), S.dun.floor >= S.dun.max && assess(S.dun.floor).r >= 1.5 ? L('طابق واحد (سهل، بس أعلى طابق وصلته)') : L('طابق واحد (مناسب)'), L('طابقين (صعب)'), '', L('4 طوابق (صعب جداً)'), '', L('6 طوابق (قاتل)')][petGrow(S.dun.floor)]}`}</p>` : ''}
+    ${Object.keys(d.pets).length ? `<p class="hint pet-grow">${L`🌱 الطابق ${S.dun.floor} يكبّر حيواناتك: ${[L('ولا شي (سهل)'), S.dun.floor >= S.dun.max && assess(S.dun.floor).r >= 1.5 ? L('طابق واحد (سهل، بس أعلى طابق وصلته)') : L('طابق واحد (مناسب)'), L('طابقين (صعب)'), '', L('4 طوابق (صعب جداً)'), '', L('6 طوابق (قاتل)')][petGrow(S.dun.floor)]}`}</p>` : ''}
     ${saddleHead()}<div class="pet-list">${eggs}${cards}</div></div>`;
 }
 function saddleHead() {
@@ -340,7 +340,7 @@ function saddleCard(p) {
   if (!S.leg.saddle) return '';
   const me = petData().pets[p.id], l = me.sl || 0, need = hxpNeed(l + 1), on = saddled(p.id);
   const lv = `<small>${L`مستوى السرج ${l}: +${(l * SADDLE_STEP * 100).toFixed(2)}% ${SADDLE_LV[p.id]}`}</small><div class="bar"><i style="width:${Math.min(100, (me.sx || 0) / need * 100)}%"></i></div>`;
-  return `<div class="saddle-sk ${on ? 'on' : ''}"><small>${on ? '' : L('لما يلبس السرج: ')}${SADDLE_SK[p.id]}</small>${lv}${on ? `<small class="good">${L`${sadIc(18)} عليه السرج`}</small>` : `<button class="btn ghost sm" data-a="saddleOn" data-v="${p.id}">${L`${sadIc(18)} حط السرج عليه`}</button>`}</div>`;
+  return `<div class="saddle-sk ${on ? 'on' : ''}"><small>${on ? '' : L('لما يلبس السرج: ')}${SADDLE_SK[p.id]}</small>${lv}${on ? `<small class="sad-on">${L`${sadIc(18)} عليه السرج`}</small>` : `<button class="btn ghost sm" data-a="saddleOn" data-v="${p.id}">${L`${sadIc(18)} حط السرج عليه`}</button>`}</div>`;
 }
 
 const BUILDINGS = [

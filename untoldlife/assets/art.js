@@ -31,6 +31,7 @@ for(let i=0;i<7;i++)ART['glove-'+i]={sheet:'glove',index:i};
 ['forbidden','quantity','breed','deepest','top','compass','up','down','spot-lake','spot-river','spot-sea','sunny','eat','auto','pets','titles','gear','week','map','save','person','ring','help','check','guild','plant-all','water-all'].forEach((id,i)=>{ART['icon-'+id]={sheet:'uiicons',index:i};});
 ['easier','harder','highest','locked','merc-skills','pause','retreat','sellable','skill-eat','skill-loot','skill-mastery','skill-power','skill-quests','stop','support'].forEach((id,i)=>{ART['icon-'+id]={sheet:'uiicons2',index:i};});
 ['auto-forge'].forEach((id,i)=>{ART['icon-'+id]={sheet:'uiicons3',index:i};});
+['icon-saddle','pet-dragon-saddle','pet-unicorn-saddle','pet-griffin-saddle'].forEach((id,i)=>{ART[id]={sheet:'saddle',index:i};});
 /* Emoji in text that now has its own picture (the dungeon used to show copper ore). */
 Object.assign(PX_EMOJI,{'🕳️':'icon-dungeon','🧳':'icon-merchant','⚖️':'icon-floorfit','🤝':'icon-friend','🫡':'ally'});
 /* Salma's portraits: neutral, friendly, joyful (assets/art/salma-portraits). */

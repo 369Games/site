@@ -130,3 +130,4 @@ for(const t of ['hoe','can','pick','sword','armor','rod','glove','crook'])ART_CU
 ['forbidden','quantity','breed','deepest','top','compass','up','down','spot-lake','spot-river','spot-sea','sunny','eat','auto','pets','titles','gear','week','map','save','person','ring','help','check','guild','plant-all','water-all'].forEach((id,i)=>{ART_CUTOUTS['uiicons:'+i]='art/ui-icons/icon-'+id+'.webp';});
 ['easier','harder','highest','locked','merc-skills','pause','retreat','sellable','skill-eat','skill-loot','skill-mastery','skill-power','skill-quests','stop','support'].forEach((id,i)=>{ART_CUTOUTS['uiicons2:'+i]='art/ui-icons2/icon-'+id+'.webp';});
 ['auto-forge'].forEach((id,i)=>{ART_CUTOUTS['uiicons3:'+i]='art/ui-icons3/icon-'+id+'.webp';});
+['icon-saddle','pet-dragon-saddle','pet-unicorn-saddle','pet-griffin-saddle'].forEach((id,i)=>{ART_CUTOUTS['saddle:'+i]='art/saddle/'+id+'.webp';});

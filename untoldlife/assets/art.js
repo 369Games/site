@@ -28,6 +28,7 @@ for(let i=0;i<7;i++)ART['glove-'+i]={sheet:'glove',index:i};
 ['helmet','shield','amulet','boots'].forEach((id,p)=>{for(let i=0;i<8;i++)ART[id+'-'+i]={sheet:'gear16',index:p*8+i};});
 ['pet-egg','pet-griffin-0','pet-griffin-1','pet-griffin-2','pet-dragon-0','pet-dragon-1','pet-dragon-2','pet-unicorn-0','pet-unicorn-1','pet-unicorn-2'].forEach((id,i)=>{ART[id]={sheet:'pets',index:i};});
 ['hunt','sword','guard','iron','sage','quest','swift','tamer','healer','legend'].forEach((id,i)=>{ART['title-'+id]={sheet:'titles',index:i};});
+['forbidden','quantity','breed','deepest','top','compass','up','down','spot-lake','spot-river','spot-sea','sunny','eat','auto','pets','titles','gear','week','map','save','person','ring','help','check','guild','plant-all','water-all'].forEach((id,i)=>{ART['icon-'+id]={sheet:'uiicons',index:i};});
 /* Emoji in text that now has its own picture (the dungeon used to show copper ore). */
 Object.assign(PX_EMOJI,{'🕳️':'icon-dungeon','🧳':'icon-merchant','⚖️':'icon-floorfit','🤝':'icon-friend','🫡':'ally'});
 /* Salma's portraits: neutral, friendly, joyful (assets/art/salma-portraits). */

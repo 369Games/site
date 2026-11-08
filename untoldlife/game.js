@@ -1831,7 +1831,7 @@ function costBtn(a, v, cost, label, cls = 'gold', extraDisabled = false) {
 function viewFarm() {
   const s = SEASONS[S.season], gh = ghCount();
   let h = L`<div class="panel"><div class="ph"><h2>🌱 المزرعة</h2>${skillBar('farm')}</div>
-  <details class="farm-help"><summary>${glyph("help")} إرشادات الزراعة وموسم ${s.n}</summary><p class="hint">${icon(s)} نحن في موسم <b>${s.n}</b>: محاصيل الموسم تنمو بسرعة كاملة وغيرها بنصف السرعة${gh ? L` — البيت المحمي يحمي أول ${gh} أحواض 🏡` : ''}.
+  <details class="farm-help"><summary>${icon('icon-help', 20)} إرشادات الزراعة وموسم ${s.n}</summary><p class="hint">${icon(s)} نحن في موسم <b>${s.n}</b>: محاصيل الموسم تنمو بسرعة كاملة وغيرها بنصف السرعة${gh ? L` — البيت المحمي يحمي أول ${gh} أحواض 🏡` : ''}.
   اضغط الحوض الفارغ للزراعة، والنامي لسقيه 💧 (يضاعف السرعة)، والجاهز للحصاد.</p></details>
   ${noFarm() ? L('<p class="hint">🚫 الزراعة ممنوعة في تحدي هذا الجيل.</p>') : ''}
   `;
@@ -2058,7 +2058,7 @@ function viewGuild() {
     <div class="duninfo" id="dunInfo"></div>
     <div class="enemy" id="enemyBox"></div>
   </div>`;
-  let h = L`<div class="panel"><div class="ph"><h2>📜 نقابة المرتزقة</h2><span class="rank">${RANKS[r][0]}</span></div>
+  let h = L`<div class="panel"><div class="ph"><h2>${icon('icon-guild', 28)} نقابة المرتزقة</h2><span class="rank">${RANKS[r][0]}</span></div>
     <div class="kv"><span>نقاط النقابة</span><span id="g_gpt"></span></div><div class="bar gp"><i id="g_gp"></i></div>
     <p class="hint">مهمات الصيد تعمل في الخلفية ونسبة نجاحها تعتمد على قوتك (⚡ <b id="g_pow"></b>). مهمات التوصيل تسلمها فوراً من مخزونك. الخانات: ${g.active.length}/${questSlots()}</p>
     ${guildGen() > 1 ? L`<p class="hint">📈 جوائز الصيد ×${guildGen() >= 100 ? fmt(guildGen()) : Math.round(guildGen() * 10) / 10} لأنك في الجيل ${S.leg.gen}${guildGen() >= GUILD_GEN_CAP ? L(': وصلت الحد الأعلى (×200).') : L(': تكبر مع كل جيل لين ×200.')}</p>` : ''}
@@ -2116,7 +2116,7 @@ function gearPanel() {
       <b>${lv ? LEG_TOOLS[id] : t.n}</b><small>${lv ? L`+${lv}% • ${rar.n}` : TIER[l]}</small></button>`;
   };
   const rows = GEAR_SLOTS.map(([id]) => { const t = TOOLS.find(x => x.id === id), l = S.tools[id] || 0; return `<div class="kv"><span>${t.n}</span><span>${l ? t.eff(l, l >= 6 ? lf(id) : 1) : L('ما طوّرته بعد')}</span></div>`; }).join('');
-  return L`<div class="panel gear"><div class="ph"><h2>🎒 عدّة ${esc(S.name)}</h2><span class="stat">اضغط أي قطعة عشان تطوّرها عند الحداد</span></div>
+  return L`<div class="panel gear"><div class="ph"><h2>${icon('icon-gear', 28)} عدّة ${esc(S.name)}</h2><span class="stat">اضغط أي قطعة عشان تطوّرها عند الحداد</span></div>
     <div class="gear-wrap"><div class="gear-doll">${GEAR_SLOTS.map(slot).join('')}</div>
     <div class="gear-stats"><div class="kv"><span>🗡️ الهجوم</span><b>${fmt(heroAtk())}</b></div><div class="kv"><span>🛡️ الدفاع</span><b>${fmt(heroDef())}</b></div>
       <div class="kv"><span>❤️ الصحة</span><b>${fmt(heroMaxHp())}</b></div><div class="kv"><span>⚡ القوة</span><b>${fmt(heroPower())}</b></div>
@@ -2180,7 +2180,7 @@ function updGuild() {
   $('g_gp').style.width = (hi ? (g.gp - lo) / (hi - lo) * 100 : 100) + '%';
   $('g_gpt').textContent = hi ? L`${fmt(g.gp)} / ${fmt(hi)} للرتبة ${RANKS[r + 1][0]}` : L`${fmt(g.gp)} — أعلى رتبة!`;
   $('g_pow').textContent = fmt(heroPower());
-  const eb2 = $('eatBtn'); if (eb2) eb2.textContent = D.eatCd > 0 ? L`🍽️ ${Math.ceil(D.eatCd)}ث` : L('🍽️ كُل الآن');
+  const eb2 = $('eatBtn'); if (eb2) visualText(eb2, D.eatCd > 0 ? L`🍽️ ${Math.ceil(D.eatCd)}ث` : L('🍽️ كُل الآن'));
   const rb = $('g_ref');
   if (rb) { rb.disabled = g.refCd > 0 || S.gold < refreshCost(); rb.textContent = g.refCd > 0 ? L`🔄 مهمات جديدة بعد ${Math.ceil(g.refCd)}ث` : L`🔄 مهمات جديدة (${fmt(refreshCost())}💰)`; }
   g.active.forEach(q => {
@@ -2576,7 +2576,7 @@ function updLegacy() {
   if (cb) {
     const c = CHALLENGES.find(x => x.id === S.gen.ch), pr = S.gen.chDone ? 1 : Math.min(1, chValue(c) / chGoal(c));
     cb.style.width = pr * 100 + '%';
-    $('lg_chp').textContent = S.gen.chDone ? L('✅ أنجزته!') : `${fmt(chValue(c))} / ${fmt(chGoal(c))}`;
+    visualText($('lg_chp'), S.gen.chDone ? L('✅ أنجزته!') : `${fmt(chValue(c))} / ${fmt(chGoal(c))}`);
   }
 }
 

@@ -77,6 +77,12 @@ function chooseShelf(season){
 }
 document.addEventListener('click',event=>{const button=event.target.closest('[data-shelf]');if(button)chooseShelf(+button.dataset.shelf);});
 Object.assign(PX_EMOJI,{'➕':'plus','✅':'check','❌':'close','⚠️':'help','🟢':'check','💡':'help','❓':'help','📊':'settings','🌱':'farm'});
+// UI icons batch (art/ui-icons): painted icons in place of phone emoji and line glyphs.
+Object.assign(PX_EMOJI,{'🚫':'icon-forbidden','🔢':'icon-quantity','🧬':'icon-breed','⏬':'icon-deepest','⏫':'icon-top','🧭':'icon-compass','⬆️':'icon-up','⬇️':'icon-down',
+ '🏞️':'icon-spot-lake','🌊':'icon-spot-river','🌅':'icon-spot-sea','☀️':'icon-sunny','🍽️':'icon-eat','▶️':'icon-auto','🐾':'icon-pets','🎖️':'icon-titles','📅':'icon-week',
+ '🗺️':'icon-map','💾':'icon-save','🧑':'icon-person','💍':'icon-ring','❓':'icon-help','✅':'icon-check','🌱':'icon-plant-all','💧':'icon-water-all'});
+for(const k of ['sun','water'])delete SIMPLE_ICONS[k]; // drawn from the painted icons below instead of the line glyphs
+ART.sun=ART['icon-sunny'];ART.water=ART['icon-water-all'];ART.help=ART['icon-help'];ART.check=ART['icon-check'];
 const NAV_ART={farm:'sprout',barn:'cow',mine:'pick',lake:'rod',guild:'sword',smith:'anvil',market:'chest',village:'village',legacy:'legacy-tree',settings:'gear'};
 function tabsMarkup(list,badges,current){
  return list.map(([id,label])=>`<button data-a="tab" data-v="${id}" class="${current===id?'on':''}" aria-current="${current===id?'page':'false'}"><span class="nav-emblem nav-${id}" aria-hidden="true">${artMarkup(NAV_ART[id],40,'',true)}${badges[id]==='dot'?'<i class="tab-dot"></i>':''}</span><span>${label.replace(/^\S+\s/,'')}</span>${badges[id]&&badges[id]!=='dot'?`<span class="badge">${typeof badges[id]==='number'?badges[id]:'✦'}</span>`:''}</button>`).join('');

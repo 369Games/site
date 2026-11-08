@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.7.15', date: '2026-11-08', big: false, title: L('أيقونات جديدة'), items: [
+    L('🎨 27 أيقونة مرسومة بستايل اللعبة بدل إيموجي الجوال: الأزرار، العناوين، أماكن الصيد، السقي والزراعة، والعلامات ✅ وغيرها.'),
+  ] },
   { v: '1.7.14', date: '2026-11-08', big: false, title: L('شراء الحيوانات بالكمية'), items: [
     L('🔢 في الحظيرة جنب زر الشراء: زر «كمية». تكتب كم حيوان تبي، ويطلع لك المبلغ كامل قبل ما تشتري، وفيه زر «الأقصى» لأكثر عدد يكفيه ذهبك ومكانك.'),
   ] },

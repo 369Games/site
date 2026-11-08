@@ -127,3 +127,4 @@ for(const t of ['hoe','can','pick','sword','armor','rod','glove','crook'])ART_CU
 ['helmet','shield','amulet','boots'].forEach((id,p)=>{for(let i=0;i<8;i++)ART_CUTOUTS['gear16:'+(p*8+i)]='art/combat-gear/'+id+'-'+i+'.webp';});
 ['pet-egg','pet-griffin-0','pet-griffin-1','pet-griffin-2','pet-dragon-0','pet-dragon-1','pet-dragon-2','pet-unicorn-0','pet-unicorn-1','pet-unicorn-2'].forEach((id,i)=>{ART_CUTOUTS['pets:'+i]='art/pets/'+id+'.webp';});
 ['hunt','sword','guard','iron','sage','quest','swift','tamer','healer','legend'].forEach((id,i)=>{ART_CUTOUTS['titles:'+i]='art/titles/title-'+id+'.webp';});
+['forbidden','quantity','breed','deepest','top','compass','up','down','spot-lake','spot-river','spot-sea','sunny','eat','auto','pets','titles','gear','week','map','save','person','ring','help','check','guild','plant-all','water-all'].forEach((id,i)=>{ART_CUTOUTS['uiicons:'+i]='art/ui-icons/icon-'+id+'.webp';});

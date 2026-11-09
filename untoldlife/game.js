@@ -1346,8 +1346,9 @@ function dunGoal() { return Math.max(30 + 3 * Math.max(0, S.leg.gen - 3), (S.gen
 function canRetire() { return S.gen.earned >= goldGoal() && S.dun.max >= dunGoal(); }
 // Dungeon stars only count floors climbed this generation, not the free start floor.
 // Stars per retirement have a cap that grows every 5 generations, and the mine gives at most 200 of them.
-const MINE_STAR_CAP = 200;
-function starCapBase() { const g = S.leg.gen; return g <= 5 ? 300 : g <= 10 ? 500 : g <= 15 ? 800 : g <= 20 ? 1200 : 1800; }
+// 1.13.4: the star cap per generation starts at 500 and climbs to 3,600; the mine's share is capped at 500.
+const MINE_STAR_CAP = 500;
+function starCapBase() { const g = S.leg.gen; return g <= 5 ? 500 : g <= 10 ? 900 : g <= 15 ? 1500 : g <= 20 ? 2400 : 3600; }
 // «Wisdom of Generations» raises the per-generation star cap by the same % it adds to the stars (the mine part keeps its own cap).
 // The tree's Wisdom of Generations and the Lucky Amulet heirloom raise the cap too, not just the stars (else they hit the cap).
 function starCap() { return Math.round(starCapBase() * (1 + 0.1 * P('t_stars')) * (1 + 0.05 * H('amulet'))); }

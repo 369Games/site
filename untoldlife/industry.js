@@ -486,7 +486,7 @@ function viewPat() {
     <small>${L`10 أساس + نص مجموع مستويات مبنى البلدة والمخزن والحقول (${indRenewLv()}) + براءة لكل 20 عقد (${I.kd || 0})`}</small>
     <p class="hint">${L('ينعاد: الحقول والعمال والأفران والطاولات والمخزن ومبنى البلدة والمواد والعقود، والمهندس (إلا لو عندك دفتر المهندس). يبقى: سكة الحديد والقارب والخدمات والاختراعات.')}</p>
     ${ok ? `<div class="row"><button class="btn ${armed ? 'red' : 'gold'}" data-a="indRenew">${armed ? L('⚠️ متأكد؟ اضغط مرة ثانية') : L('🔬 جدّد المصنع')}</button></div>` : `<p class="bad">${L`🏤 يحتاج مبنى البلدة مستوى ${IND_RENEW_HALL} (عندك ${indHall()})`}</p>`}</div>`;
-  h += '</div>' + L`<div class="panel"><div class="ph"><h2>🗺️ خريطة الاختراعات</h2></div><div class="pt-tree"><i class="pt-bar" aria-hidden="true"></i>`;
+  h += '</div>' + L`<div class="panel"><div class="ph"><h2>🗾 خريطة الاختراعات</h2></div><div class="pt-tree"><i class="pt-bar" aria-hidden="true"></i>`;
   for (const x of IND_PT) {
     const l = indPt(x.id), lock = indPtLocked(x), c = l < x.max ? x.c[l] : 0, nd = x.need && IND_PT.find(p => p.id === x.need);
     h += `<div class="card ind-card pt-node ${x.need ? 'has-need' : 'pt-root'} ${l ? 'lgcard g on' : ''} ${lock ? 'pt-lock' : ''}" style="grid-row:${x.r};grid-column:${x.col}"><div class="top"><span class="big">${ART['ind-pt-' + x.id] ? icon('ind-pt-' + x.id, 48) : x.id === 'hall' ? indHallIc(48, 4) : `<span class="ind-e big">${x.e}</span>`}</span><div class="meta"><b>${x.n}</b><small>${L`المستوى ${l} من ${x.max}`}</small></div></div>

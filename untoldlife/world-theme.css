@@ -454,3 +454,4 @@ body.lite #log li.golden,body.lite #log li.egg{box-shadow:none}
 .ind-world .world-land-day{background-image:url('assets/art/ind-terrain-day.webp')}
 .ind-world .world-land-night{background-image:url('assets/art/ind-terrain-night.webp')}
 .village-lit:not(.ind-world) .world-land-night{background-image:url('assets/art/terrain-night-electric.webp')}
+.village-lit:not(.ind-world) .world-land-day{background-image:url('assets/art/terrain-day-electric.webp')}

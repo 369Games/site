@@ -1263,7 +1263,7 @@
 "⚠️ متأكد؟ اضغط مرة ثانية": "⚠️ 确定吗？再按一次",
 "🔬 جدّد المصنع": "🔬 翻新工厂",
 "🏤 يحتاج مبنى البلدة مستوى {0} (عندك {1})": "🏤 需要镇公所 {0} 级（你现在 {1} 级）",
-"<div class=\"panel\"><div class=\"ph\"><h2>🗺️ خريطة الاختراعات</h2></div><div class=\"pt-tree\"><i class=\"pt-bar\" aria-hidden=\"true\"></i>": "<div class=\"panel\"><div class=\"ph\"><h2>🗺️ 发明地图</h2></div><div class=\"pt-tree\"><i class=\"pt-bar\" aria-hidden=\"true\"></i>",
+"<div class=\"panel\"><div class=\"ph\"><h2>🗾 خريطة الاختراعات</h2></div><div class=\"pt-tree\"><i class=\"pt-bar\" aria-hidden=\"true\"></i>": "<div class=\"panel\"><div class=\"ph\"><h2>🗾 发明地图</h2></div><div class=\"pt-tree\"><i class=\"pt-bar\" aria-hidden=\"true\"></i>",
 "🔒 يحتاج {0} {1}/{2}": "🔒 需要{0} {1}/{2}",
 "🔒 يحتاج {0}": "🔒 需要{0}",
 "🔬 اخترع ({0} 🎫)": "🔬 发明（{0} 🎫）",

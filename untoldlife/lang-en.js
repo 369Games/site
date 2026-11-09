@@ -1263,7 +1263,7 @@
 "⚠️ متأكد؟ اضغط مرة ثانية": "⚠️ Sure? Press again",
 "🔬 جدّد المصنع": "🔬 Renew the factory",
 "🏤 يحتاج مبنى البلدة مستوى {0} (عندك {1})": "🏤 Needs town hall level {0} (you have {1})",
-"<div class=\"panel\"><div class=\"ph\"><h2>🗺️ خريطة الاختراعات</h2></div><div class=\"pt-tree\"><i class=\"pt-bar\" aria-hidden=\"true\"></i>": "<div class=\"panel\"><div class=\"ph\"><h2>🗺️ Invention map</h2></div><div class=\"pt-tree\"><i class=\"pt-bar\" aria-hidden=\"true\"></i>",
+"<div class=\"panel\"><div class=\"ph\"><h2>🗾 خريطة الاختراعات</h2></div><div class=\"pt-tree\"><i class=\"pt-bar\" aria-hidden=\"true\"></i>": "<div class=\"panel\"><div class=\"ph\"><h2>🗾 Invention map</h2></div><div class=\"pt-tree\"><i class=\"pt-bar\" aria-hidden=\"true\"></i>",
 "🔒 يحتاج {0} {1}/{2}": "🔒 Needs {0} {1}/{2}",
 "🔒 يحتاج {0}": "🔒 Needs {0}",
 "🔬 اخترع ({0} 🎫)": "🔬 Invent ({0} 🎫)",

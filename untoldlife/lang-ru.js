@@ -1263,7 +1263,7 @@
 "⚠️ متأكد؟ اضغط مرة ثانية": "⚠️ Уверены? Нажмите ещё раз",
 "🔬 جدّد المصنع": "🔬 Обновить фабрику",
 "🏤 يحتاج مبنى البلدة مستوى {0} (عندك {1})": "🏤 Нужна ратуша уровня {0} (у вас {1})",
-"<div class=\"panel\"><div class=\"ph\"><h2>🗺️ خريطة الاختراعات</h2></div><div class=\"pt-tree\"><i class=\"pt-bar\" aria-hidden=\"true\"></i>": "<div class=\"panel\"><div class=\"ph\"><h2>🗺️ Карта изобретений</h2></div><div class=\"pt-tree\"><i class=\"pt-bar\" aria-hidden=\"true\"></i>",
+"<div class=\"panel\"><div class=\"ph\"><h2>🗾 خريطة الاختراعات</h2></div><div class=\"pt-tree\"><i class=\"pt-bar\" aria-hidden=\"true\"></i>": "<div class=\"panel\"><div class=\"ph\"><h2>🗾 Карта изобретений</h2></div><div class=\"pt-tree\"><i class=\"pt-bar\" aria-hidden=\"true\"></i>",
 "🔒 يحتاج {0} {1}/{2}": "🔒 Нужно: {0} {1}/{2}",
 "🔒 يحتاج {0}": "🔒 Нужно: {0}",
 "🔬 اخترع ({0} 🎫)": "🔬 Изобрести ({0} 🎫)",

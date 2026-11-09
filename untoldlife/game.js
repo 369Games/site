@@ -1486,6 +1486,7 @@ function simulate(total, step = 1) {
 const A = {
   tab: v => {
     if (!tabOpen(v)) return toast(L`🔒 «${tabName(v)}» يفتح لما: ${TAB_UNLOCK[v].why}`);
+    if (v === 'util' && !indPt('util')) return toast(L('🔒 «الخدمات» تنفتح باختراع «الخدمات العامة» من تبويب الاختراعات'));
     if ((S.unl || {})[v] === 2) S.unl[v] = 1;
     tab = v; lastSig = ''; if (v === 'guild') S.leg.eggNew = 0; const y = $('wrap').getBoundingClientRect().top + scrollY - $('tabs').offsetHeight - 16; if (scrollY > y) scrollTo(0, Math.max(0, y)); },
   seed: v => { S.farm.seed = v; },
@@ -1968,7 +1969,7 @@ function renderTabs() {
   document.documentElement.classList.toggle('ind-world', iw); // the factory's own colours (world-theme.css)
   if (!list.some(t => t[0] === tab)) { tab = list[0][0]; lastSig = ''; }
   const sw = indOpen() ? `<button data-a="world" data-v="${iw ? 'village' : 'ind'}" class="world-btn"><span class="nav-emblem" aria-hidden="true">${icon(iw ? indArt('village', 'village') : indArt('factory', 'icon-auto-forge'), 40)}${(iw ? villageAlert() : indAlert()) ? '<i class="tab-dot"></i>' : ''}</span><span>${iw ? L('القرية') : L('المصنع')}</span></button>` : '';
-  $('tabs').innerHTML = tabsMarkup(list, iw ? {} : badge, tab, iw ? {} : locked) + sw;
+  $('tabs').innerHTML = tabsMarkup(list, iw ? {} : badge, tab, iw ? indLocked() : locked) + sw;
 }
 function skillBar(k) {
   return `<div class="skill"><span>${SKILL_N[k]} <b id="sk_${k}_l"></b></span><div class="bar xp"><i id="sk_${k}_b"></i></div><small id="sk_${k}_t"></small></div>`;

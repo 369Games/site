@@ -84,9 +84,10 @@ const IND_HALL_STAGES = [
   { from: 0, n: L('بيت البلدة'), e: '🏠' }, { from: 4, n: L('دار البلدة الكبيرة'), e: '🏡' },
   { from: 7, n: L('مقر البلدة الفخم'), e: '🏛️' }, { from: 10, n: L('قصر البلدة'), e: '🏰' },
 ];
+function indLocked() { return indPt('util') ? {} : { util: 1 }; }
 function indTabs() {
   return [['fields', L('⛰️ الحقول')], ['furn', L('🏭 المراجل')], ['ws', L('🔧 الورشة')], ['city', L('🏙️ المدينة')],
-    ...(indPt('util') ? [['util', L('⚡ الخدمات')]] : []), ['pat', L('🔬 الاختراعات')], ['settings', L('⚙️ المزيد')]];
+    ['util', L('⚡ الخدمات')], ['pat', L('🔬 الاختراعات')], ['settings', L('⚙️ المزيد')]];
 }
 // Tab emblems: the painted ones once art/industry is in, stand-ins until then.
 const indArt = (k, alt) => ART['ind-tab-' + k] ? 'ind-tab-' + k : alt;
@@ -97,15 +98,16 @@ Object.assign(NAV_ART, { fields: indArt('fields', 'rock'), furn: indArt('furn', 
    pays patents by how far it got. Rails and boat stay, so the village keeps its discounts. Patents buy permanent perks;
    the first one opens the public services, which pay gold straight into your purse (no market). */
 const IND_RENEW_HALL = 10;
+// A skill tree: r/col place each invention, and it opens once the one above (need) reaches level nl.
 const IND_PT = [
-  { id: 'util', e: '⚡', max: 1, c: [10], n: L('الخدمات العامة'), d: L('يفتح تبويب الخدمات: الكهرباء والمياه والضرايب، وكلها تجيب ذهب مباشرة') },
-  { id: 'hall', e: '🏛️', max: 3, c: [8, 8, 8], n: L('أساس متين'), d: L('بعد كل تجديد يبدأ مبنى البلدة من مستوى أعلى (+1 لكل مستوى)') },
-  { id: 'store', e: '📦', max: 3, c: [8, 8, 8], n: L('مخزن جاهز'), d: L('بعد كل تجديد يبدأ المخزن من مستوى أعلى (+1 لكل مستوى)') },
-  { id: 'eng', e: '👷', max: 1, c: [20], n: L('دفتر المهندس'), d: L('تطويرات المهندس تبقى معك بعد التجديد') },
-  { id: 'slot4', e: '📜', max: 1, c: [15], n: L('تاجر رابع'), d: L('خانة عقد رابعة في المدينة') },
-  { id: 'fast', e: '⚙️', max: 5, c: [6, 6, 6, 6, 6], n: L('آلات محسّنة'), d: L('+10% سرعة لكل المراجل وطاولات الورشة لكل مستوى') },
-  { id: 'thrift', e: '♻️', max: 1, c: [40], n: L('مصانع موفّرة'), d: L('كل الأفران وطاولات الورشة تعطي نفس الإنتاج بنص المواد') },
-  { id: 'grid', e: '🔌', max: 5, c: [10, 10, 10, 10, 10], n: L('شبكة أقوى'), d: L('+20% ذهب من الخدمات لكل مستوى'), need: 'util' },
+  { id: 'util', r: 1, col: 2, e: '⚡', max: 1, c: [10], n: L('الخدمات العامة'), d: L('يفتح تبويب الخدمات: الكهرباء والمياه والضرايب، وكلها تجيب ذهب مباشرة') },
+  { id: 'hall', r: 2, col: 1, need: 'util', nl: 1, e: '🏛️', max: 3, c: [8, 8, 8], n: L('أساس متين'), d: L('بعد كل تجديد يبدأ مبنى البلدة من مستوى أعلى (+1 لكل مستوى)') },
+  { id: 'store', r: 2, col: 3, need: 'util', nl: 1, e: '📦', max: 3, c: [8, 8, 8], n: L('مخزن جاهز'), d: L('بعد كل تجديد يبدأ المخزن من مستوى أعلى (+1 لكل مستوى)') },
+  { id: 'eng', r: 4, col: 1, need: 'fast', nl: 1, e: '👷', max: 1, c: [20], n: L('دفتر المهندس'), d: L('تطويرات المهندس تبقى معك بعد التجديد') },
+  { id: 'slot4', r: 3, col: 3, need: 'store', nl: 1, e: '📜', max: 1, c: [15], n: L('تاجر رابع'), d: L('خانة عقد رابعة في المدينة') },
+  { id: 'fast', r: 3, col: 1, need: 'hall', nl: 1, e: '⚙️', max: 5, c: [6, 6, 6, 6, 6], n: L('آلات محسّنة'), d: L('+10% سرعة لكل المراجل وطاولات الورشة لكل مستوى') },
+  { id: 'thrift', r: 3, col: 2, need: 'grid', nl: 5, e: '♻️', max: 1, c: [40], n: L('مصانع موفّرة'), d: L('كل الأفران وطاولات الورشة تعطي نفس الإنتاج بنص المواد') },
+  { id: 'grid', r: 2, col: 2, need: 'util', nl: 1, e: '🔌', max: 5, c: [10, 10, 10, 10, 10], n: L('شبكة أقوى'), d: L('+20% ذهب من الخدمات لكل مستوى') },
 ];
 /* Public services: built with village gold and factory goods, kept forever (they don't reset with a renewal).
    Gold per second = base × the village gold multiplier, so they keep pace with the generations like the barn does.
@@ -120,6 +122,7 @@ const IND_UTIL = [
 ];
 function indInMult() { return indPt('thrift') ? 0.5 : 1; }
 function indPt(id) { const t = (S.leg.ind || {}).pt; return t ? t[id] || 0 : 0; }
+function indPtLocked(x) { return !!x.need && indPt(x.need) < x.nl; }
 function indPats() { return Math.floor(ind().pat || 0); }
 function indRenewLv() { const I = ind(); return indHall() + (I.b.store || 0) + IND_FIELDS.reduce((a, f) => a + I.f[f.id].l, 0); }
 function indRenewGain() { return 10 + Math.floor(indRenewLv() / 2) + Math.floor((ind().kd || 0) / 20); }
@@ -334,7 +337,7 @@ const IND_ACTIONS = {
   },
   indPt: v => {
     const x = IND_PT.find(p => p.id === v); if (!x) return;
-    const I = ind(), l = indPt(v); if (l >= x.max || (x.need && !indPt(x.need)) || indPats() < x.c[l]) return;
+    const I = ind(), l = indPt(v); if (l >= x.max || indPtLocked(x) || indPats() < x.c[l]) return;
     I.pat -= x.c[l]; I.pt = I.pt || {}; I.pt[v] = l + 1;
     log(L`🔬 اخترعت ${x.e} ${x.n}${x.max > 1 ? ` (${l + 1}/${x.max})` : ''}`, 'golden', 'ind');
     if (v === 'util') { log(L('⚡ تبويب الخدمات انفتح: ابنِ شركة الكهرباء والمياه ومكتب الضرايب، وكلها تجيب ذهب لحالها'), 'golden', 'ind'); renderTabs(); }
@@ -482,12 +485,12 @@ function viewPat() {
     <small>${L`10 أساس + نص مجموع مستويات مبنى البلدة والمخزن والحقول (${indRenewLv()}) + براءة لكل 20 عقد (${I.kd || 0})`}</small>
     <p class="hint">${L('ينعاد: الحقول والعمال والأفران والطاولات والمخزن ومبنى البلدة والمواد والعقود، والمهندس (إلا لو عندك دفتر المهندس). يبقى: سكة الحديد والقارب والخدمات والاختراعات.')}</p>
     ${ok ? `<div class="row"><button class="btn ${armed ? 'red' : 'gold'}" data-a="indRenew">${armed ? L('⚠️ متأكد؟ اضغط مرة ثانية') : L('🔬 جدّد المصنع')}</button></div>` : `<p class="bad">${L`🏛️ يحتاج مبنى البلدة مستوى ${IND_RENEW_HALL} (عندك ${indHall()})`}</p>`}</div>`;
-  h += '</div>' + L`<div class="panel"><div class="ph"><h2>🌳 شجرة الاختراعات</h2></div><div class="grid ind-grid">`;
+  h += '</div>' + L`<div class="panel"><div class="ph"><h2>🌳 شجرة الاختراعات</h2></div><div class="pt-tree"><i class="pt-bar" aria-hidden="true"></i>`;
   for (const x of IND_PT) {
-    const l = indPt(x.id), lock = x.need && !indPt(x.need), c = l < x.max ? x.c[l] : 0;
-    h += `<div class="card ind-card ${l ? 'lgcard g' : ''}"><div class="top"><span class="big">${ART['ind-pt-' + x.id] ? icon('ind-pt-' + x.id, 48) : x.id === 'hall' ? indHallIc(48, 4) : `<span class="ind-e big">${x.e}</span>`}</span><div class="meta"><b>${x.n}</b><small>${L`المستوى ${l} من ${x.max}`}</small></div></div>
+    const l = indPt(x.id), lock = indPtLocked(x), c = l < x.max ? x.c[l] : 0, nd = x.need && IND_PT.find(p => p.id === x.need);
+    h += `<div class="card ind-card pt-node ${x.need ? 'has-need' : 'pt-root'} ${l ? 'lgcard g on' : ''} ${lock ? 'pt-lock' : ''}" style="grid-row:${x.r};grid-column:${x.col}"><div class="top"><span class="big">${ART['ind-pt-' + x.id] ? icon('ind-pt-' + x.id, 48) : x.id === 'hall' ? indHallIc(48, 4) : `<span class="ind-e big">${x.e}</span>`}</span><div class="meta"><b>${x.n}</b><small>${L`المستوى ${l} من ${x.max}`}</small></div></div>
       <p class="hint">${x.d}</p>
-      ${l >= x.max ? `<p class="good">${L('✅ أعلى مستوى')}</p>` : lock ? `<p class="bad">${L`🔒 يحتاج ${IND_PT.find(p => p.id === x.need).n}`}</p>`
+      ${l >= x.max ? `<p class="good">${L('✅ أعلى مستوى')}</p>` : lock ? `<p class="bad">${x.nl > 1 ? L`🔒 يحتاج ${nd.n} ${x.nl}/${nd.max}` : L`🔒 يحتاج ${nd.n}`}</p>`
         : `<div class="row"><button class="btn gold" data-a="indPt" data-v="${x.id}" ${indPats() >= c ? '' : 'disabled'}>${L`🔬 اخترع (${c} 📜)`}</button></div>`}</div>`;
   }
   return h + '</div></div>';

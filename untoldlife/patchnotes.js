@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.12.3', date: '2026-11-09', big: false, title: L('رسومات الخدمات والاختراعات'), items: [
+    L('🎨 22 رسمة جديدة: الكهرباء والمياه ومكتب الضرايب بأربع أشكال تكبر معها، وأيقونات تبويبي الخدمات والاختراعات، وأيقونة لكل اختراع في الشجرة.'),
+  ] },
   { v: '1.12.2', date: '2026-11-09', big: false, title: L('شجرة الاختراعات صارت شجرة'), items: [
     L('🌳 الاختراعات صارت شجرة مهارات: الخدمات العامة فوق، وتحتها أساس متين وشبكة أقوى ومخزن جاهز، وكل اختراع يفتح اللي تحته. مصانع موفّرة تحت شبكة أقوى وتحتاجها كاملة (5/5).'),
     L('🔒 تبويب الخدمات صار يطلع من البداية بقفل، عشان تعرف وش تنتظر.'),

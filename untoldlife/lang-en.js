@@ -1439,6 +1439,8 @@
 "📋 الجولة الماضية: ما ساهمت": "📋 Last round: you didn't take part",
 "📋 الجولة الماضية: مركزك {0} من {1}، والهدف ما اكتمل": "📋 Last round: you placed {0} of {1}, but the goal wasn't reached",
 "📋 الجولة الماضية: مركزك {0} من {1} ← جائزة +{2}%": "📋 Last round: you placed {0} of {1} → prize +{2}%",
+"رسومات الخدمات والاختراعات": "Services and inventions art",
+"🎨 22 رسمة جديدة: الكهرباء والمياه ومكتب الضرايب بأربع أشكال تكبر معها، وأيقونات تبويبي الخدمات والاختراعات، وأيقونة لكل اختراع في الشجرة.": "🎨 22 new pictures: the power company, the water works and the tax office with four looks each that grow with them, icons for the Services and Inventions tabs, and an icon for every invention in the tree.",
 "شجرة الاختراعات صارت شجرة": "The invention tree is now a tree",
 "🌳 الاختراعات صارت شجرة مهارات: الخدمات العامة فوق، وتحتها أساس متين وشبكة أقوى ومخزن جاهز، وكل اختراع يفتح اللي تحته. مصانع موفّرة تحت شبكة أقوى وتحتاجها كاملة (5/5).": "🌳 Inventions are now a skill tree: public services on top, under it strong foundation, stronger grid and ready warehouse, and each invention opens the one below it. Thrifty factories sits under stronger grid and needs it complete (5/5).",
 "🔒 تبويب الخدمات صار يطلع من البداية بقفل، عشان تعرف وش تنتظر.": "🔒 The Services tab now shows from the start with a lock, so you know what you're working towards.",

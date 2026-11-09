@@ -692,6 +692,14 @@ function toast(msg) {
 }
 
 function have(id) { return S.inv[id] || 0; }
+/* Whatever asks for a product (gifts, guild deliveries) also takes its golden version (milk → golden milk), so a barn
+   that turned all golden can still fill them. The plain ones go first, since the golden ones sell for more. */
+function haveAny(id) { return have(id) + (ITEMS[id + '_g'] ? have(id + '_g') : 0); }
+function takeAny(id, n = 1) {
+  if (haveAny(id) < n) return false;
+  const a = Math.min(have(id), n); if (a) take(id, a); if (n > a) take(id + '_g', n - a);
+  return true;
+}
 function give(id, n = 1) {
   S.inv[id] = (S.inv[id] || 0) + n;
   if (!S.seen[id]) { S.seen[id] = 1; log(L`اكتشفت غرضاً جديداً: ${ITEMS[id].e} ${ITEMS[id].n}`, 'new'); }
@@ -1654,7 +1662,7 @@ const A = {
     const g = S.guild, i = g.board.findIndex(q => q.id === +v); if (i < 0) return;
     const q = g.board[i];
     if (q.type === 'deliver') {
-      if (!take(q.item, q.qty)) return toast(L('ما عندك الكمية المطلوبة'));
+      if (!takeAny(q.item, q.qty)) return toast(L('ما عندك الكمية المطلوبة'));
       const m = questMult(); addGold(Math.round(q.gold * m)); g.gp += qGp(q); S.stats.quests++;
       log(L`📬 سلّمت ${q.qty} ${ITEMS[q.item].e} ${ITEMS[q.item].n}: 💰 ${bi('+' + fmt(q.gold * m))} • ${bi('+' + qGp(q))} نقاط`, 'good');
     } else {
@@ -1719,7 +1727,7 @@ const A = {
     const [nid, item] = v.split(':'); const np = NPC_BY[nid];
     const st = S.npc[nid] || (S.npc[nid] = { pts: 0, gd: 0 });
     const gf = giftsOf(np);
-    if (st.gd === dayAbs() || st.pts >= 1000 || ![gf.love, gf.like].includes(item) || !take(item)) return;
+    if (st.gd === dayAbs() || st.pts >= 1000 || ![gf.love, gf.like].includes(item) || !takeAny(item)) return;
     const before = hearts(nid), loved = item === gf.love;
     st.pts = Math.min(1000, st.pts + (loved ? 100 : 50)); st.gd = st.cd = dayAbs();
     log(L`🎁 أهديت ${np.n} ${ITEMS[item].e} — ${loved ? L('«واااو! هذا أكثر شيء أحبه!» +1 قلب') : L('«شكراً، لطيف منك» +½ قلب')}`);
@@ -1950,9 +1958,9 @@ function tabAlerts() {
     const st = S.npc[np.id] || { pts: 0 }; if (st.pts >= 1000) return false;
     const kid = KING_GIFT[np.id]; if (kid && st.kk !== seasonKey() && have(kid) >= 1) return true;
     if (st.gd === dayAbs()) return false;
-    const gf = giftsOf(np); return have(gf.love) >= 1 || have(gf.like) >= 1;
+    const gf = giftsOf(np); return haveAny(gf.love) >= 1 || haveAny(gf.like) >= 1;
   })) a.village = 1;
-  if (g.board.some(q => q.type === 'deliver' ? have(q.item) >= q.qty : g.active.length < questSlots() && chanceOf(q) >= ALLY_MIN) || S.leg.eggNew) a.guild = 1;
+  if (g.board.some(q => q.type === 'deliver' ? haveAny(q.item) >= q.qty : g.active.length < questSlots() && chanceOf(q) >= ALLY_MIN) || S.leg.eggNew) a.guild = 1;
   if (TOOLS.some(t => { const l = S.tools[t.id] + 1; if (l > 6) return false; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })) a.smith = 1;
   return a;
 }
@@ -2225,8 +2233,8 @@ function viewGuild() {
   if (!g.board.length) h += L('<p class="hint">لا توجد مهمات الآن، تأتي مهمة جديدة كل 40 ثانية.</p>');
   g.board.forEach(q => {
     if (q.type === 'deliver') {
-      const it = ITEMS[q.item], ok = have(q.item) >= q.qty;
-      h += L`<div class="quest"><div class="qi"><b>📦 توصيل ${q.qty} × ${icon(it)} ${it.n}</b><small class="qline">${qc('', fmt(have(q.item)), L('لديك'))}</small>${qRew(qGold(q), qGp(q))}</div>
+      const it = ITEMS[q.item], ok = haveAny(q.item) >= q.qty;
+      h += L`<div class="quest"><div class="qi"><b>📦 توصيل ${q.qty} × ${icon(it)} ${it.n}</b><small class="qline">${qc('', fmt(haveAny(q.item)), L('لديك'))}</small>${qRew(qGold(q), qGp(q))}</div>
         <button class="btn sm" data-a="quest" data-v="${q.id}" ${ok ? '' : 'disabled'}>سلّم</button></div>`;
     } else {
       const ch = chanceOf(q), cl = ch >= 0.8 ? 'hi' : ch >= 0.4 ? 'mid' : 'lo';
@@ -2492,7 +2500,7 @@ function viewVillage() {
     const gl = [[gf.love, L('❤️ يعشقه هالموسم: +1 قلب'), 'gold'], [gf.like, L('💗 يحبه هالموسم: +½ قلب'), 'ghost']];
     for (const [it, lab, cls] of gl) {
       const I = ITEMS[it];
-      h += `<button class="btn ${cls} sm" data-a="gift" data-v="${np.id}:${it}" ${today || have(it) < 1 || st.pts >= 1000 ? 'disabled' : ''}>🎁 ${icon(I)} ${I.n} (${fmt(have(it))}) — ${lab}</button>`;
+      h += `<button class="btn ${cls} sm" data-a="gift" data-v="${np.id}:${it}" ${today || haveAny(it) < 1 || st.pts >= 1000 ? 'disabled' : ''}>🎁 ${icon(I)} ${I.n} (${fmt(haveAny(it))}) — ${lab}</button>`;
     }
     const kid = KING_GIFT[np.id], K = kid && ITEMS[kid];
     if (K) {
@@ -2768,7 +2776,7 @@ const VIEWS = {
   mine: [viewMine, updMine, () => [S.off, S.mine.miners, S.tools.pick, lgv('pick'), ORES.filter(o => o.depth <= S.mine.max).length]],
   guild: [viewGuild, updGuild, () => {
     const D = S.dun, g = S.guild;
-    return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), S.tools, S.tlg, S.hero.lvl, floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (have(q.item) >= q.qty) : Math.round(chanceOf(q) * 100))), S.leg.saddle && [S.leg.saddle.on, saddleLv(S.leg.saddle.on), Math.floor(((S.leg.pets[S.leg.saddle.on] || {}).sx || 0) / Math.max(1, hxpNeed(saddleLv(S.leg.saddle.on) + 1)) * 20)], S.gold >= SADDLE_COST, S.leg.titles && [S.leg.titles.cur, titleActive().join(), S.leg.titles.show, Object.keys(S.leg.titles.have || {}).length, Math.floor((S.leg.titles.xp || 0) / 1000)]];
+    return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), S.tools, S.tlg, S.hero.lvl, floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (haveAny(q.item) >= q.qty) : Math.round(chanceOf(q) * 100))), S.leg.saddle && [S.leg.saddle.on, saddleLv(S.leg.saddle.on), Math.floor(((S.leg.pets[S.leg.saddle.on] || {}).sx || 0) / Math.max(1, hxpNeed(saddleLv(S.leg.saddle.on) + 1)) * 20)], S.gold >= SADDLE_COST, S.leg.titles && [S.leg.titles.cur, titleActive().join(), S.leg.titles.show, Object.keys(S.leg.titles.have || {}).length, Math.floor((S.leg.titles.xp || 0) / 1000)]];
   }],
   smith: [viewSmith, updReqs, () => [S.leg.afOwn, S.af && [S.af.t, S.af.n], S.gold >= AF_COST, S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],

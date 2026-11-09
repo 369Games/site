@@ -1439,6 +1439,8 @@
 "📋 الجولة الماضية: ما ساهمت": "📋 Last round: you didn't take part",
 "📋 الجولة الماضية: مركزك {0} من {1}، والهدف ما اكتمل": "📋 Last round: you placed {0} of {1}, but the goal wasn't reached",
 "📋 الجولة الماضية: مركزك {0} من {1} ← جائزة +{2}%": "📋 Last round: you placed {0} of {1} → prize +{2}%",
+"المنتجات الذهبية تنفع للطلبات": "Golden products count for requests",
+"🥛 لو كل حيواناتك صارت ذهبية، تقدر للحين تهدي وتسلّم طلبات النقابة: الحليب الذهبي ينحسب حليب، ونفس الشي لكل المنتجات. اللعبة تاخذ العادي أول، وإذا خلص تاخذ الذهبي. (شكراً لأبو مبارك على التنبيه)": "🥛 If all your animals have turned golden, you can still give gifts and hand in guild deliveries: golden milk counts as milk, and the same goes for every product. The game uses the plain ones first, then the golden ones. (Thanks to Abu Mubarak for spotting it)",
 "منظر المصنع وكهرب القرية": "Factory skyline and village electricity",
 "🏭 لما تدخل المصنع، المنظر اللي فوق يتبدّل لمدينة صناعية: مصانع ومداخن وقطار يعدّي الجسر، وقصر البلدة على التل. وبالليل الشبابيك والأفران تنوّر.": "🏭 When you enter the factory, the banner at the top turns into an industrial town: factories, chimneys, a train crossing the bridge, and the town hall palace on the hill. At night the windows and furnaces light up.",
 "🔌 لما تبني شركة الكهرباء، ليل القرية يتغيّر: أعمدة إنارة على الطرق والجسر، والبيوت منوّرة.": "🔌 Once you build the power company, the village night changes: street lamps along the paths and the bridge, and every house lit up.",

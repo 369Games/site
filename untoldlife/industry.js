@@ -104,6 +104,7 @@ const IND_PT = [
   { id: 'eng', e: '👷', max: 1, c: [20], n: L('دفتر المهندس'), d: L('تطويرات المهندس تبقى معك بعد التجديد') },
   { id: 'slot4', e: '📜', max: 1, c: [15], n: L('تاجر رابع'), d: L('خانة عقد رابعة في المدينة') },
   { id: 'fast', e: '⚙️', max: 5, c: [6, 6, 6, 6, 6], n: L('آلات محسّنة'), d: L('+10% سرعة لكل المراجل وطاولات الورشة لكل مستوى') },
+  { id: 'thrift', e: '♻️', max: 1, c: [40], n: L('مصانع موفّرة'), d: L('كل الأفران وطاولات الورشة تعطي نفس الإنتاج بنص المواد') },
   { id: 'grid', e: '🔌', max: 5, c: [10, 10, 10, 10, 10], n: L('شبكة أقوى'), d: L('+20% ذهب من الخدمات لكل مستوى'), need: 'util' },
 ];
 /* Public services: built with village gold and factory goods, kept forever (they don't reset with a renewal).
@@ -117,6 +118,7 @@ const IND_UTIL = [
   { id: 'tax', e: '🧾', n: L('مكتب الضرايب'), d: L('يكبر مع عدد عمال المنجم والصيادين في القرية'), first: L('🧾 أهل القرية صاروا يدفعون ضرايب، والخزنة تمتلي'),
     g: 1e10, mats: l => [['block', 5000 * (l + 1)], ['plank', 2000 * (l + 1)]] },
 ];
+function indInMult() { return indPt('thrift') ? 0.5 : 1; }
 function indPt(id) { const t = (S.leg.ind || {}).pt; return t ? t[id] || 0 : 0; }
 function indPats() { return Math.floor(ind().pat || 0); }
 function indRenewLv() { const I = ind(); return indHall() + (I.b.store || 0) + IND_FIELDS.reduce((a, f) => a + I.f[f.id].l, 0); }
@@ -205,10 +207,12 @@ function tickInd(dt) {
     if ((I.r[r.id] || 0) >= cap) { u.stall = 'full'; u.p = 0; u.sz = 0; continue; }
     u.p += dt * u.n * indSpeed(r) / r.t;
     let k = Math.floor(u.p); if (!k) continue;
-    for (const [id, q] of Object.entries(r.in)) k = Math.min(k, Math.floor(indHave(id) / q));
+    // With the thrift patent every input costs half; the leftover half-units carry over (u.c), so stocks stay whole numbers.
+    const hf = indInMult(), cr = u.c || (u.c = {});
+    for (const [id, q] of Object.entries(r.in)) k = Math.min(k, Math.floor((indHave(id) + (cr[id] || 0)) / (q * hf)));
     k = Math.min(k, Math.floor(cap - (I.r[r.id] || 0)));
     if (k <= 0) { u.stall = 'in'; u.p = Math.min(u.p, 1); u.sz = (u.sz || 0) + dt; continue; }
-    for (const [id, q] of Object.entries(r.in)) indTake(id, q * k);
+    for (const [id, q] of Object.entries(r.in)) { const need = q * k * hf - (cr[id] || 0), t = Math.max(0, Math.ceil(need - 1e-9)); indTake(id, t); cr[id] = t - need; }
     I.r[r.id] = (I.r[r.id] || 0) + k; u.p -= k; u.sz = 0;
   }
   indKFill();
@@ -402,7 +406,7 @@ function viewFurn() {
 // One furnace or workbench card: recipe, output per second, stock, state, and buy/pause.
 function indMakerCard(r, bench) {
   const u = indFu(r.id), c = indFurnCost(r);
-  const ins = Object.entries(r.in).map(([id, q]) => `<span class="ind-q" title="${indName(id)}">${q} ${indIc(id, 22)}</span>`).join(' + ');
+  const ins = Object.entries(r.in).map(([id, q]) => `<span class="ind-q" title="${indName(id)}">${indNum(q * indInMult())} ${indIc(id, 22)}</span>`).join(' + ');
   const st = u.n ? indStLine('m:' + r.id, indMakerSt(r)) : '';
   return `<div class="card ind-card"><div class="top"><span class="big">${indIc(r.id, 48)}</span><div class="meta"><b>${indName(r.id)}</b><small>${bench ? L`${u.n} طاولة` : L`${u.n} فرن`}</small></div></div>
     <div class="kv ind-recipe"><span>${L('يحتاج')}</span><span>${ins}</span></div>

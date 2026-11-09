@@ -1384,6 +1384,8 @@
 "📋 الجولة الماضية: ما ساهمت": "📋 Last round: you didn't take part",
 "📋 الجولة الماضية: مركزك {0} من {1}، والهدف ما اكتمل": "📋 Last round: you placed {0} of {1}, but the goal wasn't reached",
 "📋 الجولة الماضية: مركزك {0} من {1} ← جائزة +{2}%": "📋 Last round: you placed {0} of {1} → prize +{2}%",
+"رسومات المباني والحقول": "Building and field art",
+"🎨 24 رسمة جديدة: سكة الحديد والقارب والمخزن وحفرة الطين وجبل الحجر والغابة، كل واحد بأربع أشكال تكبر معه في المستوى 4 و7 و10.": "🎨 24 new pictures: the rails, the boat, the warehouse, the clay pit, the stone mountain and the forest, each with four looks that grow with it at levels 4, 7 and 10.",
 "رسومات مبنى البلدة": "Town hall art",
 "🏛️ مبنى البلدة صار له رسوماته الأربع: بيت صغير، دار كبيرة، مقر فخم، وقصر في المستوى 10.": "🏛️ The town hall now has its four pictures: a small house, a great hall, a grand civic hall, and a palace at level 10.",
 "🏗️ سكة الحديد والقارب والمخزن والحقول صار لها أربع أشكال بعد، تتغير في المستوى 4 و7 و10. رسوماتها جاية قريب.": "🏗️ The rails, the boat, the warehouse and the fields now have four looks too, changing at levels 4, 7 and 10. Their pictures are coming soon.",

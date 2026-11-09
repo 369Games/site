@@ -348,6 +348,7 @@ const IND_ACTIONS = {
     const c = indUtilCost(x, l); if (!indCanPay(c.gold, c.mats)) return;
     indPay(c.gold, c.mats); I.u = I.u || {}; I.u[v] = l + 1;
     log(l ? L`${x.e} ${x.n} صار مستوى ${l + 1}` : x.first, 'golden', 'ind'); indStageLog(x.n, l + 1);
+    if (!l && v === 'power') renderTabs(); // the village night lights up (world-theme.css: .village-lit)
   },
   // Renewing asks twice (the button arms itself for a few seconds), since it starts the factory over.
   indRenew: () => {
@@ -478,10 +479,10 @@ function viewCity() {
 // Inventions: the renewal card and the patent tree.
 function viewPat() {
   const I = ind(), ok = indHall() >= IND_RENEW_HALL, armed = indRenewArm && Date.now() < indRenewArm;
-  let h = L`<div class="panel"><div class="ph"><h2>🔬 الاختراعات</h2><span class="stat">📜 ${indPats()} براءة</span></div>
+  let h = L`<div class="panel"><div class="ph"><h2>🔬 الاختراعات</h2><span class="stat">🎫 ${indPats()} براءة</span></div>
     <p class="hint">لما يصير مبنى البلدة قصر (المستوى ${IND_RENEW_HALL})، تقدر تجدّد المصنع: يرجع من الصفر وتاخذ براءات اختراع حسب وين وصلت. البراءات تشتري فيها اختراعات تبقى معك للأبد. سكة الحديد والقارب ما ينعادون، فخصومات القرية باقية.</p>`;
   h += `<div class="card ind-card ind-renew ${ok ? 'lgcard g' : ''}"><div class="top"><span class="big">${indHallIc(64, 10)}</span><div class="meta"><b>${L('جدّد المصنع')}</b><small>${L`تجديدات: ${I.ren || 0}`}</small></div></div>
-    <div class="kv"><span>${L('البراءات اللي بتاخذها الحين')}</span><span class="good">+${indRenewGain()} 📜</span></div>
+    <div class="kv"><span>${L('البراءات اللي بتاخذها الحين')}</span><span class="good">+${indRenewGain()} 🎫</span></div>
     <small>${L`10 أساس + نص مجموع مستويات مبنى البلدة والمخزن والحقول (${indRenewLv()}) + براءة لكل 20 عقد (${I.kd || 0})`}</small>
     <p class="hint">${L('ينعاد: الحقول والعمال والأفران والطاولات والمخزن ومبنى البلدة والمواد والعقود، والمهندس (إلا لو عندك دفتر المهندس). يبقى: سكة الحديد والقارب والخدمات والاختراعات.')}</p>
     ${ok ? `<div class="row"><button class="btn ${armed ? 'red' : 'gold'}" data-a="indRenew">${armed ? L('⚠️ متأكد؟ اضغط مرة ثانية') : L('🔬 جدّد المصنع')}</button></div>` : `<p class="bad">${L`🏛️ يحتاج مبنى البلدة مستوى ${IND_RENEW_HALL} (عندك ${indHall()})`}</p>`}</div>`;
@@ -491,7 +492,7 @@ function viewPat() {
     h += `<div class="card ind-card pt-node ${x.need ? 'has-need' : 'pt-root'} ${l ? 'lgcard g on' : ''} ${lock ? 'pt-lock' : ''}" style="grid-row:${x.r};grid-column:${x.col}"><div class="top"><span class="big">${ART['ind-pt-' + x.id] ? icon('ind-pt-' + x.id, 48) : x.id === 'hall' ? indHallIc(48, 4) : `<span class="ind-e big">${x.e}</span>`}</span><div class="meta"><b>${x.n}</b><small>${L`المستوى ${l} من ${x.max}`}</small></div></div>
       <p class="hint">${x.d}</p>
       ${l >= x.max ? `<p class="good">${L('✅ أعلى مستوى')}</p>` : lock ? `<p class="bad">${x.nl > 1 ? L`🔒 يحتاج ${nd.n} ${x.nl}/${nd.max}` : L`🔒 يحتاج ${nd.n}`}</p>`
-        : `<div class="row"><button class="btn gold" data-a="indPt" data-v="${x.id}" ${indPats() >= c ? '' : 'disabled'}>${L`🔬 اخترع (${c} 📜)`}</button></div>`}</div>`;
+        : `<div class="row"><button class="btn gold" data-a="indPt" data-v="${x.id}" ${indPats() >= c ? '' : 'disabled'}>${L`🔬 اخترع (${c} 🎫)`}</button></div>`}</div>`;
   }
   return h + '</div></div>';
 }
@@ -548,7 +549,7 @@ function indBuffsHtml() {
   let h = '';
   if (indPt('util')) h += g(L('⚡ ذهب الخدمات'), [[L('💰 مضاعف الذهب في القرية'), goldMult()], [L('🔌 شبكة أقوى (اختراع)'), 1 + 0.2 * indPt('grid')]],
     [row(L('💰 المجموع'), L`${fmt(indUtilTotal())} بالثانية`), ...IND_UTIL.map(x => row(`${x.e} ${x.n} (${L`مستوى ${indUl(x.id)}`})`, L`${fmt(indUtilRate(x.id))} بالثانية`))]);
-  h += info(L('🔬 الاختراعات'), [row(L('📜 براءات عندك'), indPats()), row(L('🔁 تجديدات'), I.ren || 0), row(L('📜 لو جدّدت الحين'), '+' + indRenewGain())]);
+  h += info(L('🔬 الاختراعات'), [row(L('🎫 براءات عندك'), indPats()), row(L('🔁 تجديدات'), I.ren || 0), row(L('🎫 لو جدّدت الحين'), '+' + indRenewGain())]);
   h += info(L('🏛️ مبنى البلدة'), [row(IND_HALL_STAGES[indHallStage()].n, L`مستوى ${indHall()}`), row(L('أعلى مستوى للمباني والحقول'), indHall()), row(L('أفران وطاولات من كل نوع'), indFurnMax())]);
   h += g(L('⛰️ إنتاج الحقول'), [[L('⛏️ حقول أغزر (المهندس)'), 1 + 0.15 * indEng('field')]],
     [row(L('👷 العمال'), `${indWorkers()} / ${indWMax()}`), ...IND_FIELDS.map(f => row(`${f.n} (${L`مستوى ${I.f[f.id].l}`})`, L`${indNum(indRate(f.id))} بالثانية`))]);

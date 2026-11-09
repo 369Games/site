@@ -450,3 +450,7 @@ body.lite #log li.golden,body.lite #log li.egg{box-shadow:none}
 .pt-bar{grid-row:2;grid-column:1/-1;align-self:start;margin:-16px 16.66% 0;border-top:3px solid #e0b453;height:0;pointer-events:none}
 .pt-lock{opacity:.55;filter:saturate(.6)}
 @media (max-width:640px){.pt-tree{grid-template-columns:1fr;gap:12px}.pt-node{grid-row:auto!important;grid-column:auto!important}.pt-node::before,.pt-node::after,.pt-bar{display:none}}
+/* Industrial Age skyline: the banner swaps for the factory town; the power company adds street lights to the village night. */
+.ind-world .world-land-day{background-image:url('assets/art/ind-terrain-day.webp')}
+.ind-world .world-land-night{background-image:url('assets/art/ind-terrain-night.webp')}
+.village-lit:not(.ind-world) .world-land-night{background-image:url('assets/art/terrain-night-electric.webp')}

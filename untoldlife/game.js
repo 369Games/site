@@ -428,7 +428,7 @@ const HEIRLOOMS = [
   { id: 'cow', n: L('بقرة العائلة'), e: '🐄', max: 10, eff: l => L`تبدأ كل جيل ومعك ${l} بقرة` },
   { id: 'diary', n: L('مذكرات الجد'), e: '📜', max: 20, eff: l => L`+${10 * l}% خبرة لكل المهارات` },
   { id: 'coin', n: L('العملة القديمة'), e: '🪙', max: 20, eff: l => L`+${5 * l}% ذهب من كل المصادر` },
-  { id: 'amulet', n: L('قلادة الحظ'), e: '📿', max: 20, eff: l => L`+${5 * l}% نجوم إرث` },
+  { id: 'amulet', n: L('قلادة الحظ'), e: '📿', max: 20, eff: l => L`+${5 * l}% نجوم الإرث وحد النجوم لكل جيل` },
   { id: 'ring', n: L('خاتم الجدة'), e: '💍', max: 5, eff: l => L`+${l / 2} قلب مبدئي مع كل أهل القرية` },
   { id: 'seedbag', n: L('كيس بذور قديم'), e: '🎒', max: 10, eff: l => L`+${3 * l}% فرصة حصاد مضاعف` },
 ];
@@ -1349,7 +1349,8 @@ function canRetire() { return S.gen.earned >= goldGoal() && S.dun.max >= dunGoal
 const MINE_STAR_CAP = 200;
 function starCapBase() { const g = S.leg.gen; return g <= 5 ? 300 : g <= 10 ? 500 : g <= 15 ? 800 : g <= 20 ? 1200 : 1800; }
 // «Wisdom of Generations» raises the per-generation star cap by the same % it adds to the stars (the mine part keeps its own cap).
-function starCap() { return Math.round(starCapBase() * (1 + 0.1 * P('t_stars'))); }
+// The tree's Wisdom of Generations and the Lucky Amulet heirloom raise the cap too, not just the stars (else they hit the cap).
+function starCap() { return Math.round(starCapBase() * (1 + 0.1 * P('t_stars')) * (1 + 0.05 * H('amulet'))); }
 function starParts() {
   const m = starMult();
   return { gold: 3 * Math.sqrt(S.gen.earned / 1e6) * m, dun: Math.max(0, S.dun.max - Math.max(10, S.gen.dun0 || 1)) / 3 * m,
@@ -2754,7 +2755,7 @@ function updLegacy() {
   $('lg_e').textContent = `${fmt(g.earned)} / ${fmt(gg)}`; $('lg_eb').style.width = Math.min(100, g.earned / gg * 100) + '%';
   $('lg_d').textContent = `${S.dun.max} / ${dg}`; $('lg_db').style.width = Math.min(100, S.dun.max / dg * 100) + '%';
   $('lg_g').textContent = fmt(starsGain());
-  const capT = L`⭐ الحد لهذا الجيل: ${starCap()} نجمة (المنجم لين ${MINE_STAR_CAP})` + (P('t_stars') ? L` • 🌳 حكمة الأجيال +${10 * P('t_stars')}% على ${starCapBase()}` : '');
+  const capT = L`⭐ الحد لهذا الجيل: ${starCap()} نجمة (المنجم لين ${MINE_STAR_CAP})` + (P('t_stars') ? L` • 🌳 حكمة الأجيال +${10 * P('t_stars')}% على ${starCapBase()}` : '') + (H('amulet') ? L` • 📿 قلادة الحظ +${5 * H('amulet')}%` : '');
   if ($('lg_cap').textContent !== capT) $('lg_cap').textContent = capT;
   const can = canRetire(); $('lg_btn').disabled = !can; $('lg_why').textContent = can ? '' : L('ما حققت شرط التقاعد بعد');
   const cb = $('lg_chb');

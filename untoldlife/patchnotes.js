@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.13.3', date: '2026-11-09', big: false, title: L('قطع الإرث ما تتغير بالإلغاء'), items: [
+    L('🏺 خيارات قطع الإرث في التقاعد صارت ثابتة لكل جيل. لو ضغطت إلغاء وفتحت التقاعد مرة ثانية (أو حدّثت الصفحة)، تطلع لك نفس القطع.'),
+  ] },
   { v: '1.13.2', date: '2026-11-09', big: false, title: L('قلادة الحظ ترفع الحد'), items: [
     L('📿 قلادة الحظ صارت ترفع حد النجوم لكل جيل مع النجوم نفسها (+5% لكل مستوى)، مثل حكمة الأجيال في الشجرة. قبل كانت تضيع لما توصل الحد.'),
   ] },

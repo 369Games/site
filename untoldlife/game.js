@@ -1419,8 +1419,15 @@ let RS = null;
 function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 function openRetire() {
   if (!canRetire()) return;
-  const pool = HEIRLOOMS.filter(x => H(x.id) < x.max).sort(() => Math.random() - 0.5);
-  const opts = pool.slice(0, 3 + P('q_heirs')).map(x => x.id);
+  // The heirloom choices are drawn once per generation and saved, so cancelling and reopening (or reloading) can't reroll
+  // them. More slots (the Heirs perk) only add new picks; the ones already shown stay.
+  const want = 3 + P('q_heirs'), ok = id => { const x = HEIRLOOMS.find(h => h.id === id); return x && H(id) < x.max; };
+  let opts = (S.gen.heirOpts || []).filter(ok);
+  if (opts.length < want) {
+    const pool = HEIRLOOMS.filter(x => H(x.id) < x.max && !opts.includes(x.id)).sort(() => Math.random() - 0.5);
+    opts = opts.concat(pool.slice(0, want - opts.length).map(x => x.id));
+  }
+  opts = opts.slice(0, want); S.gen.heirOpts = opts; save();
   RS = { opts, heir: opts[0] || null, ch: null, name: childName(), gender: S.gender || 'm' };
   showRetire();
 }

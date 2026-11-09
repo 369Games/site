@@ -1439,6 +1439,8 @@
 "📋 الجولة الماضية: ما ساهمت": "📋 Last round: you didn't take part",
 "📋 الجولة الماضية: مركزك {0} من {1}، والهدف ما اكتمل": "📋 Last round: you placed {0} of {1}, but the goal wasn't reached",
 "📋 الجولة الماضية: مركزك {0} من {1} ← جائزة +{2}%": "📋 Last round: you placed {0} of {1} → prize +{2}%",
+"قطع الإرث ما تتغير بالإلغاء": "Heirlooms don't change when you cancel",
+"🏺 خيارات قطع الإرث في التقاعد صارت ثابتة لكل جيل. لو ضغطت إلغاء وفتحت التقاعد مرة ثانية (أو حدّثت الصفحة)، تطلع لك نفس القطع.": "🏺 The heirloom choices at retirement are now fixed for each generation. If you cancel and open retirement again (or reload the page), you get the same pieces.",
 "قلادة الحظ ترفع الحد": "The lucky amulet raises the cap",
 "📿 قلادة الحظ صارت ترفع حد النجوم لكل جيل مع النجوم نفسها (+5% لكل مستوى)، مثل حكمة الأجيال في الشجرة. قبل كانت تضيع لما توصل الحد.": "📿 The lucky amulet now raises the per-generation star cap along with the stars (+5% per level), like Wisdom of Generations in the tree. Before, its bonus was wasted once you hit the cap.",
 "المنتجات الذهبية تنفع للطلبات": "Golden products count for requests",

@@ -3,6 +3,10 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.13.5', date: '2026-11-09', big: false, title: L('خريطة الاختراعات'), items: [
+    L('🗺️ شجرة الاختراعات صار اسمها خريطة الاختراعات، ومبنى البلدة صار له أيقونته في النصوص.'),
+    L('🏆 لوحة المتصدرين الأسبوعية صارت تتحدث كل 10 دقايق بدل دقيقتين.'),
+  ] },
   { v: '1.13.4', date: '2026-11-09', big: false, title: L('حد النجوم ارتفع'), items: [
     L('⭐ حد نجوم الإرث لكل جيل صار يبدأ من 500 ويرتفع لين 3,600: الأجيال 1–5: 500، 6–10: 900، 11–15: 1,500، 16–20: 2,400، و21 وفوق: 3,600. وحكمة الأجيال وقلادة الحظ ترفعه فوق كذا.'),
     L('⛏️ حد نجوم المنجم صار 500 بدل 200.'),

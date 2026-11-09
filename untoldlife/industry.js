@@ -16,6 +16,9 @@ const IND_RES = {
 };
 // The raw and furnace materials, shown on the fields, furnaces and city pages.
 const IND_BASE = ['clay', 'stone', 'wood', 'coal', 'brick', 'block', 'cu', 'fe', 'ag'];
+// The village ores the furnaces draw on, shown next to the factory stock (their net counts the village mining too).
+const IND_ORES = ['copper', 'iron', 'silver'];
+const IND_PREV = {};
 const IND_FIELDS = [
   { id: 'clay', n: L('حفرة الطين') }, { id: 'stone', n: L('جبل الحجر') }, { id: 'wood', n: L('الغابة') },
 ];
@@ -223,6 +226,8 @@ function tickInd(dt) {
   if (offline || dt <= 0) return; // the catch-up's big steps would skew it
   const a = Math.min(1, dt / 3);
   for (const id in IND_RES) IND_NET[id] = (IND_NET[id] || 0) * (1 - a) + ((I.r[id] || 0) - before[id]) / dt * a;
+  // Village ores change outside this function too (the miners), so their net runs from one tick to the next.
+  for (const id of IND_ORES) { const v = have(id); if (IND_PREV[id] !== undefined) IND_NET[id] = (IND_NET[id] || 0) * (1 - a) + (v - IND_PREV[id]) / dt * a; IND_PREV[id] = v; }
 }
 function indNetTxt(id) {
   const v = IND_NET[id] || 0, z = Math.abs(v) < 0.005;
@@ -382,7 +387,7 @@ function indReqs(gold, mats) {
 }
 function indStock(ids = IND_BASE) {
   const cap = indCap();
-  return `<div class="ind-stock">${ids.map(id => `<span class="ind-chip">${indIc(id, 20)} <b data-ir="${id}">${fmt(Math.floor(ind().r[id] || 0))}</b><small class="ind-net" data-inet="${id}"></small></span>`).join('')}<span class="ind-chip ghost">${L`📦 السعة ${fmt(cap)}`}</span><span class="ind-chip ghost wide">${L('📈 الرقم الملوّن: الصافي بالثانية بعد اللي تاكله المراجل')}</span></div>`;
+  return `<div class="ind-stock">${ids.map(id => `<span class="ind-chip${IND_RES[id] ? '' : ' vil'}" title="${IND_RES[id] ? indName(id) : L`${indName(id)} (مخزن القرية)`}">${indIc(id, 20)} <b data-ir="${id}">${fmt(Math.floor(indHave(id)))}</b><small class="ind-net" data-inet="${id}"></small></span>`).join('')}<span class="ind-chip ghost">${L`📦 السعة ${fmt(cap)}`}</span><span class="ind-chip ghost wide">${L('📈 الرقم الملوّن: الصافي بالثانية بعد اللي تاكله المراجل')}</span></div>`;
 }
 function viewFields() {
   const I = ind(), n = indWorkers(), used = indUsed();
@@ -404,7 +409,7 @@ function viewFields() {
 function viewFurn() {
   let h = L`<div class="panel"><div class="ph"><h2>🏭 المراجل</h2></div>
     <p class="hint">المراجل تحوّل الخام لمواد صناعة. كل فرن يشتغل لحاله ما دام عنده مواد. النحاس والحديد والفضة تنسحب من مخزون القرية مباشرة، والفحم وقود أغلب الوصفات.</p>`;
-  h += indStock() + '<div class="grid ind-grid">' + IND_RECIPES.map(r => indMakerCard(r, false)).join('');
+  h += indStock([...IND_BASE, ...IND_ORES]) + '<div class="grid ind-grid">' + IND_RECIPES.map(r => indMakerCard(r, false)).join('');
   return h + '</div></div>';
 }
 // One furnace or workbench card: recipe, output per second, stock, state, and buy/pause.
@@ -512,7 +517,7 @@ function viewUtil() {
 }
 // Numbers that change every frame are written in place; the page itself only redraws when the signature changes.
 function updInd() {
-  document.querySelectorAll('[data-ir]').forEach(el => { el.textContent = fmt(Math.floor(ind().r[el.dataset.ir] || 0)); });
+  document.querySelectorAll('[data-ir]').forEach(el => { el.textContent = fmt(Math.floor(indHave(el.dataset.ir))); });
   document.querySelectorAll('[data-ist]').forEach(el => {
     const [k, id] = el.dataset.ist.split(':'), st = k === 'f' ? indFieldSt(id) : indMakerSt(IND_MAKERS.find(r => r.id === id));
     if (el.textContent !== st.t) { el.textContent = st.t; el.className = 'ind-st ' + st.c; }

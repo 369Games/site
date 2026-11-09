@@ -1206,6 +1206,7 @@
 "🔬 جدّدت المصنع! أخذت {0} براءة اختراع. المصنع رجع من الصفر، والقرية محتفظة بخصوماتها": "🔬 You renewed the factory! You got {0} patents. The factory starts over, and the village keeps its discounts",
 "👷 المهندس طوّر {0} {1} لمستوى {2}": "👷 The engineer upgraded {0} {1} to level {2}",
 "📦 تحتاج مخزن أكبر: السعة {0} وهذا يحتاج {1}": "📦 Needs a bigger warehouse: capacity {0}, this needs {1}",
+"{0} (مخزن القرية)": "{0} (village storage)",
 "📦 السعة {0}": "📦 Capacity {0}",
 "📈 الرقم الملوّن: الصافي بالثانية بعد اللي تاكله المراجل": "📈 Coloured number: net per second after what the furnaces use",
 "👷 وظّف عامل ({0}💰)": "👷 Hire a worker ({0}💰)",

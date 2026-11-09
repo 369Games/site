@@ -127,6 +127,11 @@ function indHall() { return ind().b.hall || 0; }
 function indHallCost(l) { return { gold: Math.round(1e9 * Math.pow(3, l)), mats: IND_HALL_MATS[l] }; }
 function indHallStage(l = indHall()) { let i = 0; IND_HALL_STAGES.forEach((x, k) => { if (l >= x.from) i = k; }); return i; }
 function indHallIc(n, l = indHall()) { const i = indHallStage(l), k = 'ind-hall-' + (i + 1); return ART[k] ? icon(k, n) : `<span class="ind-e big">${IND_HALL_STAGES[i].e}</span>`; }
+// Every levelled building and field has four looks, like the town hall: levels 0–3, 4–6, 7–9 and 10.
+// Painted as ind-<key>-1..4; until those exist it falls back to its single picture, then to its emoji.
+function indStage(l) { return l >= 10 ? 3 : l >= 7 ? 2 : l >= 4 ? 1 : 0; }
+function indLvIc(key, l, n, alt) { const k = 'ind-' + key + '-' + (indStage(l) + 1); return ART[k] ? icon(k, n) : ART['ind-' + key] ? icon('ind-' + key, n) : alt; }
+function indStageLog(name, l) { if (l === 4 || l === 7 || l === 10) log(L`🎉 شكل ${name} تغيّر مع المستوى ${l}!`, 'golden', 'ind'); }
 function indFurnMax() { return Math.min(IND_FMAX, 3 * (indHall() + 1)); }
 // Shown instead of the upgrade button when the town hall holds a building or field back.
 function indHallGate(next) { return next > indHall() ? `<p class="bad">${L`🏛️ يحتاج مبنى البلدة مستوى ${next}`}</p>` : ''; }
@@ -236,7 +241,7 @@ const IND_ACTIONS = {
   indField: v => {
     const f = ind().f[v]; if (!f || f.l >= IND_MAXLV || f.l >= indHall()) return;
     const c = indFieldCost(f.l), mats = [[v, c.qty]]; if (!indCanPay(c.gold, mats)) return;
-    indPay(c.gold, mats); f.l++;
+    indPay(c.gold, mats); f.l++; indStageLog(IND_FIELDS.find(x => x.id === v).n, f.l);
   },
   indFurn: v => {
     const r = IND_MAKERS.find(x => x.id === v); if (!r) return; const u = indFu(v), c = indFurnCost(r);
@@ -247,12 +252,12 @@ const IND_ACTIONS = {
     const B = ind().b, l = B[v] || 0; if (!IND_BLD.some(b => b.id === v) || l >= IND_MAXLV || l >= indHall()) return;
     const c = indBldCost(l); if (!indCanPay(c.gold, c.mats)) return;
     indPay(c.gold, c.mats); B[v] = l + 1;
-    const b = IND_BLD.find(x => x.id === v);
+    const b = IND_BLD.find(x => x.id === v); indStageLog(b.n, B[v]);
     log(L`${b.e} ${b.n} صارت مستوى ${B[v]}: ${b.who} في القرية أرخص ${Math.round(indDisc(v) * 100)}%`, 'golden', 'ind');
   },
   indStore: () => {
     const B = ind().b, l = B.store || 0; if (l >= IND_MAXLV || l >= indHall()) return;
-    const c = indStoreCost(l); if (!indCanPay(c.gold, c.mats)) return; indPay(c.gold, c.mats); B.store = l + 1;
+    const c = indStoreCost(l); if (!indCanPay(c.gold, c.mats)) return; indPay(c.gold, c.mats); B.store = l + 1; indStageLog(L('المخزن'), B.store);
   },
   indHall: () => {
     const B = ind().b, l = B.hall || 0; if (l >= IND_MAXLV) return;
@@ -305,7 +310,7 @@ function viewFields() {
   h += indStock() + '<div class="grid ind-grid">';
   for (const f of IND_FIELDS) {
     const x = I.f[f.id], c = indFieldCost(x.l);
-    h += `<div class="card ind-card"><div class="top"><span class="big">${indIc(f.id, 48)}</span><div class="meta"><b>${f.n}</b><small>${L`المستوى ${x.l} من ${IND_MAXLV}`}</small></div></div>
+    h += `<div class="card ind-card"><div class="top"><span class="big">${indLvIc('f-' + f.id, x.l, 48, indIc(f.id, 48))}</span><div class="meta"><b>${f.n}</b><small>${L`المستوى ${x.l} من ${IND_MAXLV}`}</small></div></div>
       <div class="kv"><span>${indName(f.id)}</span><span><b data-ir="${f.id}">${fmt(Math.floor(I.r[f.id] || 0))}</b> / ${fmt(indCap())}</span></div>
       <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(indRate(f.id))} بالثانية`}</span></div>
       ${indStLine('f:' + f.id, indFieldSt(f.id))}
@@ -379,12 +384,12 @@ function viewCity() {
   h += indStock([...IND_BASE, ...IND_PROD.map(p => p.id)]) + '<div class="grid ind-grid">' + indHallCard();
   for (const b of IND_BLD) {
     const l = B[b.id] || 0, c = l < IND_MAXLV ? indBldCost(l) : null;
-    h += `<div class="card ind-card ${l ? 'lgcard g' : ''}"><div class="top"><span class="big">${ART['ind-' + b.id] ? icon('ind-' + b.id, 48) : `<span class="ind-e big">${b.e}</span>`}</span><div class="meta"><b>${b.n}</b><small>${L`المستوى ${l} من ${IND_MAXLV}`}</small></div></div>
+    h += `<div class="card ind-card ${l ? 'lgcard g' : ''}"><div class="top"><span class="big">${indLvIc(b.id, l, 48, `<span class="ind-e big">${b.e}</span>`)}</span><div class="meta"><b>${b.n}</b><small>${L`المستوى ${l} من ${IND_MAXLV}`}</small></div></div>
       <div class="kv"><span>${L`${b.who} في القرية`}</span><span class="good">${L`خصم ${Math.round(indDisc(b.id) * 100)}% • ×${indGrowth(b.id).toFixed(3)}`}</span></div>
       ${c ? `<small>${L`⬆️ المستوى ${l + 1}: خصم ${Math.round(0.09 * (l + 1) * 100)}% • ×${(1.45 - 0.033 * (l + 1)).toFixed(3)}`}</small>${indReqs(c.gold, c.mats)}${indTooBig(c.mats)}${indHallGate(l + 1)}<div class="row"><button class="btn gold" data-a="indBld" data-v="${b.id}" ${indCanPay(c.gold, c.mats) && l < indHall() ? '' : 'disabled'}>${L('🏗️ ابنِ')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
   }
   const sl = B.store || 0, sc = sl < IND_MAXLV ? indStoreCost(sl) : null;
-  h += `<div class="card ind-card"><div class="top"><span class="big"><span class="ind-e big">📦</span></span><div class="meta"><b>${L('المخزن')}</b><small>${L`المستوى ${sl} من ${IND_MAXLV}`}</small></div></div>
+  h += `<div class="card ind-card"><div class="top"><span class="big">${indLvIc('store', sl, 48, '<span class="ind-e big">📦</span>')}</span><div class="meta"><b>${L('المخزن')}</b><small>${L`المستوى ${sl} من ${IND_MAXLV}`}</small></div></div>
     <div class="kv"><span>${L('السعة لكل مادة')}</span><span>${fmt(indCap())}</span></div>
     ${sc ? `<small>${L('⬆️ التطوير يضاعف السعة')}</small>${indReqs(sc.gold, sc.mats)}${indHallGate(sl + 1)}<div class="row"><button class="btn gold" data-a="indStore" ${indCanPay(sc.gold, sc.mats) && sl < indHall() ? '' : 'disabled'}>${L('🏗️ وسّع')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
   return h + '</div></div>' + indContracts();

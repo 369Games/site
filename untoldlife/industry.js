@@ -44,7 +44,8 @@ const IND_KQ = { clay: 400, stone: 400, wood: 400, coal: 200, brick: 200, block:
 const IND_VAL = { clay: 3e6, stone: 3e6, wood: 3e6, coal: 1.5e7, brick: 2.5e7, block: 2.5e7, cu: 1e8, fe: 2e8, ag: 4e8, plank: 4.8e7, nails: 4.8e8, gear: 1.6e9, pipe: 1e9, machine: 2.4e10 };
 // A delivered contract's slot waits 6 minutes for a new one (the contract trader cuts 18 s a level, down to 3 minutes).
 // Two swaps; each used swap comes back after the same wait.
-const IND_KN = 3, IND_KSW = 2;
+const IND_KSW = 2;
+function indKN() { return 3 + indPt('slot4'); }
 function indKWait() { return (360 - 18 * indEng('deal')) * 1000; }
 // Engineer: permanent factory upgrades bought with blueprints and products (10 levels each).
 const IND_ENG = [
@@ -83,11 +84,54 @@ const IND_HALL_STAGES = [
   { from: 0, n: L('بيت البلدة'), e: '🏠' }, { from: 4, n: L('دار البلدة الكبيرة'), e: '🏡' },
   { from: 7, n: L('مقر البلدة الفخم'), e: '🏛️' }, { from: 10, n: L('قصر البلدة'), e: '🏰' },
 ];
-const IND_TABS = [['fields', L('⛰️ الحقول')], ['furn', L('🏭 المراجل')], ['ws', L('🔧 الورشة')], ['city', L('🏙️ المدينة')], ['settings', L('⚙️ المزيد')]];
+function indTabs() {
+  return [['fields', L('⛰️ الحقول')], ['furn', L('🏭 المراجل')], ['ws', L('🔧 الورشة')], ['city', L('🏙️ المدينة')],
+    ...(indPt('util') ? [['util', L('⚡ الخدمات')]] : []), ['pat', L('🔬 الاختراعات')], ['settings', L('⚙️ المزيد')]];
+}
 // Tab emblems: the painted ones once art/industry is in, stand-ins until then.
 const indArt = (k, alt) => ART['ind-tab-' + k] ? 'ind-tab-' + k : alt;
-Object.assign(NAV_ART, { fields: indArt('fields', 'rock'), furn: indArt('furn', 'anvil'), ws: indArt('ws', 'icon-auto-forge'), city: indArt('city', 'icon-map') });
+Object.assign(NAV_ART, { fields: indArt('fields', 'rock'), furn: indArt('furn', 'anvil'), ws: indArt('ws', 'icon-auto-forge'), city: indArt('city', 'icon-map'), util: indArt('util', 'icon-sunny'), pat: indArt('pat', 'legacy-tree') });
 
+/* Factory renewal and patents (1.12). With the town hall at level 10 (the palace) the factory can be renewed: it starts over
+   (fields, workers, furnaces and benches, warehouse, town hall, materials, contracts, and the engineer unless kept) and
+   pays patents by how far it got. Rails and boat stay, so the village keeps its discounts. Patents buy permanent perks;
+   the first one opens the public services, which pay gold straight into your purse (no market). */
+const IND_RENEW_HALL = 10;
+const IND_PT = [
+  { id: 'util', e: '⚡', max: 1, c: [10], n: L('الخدمات العامة'), d: L('يفتح تبويب الخدمات: الكهرباء والمياه والضرايب، وكلها تجيب ذهب مباشرة') },
+  { id: 'hall', e: '🏛️', max: 3, c: [8, 8, 8], n: L('أساس متين'), d: L('بعد كل تجديد يبدأ مبنى البلدة من مستوى أعلى (+1 لكل مستوى)') },
+  { id: 'store', e: '📦', max: 3, c: [8, 8, 8], n: L('مخزن جاهز'), d: L('بعد كل تجديد يبدأ المخزن من مستوى أعلى (+1 لكل مستوى)') },
+  { id: 'eng', e: '👷', max: 1, c: [20], n: L('دفتر المهندس'), d: L('تطويرات المهندس تبقى معك بعد التجديد') },
+  { id: 'slot4', e: '📜', max: 1, c: [15], n: L('تاجر رابع'), d: L('خانة عقد رابعة في المدينة') },
+  { id: 'fast', e: '⚙️', max: 5, c: [6, 6, 6, 6, 6], n: L('آلات محسّنة'), d: L('+10% سرعة لكل المراجل وطاولات الورشة لكل مستوى') },
+  { id: 'grid', e: '🔌', max: 5, c: [10, 10, 10, 10, 10], n: L('شبكة أقوى'), d: L('+20% ذهب من الخدمات لكل مستوى'), need: 'util' },
+];
+/* Public services: built with village gold and factory goods, kept forever (they don't reset with a renewal).
+   Gold per second = base × the village gold multiplier, so they keep pace with the generations like the barn does.
+   All three at level 10 come to about 3× a strong generation-13 barn. */
+const IND_UTIL = [
+  { id: 'power', e: '🔌', n: L('شركة الكهرباء'), d: L('أكبر دخل، ويكبر مع مستوى مبنى البلدة'), first: L('🔌 قريتك صار فيها كهرب! الأنوار تشتغل في الليل'),
+    g: 2e10, mats: l => [['cu', 2000 * (l + 1)], ['machine', 5 * (l + 1)]] },
+  { id: 'water', e: '💧', n: L('المياه والصرف'), d: L('دخل ثابت، والقرية صارت أنظف'), first: L('💧 قريتك صارت أنظف! المياه وصلت كل بيت'),
+    g: 1.5e10, mats: l => [['pipe', 200 * (l + 1)], ['brick', 5000 * (l + 1)]] },
+  { id: 'tax', e: '🧾', n: L('مكتب الضرايب'), d: L('يكبر مع عدد عمال المنجم والصيادين في القرية'), first: L('🧾 أهل القرية صاروا يدفعون ضرايب، والخزنة تمتلي'),
+    g: 1e10, mats: l => [['block', 5000 * (l + 1)], ['plank', 2000 * (l + 1)]] },
+];
+function indPt(id) { const t = (S.leg.ind || {}).pt; return t ? t[id] || 0 : 0; }
+function indPats() { return Math.floor(ind().pat || 0); }
+function indRenewLv() { const I = ind(); return indHall() + (I.b.store || 0) + IND_FIELDS.reduce((a, f) => a + I.f[f.id].l, 0); }
+function indRenewGain() { return 10 + Math.floor(indRenewLv() / 2) + Math.floor((ind().kd || 0) / 20); }
+function indUl(id) { const u = ind().u; return u ? u[id] || 0 : 0; }
+function indUtilCost(x, l) { return { gold: Math.round(x.g * Math.pow(1.6, l)), mats: x.mats(l) }; }
+// Base gold per second of one service at level l (before the village gold multiplier and the grid patent).
+function indUtilBase(id, l = indUl(id)) {
+  if (id === 'power') return 4e5 * l * (1 + indHall() / 10);
+  if (id === 'water') return 4e5 * l;
+  return 1125 * l * Math.min(VILLAGE_WMAX * 2, S.mine.miners + S.lake.fishers);
+}
+function indUtilMult() { return goldMult() * (1 + 0.2 * indPt('grid')); }
+function indUtilRate(id) { return indUtilBase(id) * indUtilMult(); }
+function indUtilTotal() { return indOpen() && indPt('util') ? IND_UTIL.reduce((a, x) => a + indUtilRate(x.id), 0) : 0; }
 function newInd() {
   return { hired: 0, f: { clay: { w: 0, l: 0 }, stone: { w: 0, l: 0 }, wood: { w: 1, l: 0 } }, r: {}, fu: {}, b: { rails: 0, boat: 0, store: 0 } };
 }
@@ -109,7 +153,7 @@ function indRate(id) { const x = ind().f[id]; return x.w * 0.5 * (1 + 0.5 * x.l)
 function indEng(id) { const e = ind().e; return e ? e[id] || 0 : 0; }
 function indWMax() { return IND_WMAX + 10 * indEng('crew'); }
 // Furnaces and benches speed up with their engineer upgrade.
-function indSpeed(r) { return 1 + 0.15 * indEng(IND_PROD.includes(r) ? 'bench' : 'furn'); }
+function indSpeed(r) { return (1 + 0.15 * indEng(IND_PROD.includes(r) ? 'bench' : 'furn')) * (1 + 0.1 * indPt('fast')); }
 function indEngCost(l) {
   const mats = l < 3 ? [['plank', 50 * (l + 1)], ['nails', 20 * (l + 1)]] : l < 6 ? [['gear', 10 * (l - 2)], ['pipe', 10 * (l - 2)]] : [['machine', 2 * (l - 5)]];
   return { gold: 0, mats: [['bp', IND_ENG_BP[l]], ...mats] };
@@ -168,6 +212,7 @@ function tickInd(dt) {
     I.r[r.id] = (I.r[r.id] || 0) + k; u.p -= k; u.sz = 0;
   }
   indKFill();
+  const ug = indUtilTotal() * dt; if (ug > 0) addGold(ug);
   if (offline || dt <= 0) return; // the catch-up's big steps would skew it
   const a = Math.min(1, dt / 3);
   for (const id in IND_RES) IND_NET[id] = (IND_NET[id] || 0) * (1 - a) + ((I.r[id] || 0) - before[id]) / dt * a;
@@ -206,7 +251,7 @@ function indNewK() {
 // An empty slot ({ at }) gets its new contract once the wait is over.
 function indKFill() {
   const I = ind(), now = Date.now(); if (!I.k) I.k = [];
-  while (I.k.length < IND_KN) I.k.push(indNewK());
+  while (I.k.length < indKN()) I.k.push(indNewK());
   I.k.forEach((k, i) => { if (!k.need && now >= k.at) I.k[i] = indNewK(); });
 }
 // Worked out from what it asks (not stored), so contracts already on the board follow any price change.
@@ -219,6 +264,7 @@ function indKReady() { return (ind().k || []).some(indKCan); }
 function villageAlert() { return Object.keys(tabAlerts()).length > 0 || canRetire(); }
 
 // --- actions (game.js merges these into A; this file loads first, so the offline catch-up can tick the factory) ---
+let indRenewArm = 0;
 const IND_ACTIONS = {
   indUnlock: () => {
     if (indOpen() || !indReady()) return;
@@ -281,6 +327,34 @@ const IND_ACTIONS = {
     const I = ind(), k = (I.k || [])[+v]; if (!k || !k.need || indSwaps() < 1) return;
     I.sw = (I.sw || []).filter(t => t > Date.now()); I.sw.push(Date.now() + indKWait());
     I.k[+v] = indNewK();
+  },
+  indPt: v => {
+    const x = IND_PT.find(p => p.id === v); if (!x) return;
+    const I = ind(), l = indPt(v); if (l >= x.max || (x.need && !indPt(x.need)) || indPats() < x.c[l]) return;
+    I.pat -= x.c[l]; I.pt = I.pt || {}; I.pt[v] = l + 1;
+    log(L`🔬 اخترعت ${x.e} ${x.n}${x.max > 1 ? ` (${l + 1}/${x.max})` : ''}`, 'golden', 'ind');
+    if (v === 'util') { log(L('⚡ تبويب الخدمات انفتح: ابنِ شركة الكهرباء والمياه ومكتب الضرايب، وكلها تجيب ذهب لحالها'), 'golden', 'ind'); renderTabs(); }
+  },
+  indUtil: v => {
+    const x = IND_UTIL.find(u => u.id === v); if (!x || !indPt('util')) return;
+    const I = ind(), l = indUl(v); if (l >= IND_MAXLV) return;
+    const c = indUtilCost(x, l); if (!indCanPay(c.gold, c.mats)) return;
+    indPay(c.gold, c.mats); I.u = I.u || {}; I.u[v] = l + 1;
+    log(l ? L`${x.e} ${x.n} صار مستوى ${l + 1}` : x.first, 'golden', 'ind'); indStageLog(x.n, l + 1);
+  },
+  // Renewing asks twice (the button arms itself for a few seconds), since it starts the factory over.
+  indRenew: () => {
+    if (indHall() < IND_RENEW_HALL) return;
+    if (!indRenewArm || Date.now() > indRenewArm) { indRenewArm = Date.now() + 5000; lastSig = ''; return; }
+    indRenewArm = 0;
+    const I = ind(), gain = indRenewGain();
+    I.pat = (I.pat || 0) + gain; I.ren = (I.ren || 0) + 1;
+    const keep = { rails: I.b.rails || 0, boat: I.b.boat || 0 }, fresh = newInd();
+    Object.assign(I, { hired: 0, f: fresh.f, r: {}, fu: {}, k: [], kd: 0, sw: [] });
+    I.b = { ...keep, store: indPt('store'), hall: indPt('hall') };
+    if (!indPt('eng')) I.e = {};
+    log(L`🔬 جدّدت المصنع! أخذت ${gain} براءة اختراع. المصنع رجع من الصفر، والقرية محتفظة بخصوماتها`, 'golden', 'ind');
+    tab = 'pat'; lastSig = ''; renderTabs();
   },
   indEng: v => {
     const g = IND_ENG.find(x => x.id === v); if (!g) return;
@@ -394,6 +468,40 @@ function viewCity() {
     ${sc ? `<small>${L('⬆️ التطوير يضاعف السعة')}</small>${indReqs(sc.gold, sc.mats)}${indHallGate(sl + 1)}<div class="row"><button class="btn gold" data-a="indStore" ${indCanPay(sc.gold, sc.mats) && sl < indHall() ? '' : 'disabled'}>${L('🏗️ وسّع')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
   return h + '</div></div>' + indContracts();
 }
+// Inventions: the renewal card and the patent tree.
+function viewPat() {
+  const I = ind(), ok = indHall() >= IND_RENEW_HALL, armed = indRenewArm && Date.now() < indRenewArm;
+  let h = L`<div class="panel"><div class="ph"><h2>🔬 الاختراعات</h2><span class="stat">📜 ${indPats()} براءة</span></div>
+    <p class="hint">لما يصير مبنى البلدة قصر (المستوى ${IND_RENEW_HALL})، تقدر تجدّد المصنع: يرجع من الصفر وتاخذ براءات اختراع حسب وين وصلت. البراءات تشتري فيها اختراعات تبقى معك للأبد. سكة الحديد والقارب ما ينعادون، فخصومات القرية باقية.</p>`;
+  h += `<div class="card ind-card ind-renew ${ok ? 'lgcard g' : ''}"><div class="top"><span class="big">${indHallIc(64, 10)}</span><div class="meta"><b>${L('جدّد المصنع')}</b><small>${L`تجديدات: ${I.ren || 0}`}</small></div></div>
+    <div class="kv"><span>${L('البراءات اللي بتاخذها الحين')}</span><span class="good">+${indRenewGain()} 📜</span></div>
+    <small>${L`10 أساس + نص مجموع مستويات مبنى البلدة والمخزن والحقول (${indRenewLv()}) + براءة لكل 20 عقد (${I.kd || 0})`}</small>
+    <p class="hint">${L('ينعاد: الحقول والعمال والأفران والطاولات والمخزن ومبنى البلدة والمواد والعقود، والمهندس (إلا لو عندك دفتر المهندس). يبقى: سكة الحديد والقارب والخدمات والاختراعات.')}</p>
+    ${ok ? `<div class="row"><button class="btn ${armed ? 'red' : 'gold'}" data-a="indRenew">${armed ? L('⚠️ متأكد؟ اضغط مرة ثانية') : L('🔬 جدّد المصنع')}</button></div>` : `<p class="bad">${L`🏛️ يحتاج مبنى البلدة مستوى ${IND_RENEW_HALL} (عندك ${indHall()})`}</p>`}</div>`;
+  h += '</div>' + L`<div class="panel"><div class="ph"><h2>🌳 شجرة الاختراعات</h2></div><div class="grid ind-grid">`;
+  for (const x of IND_PT) {
+    const l = indPt(x.id), lock = x.need && !indPt(x.need), c = l < x.max ? x.c[l] : 0;
+    h += `<div class="card ind-card ${l ? 'lgcard g' : ''}"><div class="top"><span class="big">${ART['ind-pt-' + x.id] ? icon('ind-pt-' + x.id, 48) : x.id === 'hall' ? indHallIc(48, 4) : `<span class="ind-e big">${x.e}</span>`}</span><div class="meta"><b>${x.n}</b><small>${L`المستوى ${l} من ${x.max}`}</small></div></div>
+      <p class="hint">${x.d}</p>
+      ${l >= x.max ? `<p class="good">${L('✅ أعلى مستوى')}</p>` : lock ? `<p class="bad">${L`🔒 يحتاج ${IND_PT.find(p => p.id === x.need).n}`}</p>`
+        : `<div class="row"><button class="btn gold" data-a="indPt" data-v="${x.id}" ${indPats() >= c ? '' : 'disabled'}>${L`🔬 اخترع (${c} 📜)`}</button></div>`}</div>`;
+  }
+  return h + '</div></div>';
+}
+// Public services: three buildings that pay gold every second, straight into the purse.
+function viewUtil() {
+  let h = L`<div class="panel"><div class="ph"><h2>⚡ الخدمات</h2><span class="stat">💰 ${fmt(indUtilTotal())} بالثانية</span></div>
+    <p class="hint">الخدمات العامة تخدم القرية وتجيب ذهب لحالها كل ثانية، بدون سوق. تبقى معك حتى لو جدّدت المصنع، ودخلها يكبر مع مضاعف الذهب في القرية.</p><div class="grid ind-grid">`;
+  for (const x of IND_UTIL) {
+    const l = indUl(x.id), c = l < IND_MAXLV ? indUtilCost(x, l) : null;
+    const next = c ? (indUtilBase(x.id, l + 1) - indUtilBase(x.id, l)) * indUtilMult() : 0;
+    h += `<div class="card ind-card ${l ? 'lgcard g' : ''}"><div class="top"><span class="big">${indLvIc('u-' + x.id, l, 48, `<span class="ind-e big">${x.e}</span>`)}</span><div class="meta"><b>${x.n}</b><small>${L`المستوى ${l} من ${IND_MAXLV}`}</small></div></div>
+      <p class="hint">${x.d}</p>
+      <div class="kv"><span>${L('الدخل')}</span><span class="good">${L`${fmt(indUtilRate(x.id))} بالثانية`}</span></div>
+      ${c ? `<small>${L`⬆️ المستوى ${l + 1}: +${fmt(next)} بالثانية`}</small>${indReqs(c.gold, c.mats)}${indTooBig(c.mats)}<div class="row"><button class="btn gold" data-a="indUtil" data-v="${x.id}" ${indCanPay(c.gold, c.mats) ? '' : 'disabled'}>${l ? L('⬆️ طوّر') : L('🏗️ ابنِ')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
+  }
+  return h + '</div></div>';
+}
 // Numbers that change every frame are written in place; the page itself only redraws when the signature changes.
 function updInd() {
   document.querySelectorAll('[data-ir]').forEach(el => { el.textContent = fmt(Math.floor(ind().r[el.dataset.ir] || 0)); });
@@ -416,6 +524,8 @@ const IND_VIEWS = {
   fields: [viewFields, updInd, indSig],
   furn: [viewFurn, updInd, indSig],
   city: [viewCity, updInd, () => { const I = ind(); return [indSig(), I.kd, (I.k || []).map(k => k.need ? [k.need, indKCan(k)] : 0), indSwaps()]; }],
+  pat: [viewPat, updInd, () => { const I = ind(); return [I.pat, I.pt, I.ren, indHall(), indRenewGain(), !!(indRenewArm && Date.now() < indRenewArm)]; }],
+  util: [viewUtil, updInd, () => { const I = ind(); return [I.u, I.pt, Math.floor(indUtilTotal() / 1e3), IND_UTIL.map(x => indUl(x.id) < IND_MAXLV && indCanPay(indUtilCost(x, indUl(x.id)).gold, indUtilCost(x, indUl(x.id)).mats))]; }],
   ws: [viewWs, updInd, () => {
     const I = ind();
     return [indSig(), IND_ENG.map(g => indEng(g.id) < IND_MAXLV && indCanPay(0, indEngCost(indEng(g.id)).mats)), Math.floor(I.r.bp || 0)];
@@ -429,6 +539,9 @@ function indBuffsHtml() {
   // Info-only card (no multiplier line).
   const info = (title, rows) => `<div class="bf"><div class="bfh"><b>${title}</b></div>${rows.map(([n, v]) => `<div class="bfl ex"><span>${n}</span><span>${v}</span></div>`).join('')}</div>`;
   let h = '';
+  if (indPt('util')) h += g(L('⚡ ذهب الخدمات'), [[L('💰 مضاعف الذهب في القرية'), goldMult()], [L('🔌 شبكة أقوى (اختراع)'), 1 + 0.2 * indPt('grid')]],
+    [row(L('💰 المجموع'), L`${fmt(indUtilTotal())} بالثانية`), ...IND_UTIL.map(x => row(`${x.e} ${x.n} (${L`مستوى ${indUl(x.id)}`})`, L`${fmt(indUtilRate(x.id))} بالثانية`))]);
+  h += info(L('🔬 الاختراعات'), [row(L('📜 براءات عندك'), indPats()), row(L('🔁 تجديدات'), I.ren || 0), row(L('📜 لو جدّدت الحين'), '+' + indRenewGain())]);
   h += info(L('🏛️ مبنى البلدة'), [row(IND_HALL_STAGES[indHallStage()].n, L`مستوى ${indHall()}`), row(L('أعلى مستوى للمباني والحقول'), indHall()), row(L('أفران وطاولات من كل نوع'), indFurnMax())]);
   h += g(L('⛰️ إنتاج الحقول'), [[L('⛏️ حقول أغزر (المهندس)'), 1 + 0.15 * indEng('field')]],
     [row(L('👷 العمال'), `${indWorkers()} / ${indWMax()}`), ...IND_FIELDS.map(f => row(`${f.n} (${L`مستوى ${I.f[f.id].l}`})`, L`${indNum(indRate(f.id))} بالثانية`))]);

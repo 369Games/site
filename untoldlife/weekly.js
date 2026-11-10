@@ -203,7 +203,7 @@ function wkBoard(title, k, unit) {
   const nm = r => adm || !badName(r.name) ? esc(r.name) : '…';
   const tools = r => adm && !r.me ? `<button class="wk-ban" data-a="wkBan" data-v="${esc(r.id)}" data-n="${esc(r.name)}" title="${L('🚫 احظر من المتصدرين')}">🚫</button>` : '';
   const uidLine = r => adm ? `<small class="wk-uid" dir="ltr">${esc(r.id)}</small>` : '';
-  return `<div class="wk-board"><b>${title}</b>${rows.length ? `<ol>${rows.map(r => `<li class="${r.me ? 'me' : ''}"><span>${tools(r)}${nm(r)} <small>${L`ج${r.gen}`}</small>${uidLine(r)}</span><b>${unit(r.v)}</b></li>`).join('')}</ol>` : L('<small class="hint">ما أحد للحين، كن الأول!</small>')}</div>`;
+  return `<div class="wk-board"><b>${title}</b>${rows.length ? `<ol>${rows.map(r => `<li class="${r.me ? 'me' : ''}"><span>${tools(r)}${nm(r)}${String(r.name || '').trim().endsWith(' ' + r.gen) ? '' : ` <small>${L`ج${r.gen}`}</small>`}${uidLine(r)}</span><b>${unit(r.v)}</b></li>`).join('')}</ol>` : L('<small class="hint">ما أحد للحين، كن الأول!</small>')}</div>`;
 }
 // Developer mode: the banned players, each with a button to let them back.
 function wkModPanel() {
@@ -245,7 +245,7 @@ function weeklyPanel() {
   }
   h += `</div></div>
     ${wkModPanel()}<div class="wk-boards">${wkBoard(L('💰 أكثر ذهب'), 'gold', fmt)}${wkBoard(L('⚔️ أعمق طابق'), 'floor', v => fmt(v))}${wkBoard(L('🎣 أكثر صيد'), 'fish', fmt)}</div>
-    <small class="hint">${WK.err ? L('⚠️ ما قدرنا نحدّث القائمة الحين، بنحاول بعد شوي.') : L('تتحدث كل دقيقتين تقريباً. أرقامك تنرسل كل 5 دقايق.')}</small>`;
+    <small class="hint">${WK.err ? L('⚠️ ما قدرنا نحدّث القائمة الحين، بنحاول بعد شوي.') : L('تتحدث كل 10 دقايق تقريباً. أرقامك تنرسل كل 5 دقايق.')}</small>`;
   return h + '</div>';
 }
 function wkUpd() {

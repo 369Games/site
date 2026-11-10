@@ -1473,7 +1473,7 @@
 "⚔️ أعمق طابق": "⚔️ Deepest floor",
 "🎣 أكثر صيد": "🎣 Most fish",
 "⚠️ ما قدرنا نحدّث القائمة الحين، بنحاول بعد شوي.": "⚠️ Couldn't update the list right now, we'll try again shortly.",
-"تتحدث كل دقيقتين تقريباً. أرقامك تنرسل كل 5 دقايق.": "Updates about every 2 minutes. Your numbers are sent every 5 minutes.",
+"تتحدث كل 10 دقايق تقريباً. أرقامك تنرسل كل 5 دقايق.": "Refreshes about every 10 minutes. Your numbers are sent every 5 minutes.",
 "(باقي {0})": "({0} left)",
 "جاري التحميل…": "Loading…",
 "{0} • مساهمتك: {1}": "{0} • You gave: {1}",

@@ -3,6 +3,10 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.13.9', date: '2026-11-10', big: false, title: L('الفحم مضاعف والحجر المصقول له فايدة'), items: [
+    L('⚫ فرن الفحم صار يعطي فحمتين من 3 خشب بدل فحمة وحدة.'),
+    L('📌 المسامير صارت تحتاج سبيكة حديد وحجر مصقول بدل الفحم، عشان الحجر المصقول يصير له فايدة والفحم ما يدخل في كل شي.'),
+  ] },
   { v: '1.13.8', date: '2026-11-10', big: false, title: L('خبرة المنجم صارت تكبر مع العمق'), items: [
     L('⛏️ خبرة كل صخرة صارت حسب صلابتها مع زيادة للعمق. قبل كان الطابق 1 يعطي خبرة أكثر 40 مرة من آخر طابق، والحين كل ما نزلت أكثر تلفّل أسرع: آخر الطوابق أسرع تقريباً 16 مرة من الطابق 1.'),
   ] },

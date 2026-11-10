@@ -24,7 +24,7 @@ const IND_FIELDS = [
 ];
 // Furnace recipes: inputs per batch (village ores by their item id), seconds per batch per furnace, base furnace price.
 const IND_RECIPES = [
-  { id: 'coal', in: { wood: 3 }, t: 3, c: 5e7 },
+  { id: 'coal', in: { wood: 3 }, out: 2, t: 3, c: 5e7 },
   { id: 'brick', in: { clay: 2, coal: 1 }, t: 4, c: 1e8 },
   { id: 'block', in: { stone: 3 }, t: 4, c: 1e8 },
   { id: 'cu', in: { copper: 3, coal: 1 }, t: 6, c: 3e8 },
@@ -35,7 +35,7 @@ const IND_RECIPES = [
 const IND_PROD = [
   // out: how many each batch makes (1 when left out).
   { id: 'plank', in: { wood: 4 }, out: 2, t: 3, c: 1e8 },
-  { id: 'nails', in: { fe: 1, coal: 1 }, out: 3, t: 4, c: 3e8 },
+  { id: 'nails', in: { fe: 1, block: 1 }, out: 3, t: 4, c: 3e8 }, // cut stone, so it has a use and coal isn't in everything
   { id: 'gear', in: { fe: 2, cu: 1 }, out: 2, t: 8, c: 6e8 },
   { id: 'pipe', in: { cu: 2, brick: 2 }, out: 2, t: 8, c: 6e8 },
   { id: 'machine', in: { gear: 3, pipe: 2, plank: 6, nails: 8 }, t: 30, c: 2e9 },

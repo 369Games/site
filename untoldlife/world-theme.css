@@ -464,3 +464,5 @@ body.lite #log li.golden,body.lite #log li.egg{box-shadow:none}
 .ind-card .reqs .rs .eta{font-weight:600;color:var(--muted)}
 .ind-card .reqs .rn{overflow-wrap:normal;word-break:normal}
 .ind-fill .up{color:var(--good)}.ind-fill .down{color:var(--red)}
+/* Contract reward: gold and blueprints as two clear chips. */
+.ind-rew{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}.ind-rew span{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:#ffffff0d;border:1px solid #c9a35a55;font-size:13px}.ind-rew bdi{font-weight:700;direction:ltr}

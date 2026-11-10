@@ -1245,7 +1245,7 @@
 "عقد {0}": "Contract {0}",
 "التجار يجهّزون طلب جديد": "The traders are preparing a new request",
 "⏳ عقد جديد بعد <b data-kw=\"{0}\">{1}</b>": "⏳ New contract in <b data-kw=\"{0}\">{1}</b>",
-"المكافأة: {0}💰 + {1} 📐": "Reward: {0}💰 + {1} 📐",
+"المكافأة": "Reward",
 "📦 سلّم": "📦 Deliver",
 "🔄 بدّل ({0})": "🔄 Swap ({0})",
 "مبنى البلدة: المستوى {0} من {1}": "Town hall: level {0} of {1}",

@@ -500,7 +500,8 @@ function indContracts() {
   h += `<p class="ind-sw">${sw > 0 ? L`🔄 التبديلات: ${sw} من ${IND_KSW}` : L`🔄 التبديلات خلصت، يرجع واحد بعد <b data-kw="${indSwapBack()}">${indClock(indSwapBack() - now)}</b>`}</p><div class="grid ind-grid">`;
   (I.k || []).forEach((k, i) => {
     if (!k.need) { h += `<div class="card ind-card ind-k ind-kwait"><div class="top"><span class="big">${indIc('contract', 48)}</span><div class="meta"><b>${L`عقد ${i + 1}`}</b><small>${L('التجار يجهّزون طلب جديد')}</small></div></div><p class="hint">${L`⏳ عقد جديد بعد <b data-kw="${k.at}">${indClock(k.at - now)}</b>`}</p></div>`; return; }
-    h += `<div class="card ind-card ind-k ${indKCan(k) ? 'lgcard g' : ''}"><div class="top"><span class="big">${indIc('contract', 48)}</span><div class="meta"><b>${L`عقد ${i + 1}`}</b><small>${L`المكافأة: ${fmt(indKGold(k))}💰 + ${k.bp} 📐`}</small></div></div>
+    h += `<div class="card ind-card ind-k ${indKCan(k) ? 'lgcard g' : ''}"><div class="top"><span class="big">${indIc('contract', 48)}</span><div class="meta"><b>${L`عقد ${i + 1}`}</b><small>${L('المكافأة')}</small></div></div>
+      <div class="ind-rew"><span>💰 <bdi>${fmt(indKGold(k))}</bdi> ${L('ذهب')}</span><span>📐 <bdi>${k.bp}</bdi> ${L('مخطط')}</span></div>
       ${indReqs(0, k.need)}
       <div class="row"><button class="btn gold" data-a="indK" data-v="${i}" ${indKCan(k) ? '' : 'disabled'}>${L('📦 سلّم')}</button><button class="btn ghost sm" data-a="indKSkip" data-v="${i}" ${sw > 0 ? '' : 'disabled'}>${L`🔄 بدّل (${sw})`}</button></div></div>`;
   });

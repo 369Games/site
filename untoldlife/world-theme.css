@@ -457,3 +457,4 @@ body.lite #log li.golden,body.lite #log li.egg{box-shadow:none}
 .village-lit:not(.ind-world) .world-land-day{background-image:url('assets/art/terrain-day-electric.webp')}
 /* Village ores in the factory stock: a dashed border says they come from the village. */
 .ind-chip.vil{border-style:dashed;border-color:#8fb06a88}
+.ind-fill{display:block;min-height:1.4em;color:var(--muted);font-size:12px}

@@ -150,8 +150,12 @@ async function wkPush() {
     // Never more than the rules allow since the last send (or since the week began).
     const since = (Date.now() - (old.ts && old.ts.toMillis ? old.ts.toMillis() : wkStart(S.wk.id))) / 1000;
     const lim = Math.floor(WK_RATE * Math.max(0, since - 5));
+    // The boards are capped per second too (tools/firestore.rules): gold 1T/s (it was 1B/s before 1.15.2, which the factory
+    // outgrew: contracts pay trillions at once, so a big player's whole send was refused and their row froze).
+    // If the rules refuse a send, the next one goes at the old 1B/s straight away (rules not published yet).
+    const up2 = (k, rate) => Math.min(Math.max(cur[k], was(k)), was(k) + Math.floor(rate * Math.max(0, since - 5)));
     const row = { name: (!badName(S.name) && String(S.name || '').replace(/[<>&"'`]/g, '').slice(0, 24)) || '…', gen: S.leg.gen,
-      gold: Math.max(cur.gold, was('gold')), fish: Math.max(cur.fish, was('fish')), floor: Math.max(cur.floor, was('floor')) };
+      gold: up2('gold', WK.lowCap ? 0.95e9 : 0.95e12), fish: up2('fish', 950), floor: up2('floor', 19) };
     const add = {}, round = {};
     for (const g of VG) { const k = 'g' + g.k; row[k] = Math.min(Math.max(cur[k], was(k)), was(k) + lim); add[g.k] = row[k] - was(k); round[g.k] = vgRound(g); }
     if (WK.sent && WK_KEYS.every(k => row[k] === old[k])) { WK.busy = false; return; }
@@ -185,7 +189,10 @@ async function wkPush() {
       G[k + 'd'] = round[k]; G[k + 'n'] = (G[k + 'n'] || 0) + a;
       if (a > 0) G[k + 'l'] = { ...G[k + 'l'], [uid]: ((G[k + 'l'] || {})[uid] || 0) + a };
     }
-  } catch (e) { WK.err = (e && e.code) || 'x'; WK.sentWk = -1; WK.g = null; console.warn('weekly', WK.err); }
+  } catch (e) {
+    WK.err = (e && e.code) || 'x'; WK.sentWk = -1; WK.g = null; console.warn('weekly', WK.err);
+    if (WK.err === 'permission-denied' && !WK.lowCap) { WK.lowCap = true; WK.sentAt = 0; } // try again now, under the old gold cap
+  }
   WK.busy = false;
 }
 async function wkPull() {

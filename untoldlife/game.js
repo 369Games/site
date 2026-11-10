@@ -2960,7 +2960,7 @@ function showIntro() {
   الأرض متعبة، والحظيرة فارغة، والمنجم القديم خلف التلة مهجور منذ سنين... ويقولون إن وحوشاً سكنت أعماقه.</p>
   <p>أهل القرية طيبون، ونقابة المرتزقة تبحث دائماً عن أيادٍ قوية. ابدأ بالقليل، واصبر... وستكتب قصتك بنفسك.</p>
   <p style="text-align:end">— جدك</p></div>
-  ${langPick()}<label><b>ما اسمك؟</b></label><input id="nameIn" maxlength="20" placeholder="اكتب اسمك هنا">
+  ${langPick()}<label><b>ما اسمك؟</b></label><input id="nameIn" maxlength="20" placeholder="اكتب اسمك (اختياري)">
   <label><b>أنت؟</b></label>${genderPick('introGender', introGender)}
   <div class="intro-go"><button class="btn gold" data-a="start" style="width:100%;font-size:17px">🏡 ادخل القرية</button></div>
   ${(siteConfig().firebase || {}).apiKey && location.protocol !== 'file:' ? L('<button class="btn ghost sm intro-cloud" data-a="introCloud">☁️ لعبت قبل؟ كمّل تقدمك بحساب Google</button>') : ''}`);

@@ -242,6 +242,8 @@ let IND_UG = 0; // services gold paid so far (the away summary reads how much ca
 function tickInd(dt) {
   if (!indOpen()) return;
   const I = ind(), cap = indCap(), before = {};
+  // Once: lock the three ores the furnaces live on in the market, so «sell all» can't sell them (the player can unlock them there).
+  if (!I.lk) { I.lk = 1; IND_ORES.forEach(id => { S.locked[id] = 1; }); if (!offline) log(L('🔒 قفلنا النحاس والحديد والفضة في السوق لأن أفران المصنع تحتاجها. تقدر تفك القفل من السوق متى ما تبي.'), 'good'); }
   for (const id in IND_RES) before[id] = I.r[id] || 0;
   for (const f of IND_FIELDS) { const v = I.r[f.id] || 0; if (v < cap) I.r[f.id] = Math.min(cap, v + indRate(f.id) * dt); }
   for (const r of IND_MAKERS) {

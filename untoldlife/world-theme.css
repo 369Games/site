@@ -466,3 +466,5 @@ body.lite #log li.golden,body.lite #log li.egg{box-shadow:none}
 .ind-fill .up{color:var(--good)}.ind-fill .down{color:var(--red)}
 /* Contract reward: gold and blueprints as two clear chips. */
 .ind-rew{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}.ind-rew span{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:#ffffff0d;border:1px solid #c9a35a55;font-size:13px}.ind-rew bdi{font-weight:700;direction:ltr}
+/* Phones: the factory stock in three tighter columns, so the cards below aren't pushed a whole screen down. */
+@media (max-width:480px){.ind-stock{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.ind-stock .ind-chip{padding:4px 7px;font-size:12px;gap:3px;justify-content:space-between}.ind-stock .ind-chip b{min-width:0}.ind-stock .ind-net{min-width:0;font-size:10px;margin:0}.ind-stock .ind-chip .px{width:16px;height:16px}}

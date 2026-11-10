@@ -15,6 +15,8 @@ const LANG_PACKS = window.LANG_PACKS || {};
 const LANG_RETIRED = { es: 'en', pt: 'en' };
 const LANG = (() => {
   try { let v = localStorage.getItem(LANG_KEY); if (LANG_RETIRED[v]) { v = LANG_RETIRED[v]; localStorage.setItem(LANG_KEY, v); } if (v && LANGS.some(l => l[0] === v) && (v === 'ar' || LANG_PACKS[v])) return v; } catch (e) {}
+  // No choice saved: a new visitor follows the browser's language (worked out in index.html), everyone else stays Arabic.
+  const g = window.UL_LANG_GUESS; if (g && g !== 'ar' && LANG_PACKS[g]) return g;
   return 'ar';
 })();
 const L_DICT = LANG === 'ar' ? null : LANG_PACKS[LANG];

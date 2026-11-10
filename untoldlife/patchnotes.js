@@ -3,6 +3,10 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.15.3', date: '2026-11-10', big: false, title: L('تحكم بالأفران وتوزيع ذكي للعمال'), items: [
+    L('⚒️ كل فرن وطاولة صار تحته − و+ تختار فيها كم واحد منها شغّال، و0 يوقفها كلها.'),
+    L('👷 في الحقول زر «وزّع ذكي»: يوزّع العمال حسب اللي تاكله الأفران والطاولات الشغّالة، وزر «تلقائي» يعيد التوزيع كل 30 ثانية.'),
+  ] },
   { v: '1.15.2', date: '2026-11-10', big: false, title: L('سقف لحجم العقود'), items: [
     L('📜 العقود تكبر 12% مع كل عقد تسلّمه لين 300 عقد (حجم ×37)، وبعدها تثبت. يعني أكبر عقد ممكن يعطي تقريباً 5.3T، و10.7T مع تاجر العقود كامل.'),
   ] },

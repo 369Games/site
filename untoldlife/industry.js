@@ -190,6 +190,31 @@ function indStageLog(name, l) { if (l === 4 || l === 7 || l === 10) log(L`🎉 �
 function indFurnMax() { return Math.min(IND_FMAX, 3 * (indHall() + 1)); }
 // Shown instead of the upgrade button when the town hall holds a building or field back.
 function indHallGate(next) { return next > indHall() ? `<p class="bad">${L`🏤 يحتاج مبنى البلدة مستوى ${next}`}</p>` : ''; }
+// How many of a kind are running: the player picks it (u.a, all of them when unset); a paused kind (on = 0) runs none.
+function indActive(r) { const u = indFu(r.id); return u.on ? Math.min(u.n, u.a === undefined ? u.n : u.a) : 0; }
+/* Smart worker split for the fields: as many workers on each raw material as the running furnaces and benches burn
+   (wood for coal and planks, clay for bricks, stone for cut stone), and the rest spread so no field sits idle while
+   another fills up. */
+function indSmartW() {
+  const I = ind(), n = indWorkers(), f = I.f, need = {}, want = {};
+  IND_FIELDS.forEach(x => { need[x.id] = 0; });
+  for (const r of IND_MAKERS) {
+    const per = indActive(r) * indSpeed(r) / r.t;
+    if (per) for (const [id, q] of Object.entries(r.in)) if (id in need) need[id] += per * q * indInMult();
+  }
+  const perW = x => 0.5 * (1 + 0.5 * f[x].l) * (1 + 0.15 * indEng('field'));
+  let tot = 0; IND_FIELDS.forEach(x => { want[x.id] = need[x.id] / perW(x.id); tot += want[x.id]; });
+  const ids = IND_FIELDS.map(x => x.id), out = {};
+  if (tot <= 0) { ids.forEach((id, i) => { out[id] = Math.floor(n / 3) + (i < n % 3 ? 1 : 0); }); }
+  else {
+    const scale = Math.min(1, n / tot); let left = n;
+    ids.forEach(id => { out[id] = Math.min(left, Math.floor(want[id] * scale)); left -= out[id]; });
+    // Workers left over: first round up what's burned, then to the fields that aren't full, by how much they're used.
+    const open = ids.filter(id => (I.r[id] || 0) < indCap() * 0.99), order = (open.length ? open : ids).slice().sort((a, b) => want[b] - want[a]);
+    for (let i = 0; left > 0; i++) { const id = order[i % order.length]; out[id]++; left--; }
+  }
+  ids.forEach(id => { f[id].w = out[id]; });
+}
 function indFu(id) { const fu = ind().fu; return fu[id] || (fu[id] = { n: 0, on: 1, p: 0 }); }
 // A resource can be an industry one (S.leg.ind.r) or a village ore (S.inv).
 function indHave(id) { return IND_RES[id] ? ind().r[id] || 0 : have(id); }
@@ -208,6 +233,7 @@ const IND_NET = {};
 // For the countdowns: a snapshot of every stock once a second for the last minute, so a rate is (now − a minute ago) / time.
 // Furnaces work in batches, so the quick average above jumps too much to time anything with.
 const IND_HIST = [], IND_ETA = {};
+let IND_AW = 0;
 // Running total of what fields and furnaces added or used (ticks only): spending on a building isn't production, so the
 // countdowns measure this, not the stock (a stock that just paid for an upgrade would look like it's running out).
 const IND_CUM = {};
@@ -219,9 +245,9 @@ function tickInd(dt) {
   for (const f of IND_FIELDS) { const v = I.r[f.id] || 0; if (v < cap) I.r[f.id] = Math.min(cap, v + indRate(f.id) * dt); }
   for (const r of IND_MAKERS) {
     const u = indFu(r.id); u.stall = '';
-    if (!u.n || !u.on) { u.p = 0; u.sz = 0; continue; }
+    const na = indActive(r); if (!na) { u.p = 0; u.sz = 0; continue; }
     if ((I.r[r.id] || 0) >= cap) { u.stall = 'full'; u.p = 0; u.sz = 0; continue; }
-    u.p += dt * u.n * indSpeed(r) / r.t;
+    u.p += dt * na * indSpeed(r) / r.t;
     let k = Math.floor(u.p); if (!k) continue;
     // With the thrift patent every input costs half; the leftover half-units carry over (u.c), so stocks stay whole numbers.
     const hf = indInMult(), cr = u.c || (u.c = {});
@@ -233,6 +259,7 @@ function tickInd(dt) {
     I.r[r.id] = (I.r[r.id] || 0) + k * out; u.p -= k; u.sz = 0;
   }
   indKFill();
+  if (I.autoW && !offline) { IND_AW += dt; if (IND_AW >= 30) { IND_AW = 0; indSmartW(); } } // auto split: every 30 seconds
   const ug = indUtilTotal() * dt; if (ug > 0) { addGold(ug); IND_UG += ug; }
   if (offline || dt <= 0) return; // the catch-up's big steps would skew it
   const a = Math.min(1, dt / 3);
@@ -268,7 +295,7 @@ function indFull(id) { return (ind().r[id] || 0) >= indCap() * 0.99; }
 function indFieldSt(id) { return ind().f[id].w && indFull(id) ? { c: 'bad', t: L('📦 المخزن مليان، الحقل واقف') } : { c: '', t: '' }; }
 function indMakerSt(r) {
   const u = indFu(r.id);
-  return !u.n ? { c: '', t: '' } : !u.on ? { c: 'hint', t: L('⏸️ موقف') } : indFull(r.id) ? { c: 'bad', t: L('📦 المخزن مليان') }
+  return !u.n ? { c: '', t: '' } : !indActive(r) ? { c: 'hint', t: L('⏸️ موقف') } : indFull(r.id) ? { c: 'bad', t: L('📦 المخزن مليان') }
     : (u.sz || 0) >= 2 ? { c: 'bad', t: L('⚠️ واقف: المواد ما تكفي') } : { c: 'good', t: L('⚒️ شغّال') };
 }
 function indStLine(key, st) { return `<p class="ind-st ${st.c}" data-ist="${key}">${st.t}</p>`; }
@@ -327,10 +354,18 @@ const IND_ACTIONS = {
     indPay(c.gold, mats); f.l++; indStageLog(IND_FIELDS.find(x => x.id === v).n, f.l);
   },
   indFurn: v => {
-    const r = IND_MAKERS.find(x => x.id === v); if (!r) return; const u = indFu(v), c = indFurnCost(r);
-    if (u.n >= indFurnMax() || S.gold < c) return; S.gold -= c; u.n++;
+    const r = IND_MAKERS.find(x => x.id === v); if (!r) return; const u = indFu(v), c = indFurnCost(r), all = u.a === undefined || u.a >= u.n;
+    if (u.n >= indFurnMax() || S.gold < c) return; S.gold -= c; u.n++; if (all && u.a !== undefined) u.a = u.n; // a new one starts running only when all of them were
   },
   indFurnOn: v => { const u = indFu(v); u.on = u.on ? 0 : 1; },
+  // − / + on a furnace or bench: how many of this kind run (0 pauses it).
+  indAct: v => {
+    const [id, d] = v.split(':'), u = indFu(id); if (!u.n) return;
+    const cur = u.on ? Math.min(u.n, u.a === undefined ? u.n : u.a) : 0;
+    u.on = 1; u.a = Math.max(0, Math.min(u.n, cur + +d));
+  },
+  indSmart: () => indSmartW(),
+  indAutoW: () => { const I = ind(); I.autoW = I.autoW ? 0 : 1; if (I.autoW) { IND_AW = 0; indSmartW(); } },
   indBld: v => {
     const B = ind().b, l = B[v] || 0; if (!IND_BLD.some(b => b.id === v) || l >= IND_MAXLV || l >= indHall()) return;
     const c = indBldCost(l); if (!indCanPay(c.gold, c.mats)) return;
@@ -449,7 +484,8 @@ function viewFields() {
   const I = ind(), n = indWorkers(), used = indUsed();
   let h = L`<div class="panel"><div class="ph"><h2>🗻 الحقول</h2><span class="stat">👷 ${used} / ${n} عامل</span></div>
     <p class="hint">العمال يجمعون الخام لحالهم. وزّعهم على الحقول حسب اللي تحتاجه، وغيّر التوزيع متى ما تبي ببلاش.</p>
-    <div class="row">${costBtn('indHire', '', indHireCost(), L`👷 وظّف عامل (${fmt(indHireCost())}💰)`, 'gold', I.hired + 1 >= indWMax())}<button class="btn ghost" data-a="indEven">⚖️ وزّع بالتساوي</button></div>`;
+    <div class="row">${costBtn('indHire', '', indHireCost(), L`👷 وظّف عامل (${fmt(indHireCost())}💰)`, 'gold', I.hired + 1 >= indWMax())}<button class="btn ghost" data-a="indEven">⚖️ وزّع بالتساوي</button><button class="btn ghost" data-a="indSmart">👷 وزّع ذكي</button><button class="tog ${I.autoW ? 'on' : ''}" data-a="indAutoW">🤖 ${I.autoW ? L('تلقائي: شغّال') : L('تلقائي: موقف')}</button></div>
+    <p class="hint">${L('«وزّع ذكي» يحط على كل حقل عمال قد اللي تاكله الأفران والطاولات الشغّالة منه، والباقي على الحقول اللي ما امتلت. و«تلقائي» يعيد التوزيع كل 30 ثانية.')}</p>`;
   h += indStock() + '<div class="grid ind-grid">';
   for (const f of IND_FIELDS) {
     const x = I.f[f.id], c = indFieldCost(x.l);
@@ -477,10 +513,10 @@ function indMakerCard(r, bench) {
   return `<div class="card ind-card"><div class="top"><span class="big">${indIc(r.id, 48)}</span><div class="meta"><b>${indName(r.id)}</b><small>${bench ? L`${u.n} طاولة` : L`${u.n} فرن`}</small></div></div>
     <div class="kv ind-recipe"><span>${L('يحتاج')}</span><span>${ins}</span></div>
     <div class="kv ind-recipe"><span>${L('يعطي')}</span><span class="ind-q">${r.out || 1} ${indIc(r.id, 22)}</span></div>
-    <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(u.n * indSpeed(r) * (r.out || 1) / r.t)} بالثانية`}</span></div>
+    <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(indActive(r) * indSpeed(r) * (r.out || 1) / r.t)} بالثانية`}</span></div>
     <div class="kv"><span>${L('عندك')}</span><span><b data-ir="${r.id}">${fmt(Math.floor(ind().r[r.id] || 0))}</b></span></div>${u.n ? `<small class="ind-fill">⏳ ${(x => `<span class="${x.c}" data-fill="${r.id}">${x.t}</span>`)(indFillSt(r.id))}</small>` : ''}${st}
     ${u.n >= indFurnMax() && u.n < IND_FMAX ? `<p class="hint">${L`🏤 الحد ${indFurnMax()}: طوّر مبنى البلدة عشان تزيد`}</p>` : ''}
-    <div class="row">${costBtn('indFurn', r.id, c, bench ? L`➕ طاولة (${fmt(c)}💰)` : L`➕ فرن (${fmt(c)}💰)`, 'gold', u.n >= indFurnMax())}${u.n ? `<button class="btn ghost sm" data-a="indFurnOn" data-v="${r.id}">${u.on ? L('⏸️ وقّف') : L('▶️ شغّل')}</button>` : ''}</div></div>`;
+    <div class="row">${costBtn('indFurn', r.id, c, bench ? L`➕ طاولة (${fmt(c)}💰)` : L`➕ فرن (${fmt(c)}💰)`, 'gold', u.n >= indFurnMax())}</div>${u.n ? `<div class="row ind-w"><button class="btn ghost sm" data-a="indAct" data-v="${r.id}:-1" ${indActive(r) ? '' : 'disabled'}>−</button><b>${L`⚒️ ${indActive(r)} من ${u.n} شغّال`}</b><button class="btn ghost sm" data-a="indAct" data-v="${r.id}:1" ${indActive(r) < u.n ? '' : 'disabled'}>+</button></div>` : ''}</div>`;
 }
 // The workshop: products on benches and the engineer.
 function viewWs() {
@@ -590,7 +626,7 @@ function updInd() {
 function indSig() {
   const I = ind(); if (!I) return [];
   const pay = (g, m) => indCanPay(g, m);
-  return [I.hired, I.f, I.b, I.e, IND_MAKERS.map(r => { const u = indFu(r.id); return [u.n, u.on]; }), (I.b.hall || 0) < IND_MAXLV && pay(indHallCost(I.b.hall || 0).gold, indHallCost(I.b.hall || 0).mats),
+  return [I.hired, I.f, I.b, I.e, IND_MAKERS.map(r => [indFu(r.id).n, indActive(r)]), I.autoW, (I.b.hall || 0) < IND_MAXLV && pay(indHallCost(I.b.hall || 0).gold, indHallCost(I.b.hall || 0).mats),
     IND_FIELDS.map(f => { const c = indFieldCost(I.f[f.id].l); return pay(c.gold, [[f.id, c.qty]]); }),
     IND_BLD.map(b => (I.b[b.id] || 0) < IND_MAXLV && pay(indBldCost(I.b[b.id] || 0).gold, indBldCost(I.b[b.id] || 0).mats)),
     (I.b.store || 0) < IND_MAXLV && pay(indStoreCost(I.b.store || 0).gold, indStoreCost(I.b.store || 0).mats)];

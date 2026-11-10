@@ -1483,7 +1483,7 @@
 "📋 الجولة الماضية: مركزك {0} من {1}، والهدف ما اكتمل": "📋 Last round: you placed {0} of {1}, but the goal wasn't reached",
 "📋 الجولة الماضية: مركزك {0} من {1} ← جائزة +{2}%": "📋 Last round: you placed {0} of {1} → prize +{2}%",
 "سقف لحجم العقود": "A cap on contract size",
-"📜 العقود تكبر 12% مع كل عقد تسلّمه لين 160 عقد (حجم ×20.2)، وبعدها تثبت. يعني أكبر عقد ممكن يعطي تقريباً 2.9T، و5.8T مع تاجر العقود كامل.": "📜 Contracts grow 12% with each one you deliver, up to 160 contracts (×20.2 in size), then they stay there. The biggest possible contract pays about 2.9T, or 5.8T with a full contract trader.",
+"📜 العقود تكبر 12% مع كل عقد تسلّمه لين 300 عقد (حجم ×37)، وبعدها تثبت. يعني أكبر عقد ممكن يعطي تقريباً 5.3T، و10.7T مع تاجر العقود كامل.": "📜 Contracts grow 12% with each one you deliver, up to 300 contracts (×37 in size), then they stay there. The biggest possible contract pays about 5.3T, or 10.7T with a full contract trader.",
 "أهداف القرية صارت ذكية": "Smarter village goals",
 "🏘️ هدف القرية اليومي صار يتعدّل لحاله: 75% من مجموع الجولة اللي قبلها، وما ينزل عن الرقم القديم. كل ما كثرتوا كبر الهدف، فصار يحتاج تعاون فعلاً.": "🏘️ The daily village goal now adjusts itself: 75% of the previous round's total, and never below the old number. The more of you play, the bigger the goal, so it really takes teamwork now.",
 "دليل المصنع وإنجازاته": "Factory guide and achievements",

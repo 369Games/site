@@ -1440,6 +1440,8 @@
 "📋 الجولة الماضية: ما ساهمت": "📋 Last round: you didn't take part",
 "📋 الجولة الماضية: مركزك {0} من {1}، والهدف ما اكتمل": "📋 Last round: you placed {0} of {1}, but the goal wasn't reached",
 "📋 الجولة الماضية: مركزك {0} من {1} ← جائزة +{2}%": "📋 Last round: you placed {0} of {1} → prize +{2}%",
+"خبرة المنجم صارت تكبر مع العمق": "Mine XP now grows with depth",
+"⛏️ خبرة كل صخرة صارت حسب صلابتها مع زيادة للعمق. قبل كان الطابق 1 يعطي خبرة أكثر 40 مرة من آخر طابق، والحين كل ما نزلت أكثر تلفّل أسرع: آخر الطوابق أسرع تقريباً 16 مرة من الطابق 1.": "⛏️ Each rock's XP now follows its hardness, with a bonus for depth. Floor 1 used to give 40 times the XP of the deepest floor; now the deeper you go, the faster you level: the deepest floors are about 16 times faster than floor 1.",
 "وصفات الورشة صارت منطقية": "Workshop recipes that make sense",
 "🔧 طاولات الورشة صارت تعطي أكثر من قطعة: 4 خشب تعطي لوحين، وسبيكة حديد وفحمة تعطي 3 مسامير، وسبيكتين حديد وسبيكة نحاس تعطي ترسين، وسبيكتين نحاس وطوبتين تعطي أنبوبين.": "🔧 Workshop benches now make more than one piece: 4 wood make 2 planks, an iron ingot and a coal make 3 nails, 2 iron ingots and a copper ingot make 2 gears, and 2 copper ingots and 2 bricks make 2 pipes.",
 "أفران ومبنى بلدة أرخص": "Cheaper furnaces and town hall",

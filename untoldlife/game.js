@@ -924,7 +924,9 @@ function blockDone() {
   for (let i = 0; i < av.length; i++) { r -= ws[i]; if (r <= 0) { o = av[i]; break; } }
   give(o.id, 1 + Math.floor(d / 40));
   if (Math.random() < (0.004 + d * 0.0001) * (1 + 0.5 * P('m_gem')) * (1 + 0.2 * CC('underground')) * Math.max(0, 1 + spv('smith', 'gem'))) { give('gem'); log(L('💎 عثرت على جوهرة نادرة!'), 'good'); }
-  addXp('mine', 1 + d * 0.15); S.stats.blocks++;
+  // XP follows how hard the block is, plus a bonus for depth, so deeper always levels faster (it used to be the other way:
+  // hardness grows with depth², the old XP only with depth, so floor 1 gave 40× the XP of the deepest floor).
+  addXp('mine', 0.25 * hardness() * (1 + d / 100)); S.stats.blocks++;
   if (d === S.mine.max && d < PICK_CAP[S.tools.pick]) {
     S.mine.blocks++;
     if (S.mine.blocks >= 5) {

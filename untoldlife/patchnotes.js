@@ -3,6 +3,10 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.13.6', date: '2026-11-10', big: false, title: L('أفران ومبنى بلدة أرخص'), items: [
+    L('🏭 سعر الأفران وطاولات الورشة صار يزيد ×1.3 مع كل واحد بدل ×1.6. يعني الـ33 فرن اللي يسمح فيها مبنى البلدة صارت في متناولك: فرن الفحم الـ33 تقريباً 221B بدل 170T.'),
+    L('🏤 تطوير مبنى البلدة صار بنص السعر في كل مستوى: نص الذهب ونص المواد.'),
+  ] },
   { v: '1.13.5', date: '2026-11-09', big: false, title: L('خريطة الاختراعات'), items: [
     L('🗺️ شجرة الاختراعات صار اسمها خريطة الاختراعات، ومبنى البلدة صار له أيقونته في النصوص.'),
     L('🏆 لوحة المتصدرين الأسبوعية صارت تتحدث كل 10 دقايق بدل دقيقتين.'),

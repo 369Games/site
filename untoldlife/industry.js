@@ -169,14 +169,16 @@ function indEngCost(l) {
 // +7% per worker, so every level of workers' housing is worth buying (worker 150 ≈ 1.2T, all 150 ≈ 18T).
 function indHireCost() { return Math.round(5e7 * Math.pow(1.07, ind().hired)); }
 function indFieldCost(l) { return { gold: Math.round(2e8 * Math.pow(2.5, l)), qty: Math.round(200 * Math.pow(2, l)) }; }
-function indFurnCost(r) { return Math.round(r.c * Math.pow(1.6, indFu(r.id).n)); }
+// ×1.3 per furnace (was ×1.6), so the 33 the town hall allows are within reach: the 33rd coal furnace ≈ 221B.
+function indFurnCost(r) { return Math.round(r.c * Math.pow(1.3, indFu(r.id).n)); }
 // Never ask for a full warehouse: furnaces keep nibbling at the stock, so it would sit a few short of the cap forever.
 // The expansion asks 15/16 of the current capacity, rounded to two digits (32K → 30K).
 function indSig2(n) { const p = Math.pow(10, Math.max(0, Math.floor(Math.log10(n)) - 1)); return Math.round(n / p) * p; }
 function indStoreCost(l) { const q = indSig2(1000 * Math.pow(2, l) * 15 / 16); return { gold: Math.round(2e8 * Math.pow(3, l)), mats: [['wood', q], ['stone', q]] }; }
 function indBldCost(l) { return { gold: Math.round(5e8 * Math.pow(2, l)), mats: IND_BLD_MATS[l] }; } // l = current level (0..9)
 function indHall() { return ind().b.hall || 0; }
-function indHallCost(l) { return { gold: Math.round(1e9 * Math.pow(3, l)), mats: IND_HALL_MATS[l] }; }
+// Half of the original price at every level (1.13.6): gold 500M × 3^L and half the materials.
+function indHallCost(l) { return { gold: Math.round(5e8 * Math.pow(3, l)), mats: IND_HALL_MATS[l].map(([id, q]) => [id, Math.round(q / 2)]) }; }
 function indHallStage(l = indHall()) { let i = 0; IND_HALL_STAGES.forEach((x, k) => { if (l >= x.from) i = k; }); return i; }
 function indHallIc(n, l = indHall()) { const i = indHallStage(l), k = 'ind-hall-' + (i + 1); return ART[k] ? icon(k, n) : `<span class="ind-e big">${IND_HALL_STAGES[i].e}</span>`; }
 // Every levelled building and field has four looks, like the town hall: levels 0–3, 4–6, 7–9 and 10.

@@ -91,11 +91,11 @@ const IND_HALL_STAGES = [
 function indLocked() { return indPt('util') ? {} : { util: 1 }; }
 function indTabs() {
   return [['fields', L('🗻 الحقول')], ['furn', L('🏭 المراجل')], ['ws', L('🔧 الورشة')], ['city', L('🏙️ المدينة')],
-    ['util', L('🎛️ الخدمات')], ['pat', L('🔬 الاختراعات')], ['settings', L('⚙️ المزيد')]];
+    ['util', L('🎛️ الخدمات')], ['pat', L('🔬 الاختراعات')], ['train', L('🚂 القطار')], ['settings', L('⚙️ المزيد')]];
 }
 // Tab emblems: the painted ones once art/industry is in, stand-ins until then.
 const indArt = (k, alt) => ART['ind-tab-' + k] ? 'ind-tab-' + k : alt;
-Object.assign(NAV_ART, { fields: indArt('fields', 'rock'), furn: indArt('furn', 'anvil'), ws: indArt('ws', 'icon-auto-forge'), city: indArt('city', 'icon-map'), util: indArt('util', 'icon-sunny'), pat: indArt('pat', 'legacy-tree') });
+Object.assign(NAV_ART, { fields: indArt('fields', 'rock'), furn: indArt('furn', 'anvil'), ws: indArt('ws', 'icon-auto-forge'), city: indArt('city', 'icon-map'), train: indArt('train', 'ind-rails-4'), util: indArt('util', 'icon-sunny'), pat: indArt('pat', 'legacy-tree') });
 
 /* Factory renewal and patents (1.12). With the town hall at level 10 (the palace) the factory can be renewed: it starts over
    (fields, workers, furnaces and benches, warehouse, town hall, materials, contracts, and the engineer unless kept) and
@@ -125,6 +125,21 @@ const IND_UTIL = [
     g: 1e10, mats: l => [['block', 5000 * (l + 1)], ['plank', 2000 * (l + 1)]] },
 ];
 function indInMult() { return indPt('thrift') ? 0.5 : 1; }
+/* The First Train (1.16): the game's finale. Five stages, each a huge order of gold and factory goods; progress is kept
+   through factory renewals (S.leg.ind.tr), so it's the long goal that spans them. Finishing it shows the ending, gives
+   the «First Train» achievement and a permanent bonus: +20% factory speed (fields, furnaces, benches) and +10% gold
+   from every source in the village. Play goes on afterwards. */
+const IND_TRAIN = [
+  { e: '🚂', a: 'ind-rails-2', n: L('الخط الرئيسي'), d: L('سكة تربط الوادي بالمدن البعيدة'), g: 5e12, mats: [['block', 200000], ['fe', 150000], ['plank', 100000]], need: () => indLv('rails') >= 10, why: L('سكة الحديد مستوى 10') },
+  { e: '🚂', a: 'ind-hall-3', n: L('المحطة الكبرى'), d: L('محطة من طوب وحديد وزجاج في قلب المدينة'), g: 1e13, mats: [['brick', 300000], ['block', 300000], ['pipe', 20000], ['gear', 20000]], need: () => indHall() >= 10, why: L('مبنى البلدة قصر (مستوى 10)') },
+  { e: '🚂', a: 'ind-rails-4', n: L('القاطرة'), d: L('قلب القطار: مرجل بخار وعجلات من حديد'), g: 2e13, mats: [['fe', 400000], ['cu', 300000], ['gear', 50000], ['machine', 2000]] },
+  { e: '🚂', a: 'ind-rails-3', n: L('العربات'), d: L('عربات للركاب والبضايع'), g: 3e13, mats: [['plank', 400000], ['nails', 300000], ['ag', 300000], ['machine', 3000]] },
+  { e: '🎉', a: 'icon-celebrate', n: L('الرحلة الأولى'), d: L('فحم للطريق، وآخر التجهيزات، وبراءات تشغيل القطار'), g: 5e13, mats: [['coal', 500000], ['machine', 5000]], pat: 50 },
+];
+function indTrain() { return indOpen() ? ind().tr || 0 : 0; }
+function indTrainDone() { return indTrain() >= IND_TRAIN.length; }
+function indTrainB() { return indTrainDone() ? 1.2 : 1; }
+function indTrainCan(i) { const x = IND_TRAIN[i]; return !!x && (!x.need || x.need()) && (!x.pat || indPats() >= x.pat) && indCanPay(x.g, x.mats); }
 function indPt(id) { const t = (S.leg.ind || {}).pt; return t ? t[id] || 0 : 0; }
 function indPtLocked(x) { return !!x.need && indPt(x.need) < x.nl; }
 function indPats() { return Math.floor(ind().pat || 0); }
@@ -158,11 +173,11 @@ function indGrowth(b) { return 1.45 - 0.033 * indLv(b); }
 function indWorkers() { return 1 + ind().hired; }
 function indUsed() { const f = ind().f; return IND_FIELDS.reduce((a, x) => a + f[x.id].w, 0); }
 function indCap() { return 1000 * Math.pow(2, ind().b.store || 0); }
-function indRate(id) { const x = ind().f[id]; return x.w * 0.5 * (1 + 0.5 * x.l) * (1 + 0.15 * indEng('field')); }
+function indRate(id) { const x = ind().f[id]; return x.w * 0.5 * (1 + 0.5 * x.l) * (1 + 0.15 * indEng('field')) * indTrainB(); }
 function indEng(id) { const e = ind().e; return e ? e[id] || 0 : 0; }
 function indWMax() { return IND_WMAX + 10 * indEng('crew'); }
 // Furnaces and benches speed up with their engineer upgrade.
-function indSpeed(r) { return (1 + 0.15 * indEng(IND_PROD.includes(r) ? 'bench' : 'furn')) * (1 + 0.1 * indPt('fast')); }
+function indSpeed(r) { return (1 + 0.15 * indEng(IND_PROD.includes(r) ? 'bench' : 'furn')) * (1 + 0.1 * indPt('fast')) * indTrainB(); }
 function indEngCost(l) {
   const mats = l < 3 ? [['plank', 50 * (l + 1)], ['nails', 20 * (l + 1)]] : l < 6 ? [['gear', 10 * (l - 2)], ['pipe', 10 * (l - 2)]] : [['machine', 2 * (l - 5)]];
   return { gold: 0, mats: [['bp', IND_ENG_BP[l]], ...mats] };
@@ -203,7 +218,7 @@ function indSmartW() {
     const per = indActive(r) * indSpeed(r) / r.t;
     if (per) for (const [id, q] of Object.entries(r.in)) if (id in need) need[id] += per * q * indInMult();
   }
-  const perW = x => 0.5 * (1 + 0.5 * f[x].l) * (1 + 0.15 * indEng('field'));
+  const perW = x => 0.5 * (1 + 0.5 * f[x].l) * (1 + 0.15 * indEng('field')) * indTrainB();
   let tot = 0; IND_FIELDS.forEach(x => { want[x.id] = need[x.id] / perW(x.id); tot += want[x.id]; });
   const ids = IND_FIELDS.map(x => x.id), out = {};
   if (tot <= 0) { ids.forEach((id, i) => { out[id] = Math.floor(n / 3) + (i < n % 3 ? 1 : 0); }); }
@@ -428,6 +443,13 @@ const IND_ACTIONS = {
     log(L`🔬 جدّدت المصنع! أخذت ${gain} براءة اختراع. المصنع رجع من الصفر، والقرية محتفظة بخصوماتها`, 'golden', 'ind');
     tab = 'pat'; lastSig = ''; renderTabs();
   },
+  indTrainGo: () => {
+    const I = ind(), i = indTrain(), x = IND_TRAIN[i]; if (!x || !indTrainCan(i)) return;
+    indPay(x.g, x.mats); if (x.pat) I.pat -= x.pat; I.tr = i + 1;
+    log(L`🚂 خلصت مرحلة «${x.n}» من القطار الأول (${i + 1} من ${IND_TRAIN.length})`, 'golden', 'ind');
+    if (indTrainDone()) { I.trAt = Date.now(); log(L('🎉 القطار الأول طلع من المحطة! ختمت UntoldLife. المصنع صار أسرع 20% والذهب +10% للأبد.'), 'golden', 'ind'); checkAch(); indEnding(); }
+  },
+  indEndingShow: () => indEnding(),
   indEng: v => {
     const g = IND_ENG.find(x => x.id === v); if (!g) return;
     const I = ind(), l = indEng(v); if (l >= IND_MAXLV) return;
@@ -608,6 +630,44 @@ function viewUtil() {
   }
   return h + '</div></div>';
 }
+// The ending: shown once when the last stage is built, and again from the train page.
+function indEnding() {
+  const I = ind(), st = S.stats;
+  openModal(L`<h2>🚂 القطار الأول طلع من المحطة!</h2>
+    <div class="letter"><p>من مزرعة صغيرة متعبة تركها لك جدك، إلى قطار يربط وادي الصدى بالعالم.</p>
+    <p>عائلتك كتبت قصتها، جيل بعد جيل. <b>ختمت UntoldLife.</b></p></div>
+    <ul class="gains">
+      <li>🌳 ${L`الجيل ${S.leg.gen}`}</li><li>⏱️ ${L`وقت اللعب: ${ftime(st.play || 0)}`}</li>
+      <li>💰 ${L`ذهب كسبته: ${fmt(st.earned || 0)}`}</li><li>📜 ${L`عقود سلّمتها: ${fmt(Math.max(I.kt || 0, I.kd || 0))}`}</li>
+      <li>🔁 ${L`تجديدات المصنع: ${I.ren || 0}`}</li><li>🏅 ${L`الإنجازات: ${Object.keys(S.leg.ach).length} من ${ACH.length}`}</li>
+    </ul>
+    <p class="good">${L('🎁 جائزتك للأبد: المصنع أسرع 20%، والذهب +10% من كل المصادر.')}</p>
+    <p class="hint">${L('اللعب يكمل: الأجيال، وبركة الوادي، والمتصدرين كلها باقية. وشكراً إنك لعبت ❤')}</p>
+    <button class="btn gold" data-a="closeModal" style="width:100%">${L('🚂 نكمل الرحلة')}</button>`);
+}
+// The First Train page: five stages, one after the other.
+function viewTrain() {
+  const I = ind(), cur = indTrain(), done = indTrainDone();
+  let h = L`<div class="panel"><div class="ph"><h2>🚂 القطار الأول</h2><span class="stat">${L`المرحلة ${Math.min(cur + 1, IND_TRAIN.length)} من ${IND_TRAIN.length}`}</span></div>
+    <p class="hint">المشروع الكبير: أول قطار يربط وادي الصدى بالعالم. خمس مراحل، وكل مرحلة تحتاج كل اللي تسويه مصانعك. تقدمك فيه ما ينعاد مع تجديد المصنع، ولما يكتمل تكون ختمت اللعبة وتاخذ جائزة للأبد.</p>`;
+  if (done) h += `<div class="card ind-card lgcard g"><div class="top"><span class="big">${indLvIc('train', 10, 64, '<span class="ind-e big">🚂</span>')}</span><div class="meta"><b>${L('القطار الأول يشتغل')}</b><small>${L('ختمت UntoldLife')}</small></div></div>
+      <p class="good">${L('🎁 جائزتك للأبد: المصنع أسرع 20%، والذهب +10% من كل المصادر.')}</p>
+      <div class="row"><button class="btn gold" data-a="indEndingShow">${L('🎬 شوف الخاتمة')}</button></div></div>`;
+  h += '<div class="grid ind-grid">';
+  IND_TRAIN.forEach((x, i) => {
+    const st = i < cur ? 'done' : i === cur ? 'cur' : 'lock';
+    h += `<div class="card ind-card ${st === 'done' ? 'lgcard g' : st === 'lock' ? 'pt-lock' : ''}"><div class="top"><span class="big">${ART['ind-train-' + (i + 1)] ? icon('ind-train-' + (i + 1), 48) : ART[x.a] ? icon(x.a, 48) : `<span class="ind-e big">${x.e}</span>`}</span><div class="meta"><b>${i + 1}. ${x.n}</b><small>${x.d}</small></div></div>`;
+    if (st === 'done') h += `<p class="good">${L('✅ اكتملت')}</p>`;
+    else if (st === 'lock') h += `<p class="hint">${L('🔒 تنفتح بعد المرحلة اللي قبلها')}</p>${indReqs(x.g, x.mats)}`;
+    else {
+      const needOk = !x.need || x.need();
+      h += `${x.need ? `<p class="${needOk ? 'good' : 'bad'}">${needOk ? '✅' : '🔒'} ${L`يحتاج: ${x.why}`}</p>` : ''}${indReqs(x.g, x.mats)}${x.pat ? `<p class="${indPats() >= x.pat ? 'good' : 'bad'}">🎫 ${L`براءات اختراع: ${indPats()} / ${x.pat}`}</p>` : ''}${indTooBig(x.mats)}
+        <div class="row"><button class="btn gold" data-a="indTrainGo" ${indTrainCan(i) ? '' : 'disabled'}>${L('🏗️ ابنِ المرحلة')}</button></div>`;
+    }
+    h += '</div>';
+  });
+  return h + '</div></div>';
+}
 // Numbers that change every frame are written in place; the page itself only redraws when the signature changes.
 function updInd() {
   document.querySelectorAll('[data-ir]').forEach(el => { el.textContent = fmt(Math.floor(indHave(el.dataset.ir))); });
@@ -634,6 +694,7 @@ const IND_VIEWS = {
   fields: [viewFields, updInd, indSig],
   furn: [viewFurn, updInd, indSig],
   city: [viewCity, updInd, () => { const I = ind(); return [indSig(), I.kd, (I.k || []).map(k => k.need ? [k.need, indKCan(k)] : 0), indSwaps()]; }],
+  train: [viewTrain, updInd, () => { const I = ind(); return [I.tr, I.pat, indHall(), indLv('rails'), indTrain() < IND_TRAIN.length && indTrainCan(indTrain())]; }],
   pat: [viewPat, updInd, () => { const I = ind(); return [I.pat, I.pt, I.ren, indHall(), indRenewGain(), !!(indRenewArm && Date.now() < indRenewArm)]; }],
   util: [viewUtil, updInd, () => { const I = ind(); return [I.u, I.pt, Math.floor(indUtilTotal() / 1e3), IND_UTIL.map(x => indUl(x.id) < IND_MAXLV && indCanPay(indUtilCost(x, indUl(x.id)).gold, indUtilCost(x, indUl(x.id)).mats))]; }],
   ws: [viewWs, updInd, () => {
@@ -651,6 +712,8 @@ function indBuffsHtml() {
   let h = '';
   if (indPt('util')) h += g(L('🎛️ ذهب الخدمات'), [[L('💰 مضاعف الذهب في القرية'), goldMult()], [L('🔌 شبكة أقوى (اختراع)'), 1 + 0.2 * indPt('grid')]],
     [row(L('💰 المجموع'), L`${fmt(indUtilTotal())} بالثانية`), ...IND_UTIL.map(x => row(`${x.e} ${x.n} (${L`مستوى ${indUl(x.id)}`})`, L`${fmt(indUtilRate(x.id))} بالثانية`))]);
+  if (indTrainDone()) h += g(L('🚂 القطار الأول'), [[L('⚙️ سرعة المصنع'), 1.2]], [row(L('💰 الذهب في القرية'), '+10%')]);
+  else h += info(L('🚂 القطار الأول'), [row(L('المراحل المكتملة'), `${indTrain()} / ${IND_TRAIN.length}`)]);
   h += info(L('🔬 الاختراعات'), [row(L('🎫 براءات عندك'), indPats()), row(L('🔁 تجديدات'), I.ren || 0), row(L('🎫 لو جدّدت الحين'), '+' + indRenewGain())]);
   h += info(L('🏤 مبنى البلدة'), [row(IND_HALL_STAGES[indHallStage()].n, L`مستوى ${indHall()}`), row(L('أعلى مستوى للمباني والحقول'), indHall()), row(L('أفران وطاولات من كل نوع'), indFurnMax())]);
   h += g(L('🗻 إنتاج الحقول'), [[L('⛏️ حقول أغزر (المهندس)'), 1 + 0.15 * indEng('field')]],

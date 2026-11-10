@@ -479,6 +479,7 @@ ach('marry', '💍', L('فرحة الوادي'), L('تزوّج من أحد أه�
     ['indn0', '🔁', L('بداية جديدة'), L('جدّد المصنع أول مرة'), () => has() && (I().ren || 0) >= 1, 'medal-indn', 'bronze'],
     ['indn1', '🔁', L('مخترع عريق'), L('جدّد المصنع 5 مرات'), () => has() && (I().ren || 0) >= 5, 'medal-indn', 'gold'],
     ['indu', '🔌', L('مدينة مضيئة'), L('وصّل الكهرباء والمياه والضرايب كلها لمستوى 10'), () => has() && IND_UTIL.every(x => indUl(x.id) >= 10), 'medal-indu', 'gold'],
+    ['indt', '🚂', L('القطار الأول'), L('ابنِ القطار الأول واختم اللعبة'), () => has() && indTrainDone(), 'medal-indr', 'gold'],
     ['indp', '🗾', L('خريطة كاملة'), L('اخترع كل شي في خريطة الاختراعات'), () => has() && IND_PT.every(x => indPt(x.id) >= x.max), 'medal-indp', 'gold'],
   ];
   for (const [id, e, n, d, fn, art, metal] of A2) {
@@ -631,7 +632,7 @@ function achMult() { return 1 + 0.01 * Object.keys(S.leg.ach).length; }
 function heirToolGold() { return ['sword', 'armor', 'hoe', 'can', 'pick', 'rod'].reduce((a, k) => a + H(k), 0) * 0.01; }
 // Weekly rewards (weekly.js): each lasts 7 days from the moment it's earned. buf = weekly challenge, vb = village goal.
 function wkOn(k) { return !!(S.wk && S.wk[k] > Date.now()); }
-function goldMult() { return (wkOn('buf') ? 1.1 : 1) * (1 + 0.1 * P('t_price')) * (1 + 0.05 * H('coin') + heirToolGold()) * (1 + 0.1 * CC('noworkers')) * achMult() * bless() * (inCh('poverty') ? 0.5 : 1); }
+function goldMult() { return (wkOn('buf') ? 1.1 : 1) * (1 + 0.1 * P('t_price')) * (1 + 0.05 * H('coin') + heirToolGold()) * (1 + 0.1 * CC('noworkers')) * achMult() * bless() * (inCh('poverty') ? 0.5 : 1) * (indTrainDone() ? 1.1 : 1); }
 /* Production speeds use two buckets. Inside a bucket the bonuses add up; the two buckets multiply.
    - this generation: tools, skill levels, villagers (starts over every generation)
    - the family: legacy perks, challenge rewards, the valley's blessing, marriage
@@ -2655,7 +2656,7 @@ function buffsHtml() {
     [[L('💎 فرصة الجواهر'), '×' + ((1 + 0.5 * P('m_gem')) * (1 + 0.2 * CC('underground'))).toFixed(2)], [L('🪨 أقصى عمق للفأس'), PICK_CAP[S.tools.pick] > 1e8 ? '∞' : PICK_CAP[S.tools.pick]]]);
   if (S.leg.gen >= 2) h += speedGroup(L('🎣 قوة الصيد'), 'fish');
   h += g(L('💰 الذهب من كل المصادر'), [[L`👴 العمدة (${hearts('mayor')} قلوب) — البيع فقط`, 1 + 0.02 * hearts('mayor')], [L('🌳 مساومة'), 1 + 0.1 * P('t_price')], [L('🪙 العملة القديمة'), 1 + 0.05 * H('coin')],
-    [L('🙅 مكافأة تحدي بدون عمال'), 1 + 0.1 * CC('noworkers')], [L`🏅 الإنجازات (${Object.keys(S.leg.ach).length})`, achMult()], [L('🌈 بركة الوادي'), bless()], [L('⚠️ تحدي القحط (نشط)'), inCh('poverty') ? 0.5 : 1]]);
+    [L('🙅 مكافأة تحدي بدون عمال'), 1 + 0.1 * CC('noworkers')], [L`🏅 الإنجازات (${Object.keys(S.leg.ach).length})`, achMult()], [L('🌈 بركة الوادي'), bless()], [L('⚠️ تحدي القحط (نشط)'), inCh('poverty') ? 0.5 : 1], [L('🚂 القطار الأول'), indTrainDone() ? 1.1 : 1]]);
   h += g(L('⚔️ الهجوم والصحة'), [[L('🌳 دم المحارب'), 1 + 0.15 * P('w_power')], [L('⚔️ مكافأة تحدي المحارب'), 1 + 0.1 * CC('warrior')], [L('🌈 بركة الوادي'), bless()]],
     [[L('🗡️ الهجوم'), fmt(heroAtk()) + L` (السيف +${fmt(SWORD[S.tools.sword] * lf('sword'))})`], [L('🛡️ الدفاع'), fmt(heroDef()) + L` (الدرع +${fmt(ARMOR_DEF[S.tools.armor] * lf('armor'))})`],
       [L('❤️ الصحة القصوى'), fmt(heroMaxHp()) + (hearts('leila') ? L` (ليلى +${5 * hearts('leila')}%)` : '')], [L('⚡ القوة'), fmt(heroPower())],

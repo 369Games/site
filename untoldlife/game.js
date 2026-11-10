@@ -463,23 +463,23 @@ achSet('chl', '🏆', [[1, L('متحدٍّ')], [10, L('لا يُقهر')], [30, 
 ach('love', '💞', L('صديق القرية'), L('وصّل علاقتك مع شخص إلى 10 قلوب'), () => NPCS.some(n => (S.npc[n.id] || {}).pts >= 1000));
 ach('marry', '💍', L('فرحة الوادي'), L('تزوّج من أحد أهل القرية'), () => !!S.leg.married);
 /* Industrial Age achievements (1.15). Counters that reset with a factory renewal use lifetime totals (kt), and the
-   picture is the factory's own art in a medal frame. */
+   picture is the factory's own medal emblem (art/industry/medal-*) in a bronze, silver or gold ring. */
 {
   const I = () => S.leg.ind, has = () => !!S.leg.ind;
   const A2 = [
-    ['ind0', '⚙️', L('فجر الصناعة'), L('افتح عصر الصناعة'), () => has(), 'ind-tab-factory', 'gold'],
-    ['indk0', '📜', L('تاجر مبتدئ'), L('سلّم 10 عقود'), () => has() && Math.max(I().kt || 0, I().kd || 0) >= 10, 'ind-contract', 'bronze'],
-    ['indk1', '📜', L('تاجر الوادي'), L('سلّم 100 عقد'), () => has() && Math.max(I().kt || 0, I().kd || 0) >= 100, 'ind-contract', 'silver'],
-    ['indk2', '📜', L('إمبراطور التجارة'), L('سلّم 500 عقد'), () => has() && Math.max(I().kt || 0, I().kd || 0) >= 500, 'ind-contract', 'gold'],
-    ['indh0', '🏤', L('دار البلدة'), L('طوّر مبنى البلدة لمستوى 4'), () => has() && indHall() >= 4, 'ind-hall-2', 'bronze'],
-    ['indh1', '🏰', L('قصر البلدة'), L('طوّر مبنى البلدة لمستوى 10'), () => has() && indHall() >= 10, 'ind-hall-4', 'gold'],
-    ['indr', '🛤️', L('خط سكة كامل'), L('وصّل سكة الحديد لمستوى 10'), () => has() && indLv('rails') >= 10, 'ind-rails-4', 'silver'],
-    ['indb', '⛵', L('أسطول الوادي'), L('وصّل القارب لمستوى 10'), () => has() && indLv('boat') >= 10, 'ind-boat-4', 'silver'],
-    ['indw', '👷', L('مدينة عمّال'), L('وظّف 150 عامل في حقول المصنع'), () => has() && indWorkers() >= 150, 'ind-housing', 'silver'],
-    ['indn0', '🔁', L('بداية جديدة'), L('جدّد المصنع أول مرة'), () => has() && (I().ren || 0) >= 1, 'icon-renew', 'bronze'],
-    ['indn1', '🔁', L('مخترع عريق'), L('جدّد المصنع 5 مرات'), () => has() && (I().ren || 0) >= 5, 'icon-renew', 'gold'],
-    ['indu', '🔌', L('مدينة مضيئة'), L('وصّل الكهرباء والمياه والضرايب كلها لمستوى 10'), () => has() && IND_UTIL.every(x => indUl(x.id) >= 10), 'ind-u-power-4', 'gold'],
-    ['indp', '🗾', L('خريطة كاملة'), L('اخترع كل شي في خريطة الاختراعات'), () => has() && IND_PT.every(x => indPt(x.id) >= x.max), 'ind-inv-map', 'gold'],
+    ['ind0', '⚙️', L('فجر الصناعة'), L('افتح عصر الصناعة'), () => has(), 'medal-ind', 'gold'],
+    ['indk0', '📜', L('تاجر مبتدئ'), L('سلّم 10 عقود'), () => has() && Math.max(I().kt || 0, I().kd || 0) >= 10, 'medal-indk', 'bronze'],
+    ['indk1', '📜', L('تاجر الوادي'), L('سلّم 100 عقد'), () => has() && Math.max(I().kt || 0, I().kd || 0) >= 100, 'medal-indk', 'silver'],
+    ['indk2', '📜', L('إمبراطور التجارة'), L('سلّم 500 عقد'), () => has() && Math.max(I().kt || 0, I().kd || 0) >= 500, 'medal-indk', 'gold'],
+    ['indh0', '🏤', L('دار البلدة'), L('طوّر مبنى البلدة لمستوى 4'), () => has() && indHall() >= 4, 'medal-indh', 'bronze'],
+    ['indh1', '🏰', L('قصر البلدة'), L('طوّر مبنى البلدة لمستوى 10'), () => has() && indHall() >= 10, 'medal-indh', 'gold'],
+    ['indr', '🛤️', L('خط سكة كامل'), L('وصّل سكة الحديد لمستوى 10'), () => has() && indLv('rails') >= 10, 'medal-indr', 'silver'],
+    ['indb', '⛵', L('أسطول الوادي'), L('وصّل القارب لمستوى 10'), () => has() && indLv('boat') >= 10, 'medal-indb', 'silver'],
+    ['indw', '👷', L('مدينة عمّال'), L('وظّف 150 عامل في حقول المصنع'), () => has() && indWorkers() >= 150, 'medal-indw', 'silver'],
+    ['indn0', '🔁', L('بداية جديدة'), L('جدّد المصنع أول مرة'), () => has() && (I().ren || 0) >= 1, 'medal-indn', 'bronze'],
+    ['indn1', '🔁', L('مخترع عريق'), L('جدّد المصنع 5 مرات'), () => has() && (I().ren || 0) >= 5, 'medal-indn', 'gold'],
+    ['indu', '🔌', L('مدينة مضيئة'), L('وصّل الكهرباء والمياه والضرايب كلها لمستوى 10'), () => has() && IND_UTIL.every(x => indUl(x.id) >= 10), 'medal-indu', 'gold'],
+    ['indp', '🗾', L('خريطة كاملة'), L('اخترع كل شي في خريطة الاختراعات'), () => has() && IND_PT.every(x => indPt(x.id) >= x.max), 'medal-indp', 'gold'],
   ];
   for (const [id, e, n, d, fn, art, metal] of A2) {
     ach(id, e, n, d, fn);

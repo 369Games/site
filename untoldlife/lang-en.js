@@ -1440,6 +1440,8 @@
 "📋 الجولة الماضية: ما ساهمت": "📋 Last round: you didn't take part",
 "📋 الجولة الماضية: مركزك {0} من {1}، والهدف ما اكتمل": "📋 Last round: you placed {0} of {1}, but the goal wasn't reached",
 "📋 الجولة الماضية: مركزك {0} من {1} ← جائزة +{2}%": "📋 Last round: you placed {0} of {1} → prize +{2}%",
+"وصفات الورشة صارت منطقية": "Workshop recipes that make sense",
+"🔧 طاولات الورشة صارت تعطي أكثر من قطعة: 4 خشب تعطي لوحين، وسبيكة حديد وفحمة تعطي 3 مسامير، وسبيكتين حديد وسبيكة نحاس تعطي ترسين، وسبيكتين نحاس وطوبتين تعطي أنبوبين.": "🔧 Workshop benches now make more than one piece: 4 wood make 2 planks, an iron ingot and a coal make 3 nails, 2 iron ingots and a copper ingot make 2 gears, and 2 copper ingots and 2 bricks make 2 pipes.",
 "أفران ومبنى بلدة أرخص": "Cheaper furnaces and town hall",
 "🏭 سعر الأفران وطاولات الورشة صار يزيد ×1.3 مع كل واحد بدل ×1.6. يعني الـ33 فرن اللي يسمح فيها مبنى البلدة صارت في متناولك: فرن الفحم الـ33 تقريباً 221B بدل 170T.": "🏭 Furnace and workshop bench prices now rise ×1.3 each instead of ×1.6, so the 33 the town hall allows are within reach: the 33rd coal furnace costs about 221B instead of 170T.",
 "🏤 تطوير مبنى البلدة صار بنص السعر في كل مستوى: نص الذهب ونص المواد.": "🏤 Every town hall upgrade now costs half: half the gold and half the materials.",

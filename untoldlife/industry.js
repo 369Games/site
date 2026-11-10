@@ -33,10 +33,11 @@ const IND_RECIPES = [
 ];
 // Workshop benches: the same mechanics as furnaces (their own count, pause, warehouse cap), making products.
 const IND_PROD = [
-  { id: 'plank', in: { wood: 4 }, t: 3, c: 1e8 },
-  { id: 'nails', in: { fe: 1, coal: 1 }, t: 4, c: 3e8 },
-  { id: 'gear', in: { fe: 2, cu: 1 }, t: 8, c: 6e8 },
-  { id: 'pipe', in: { cu: 2, brick: 2 }, t: 8, c: 6e8 },
+  // out: how many each batch makes (1 when left out).
+  { id: 'plank', in: { wood: 4 }, out: 2, t: 3, c: 1e8 },
+  { id: 'nails', in: { fe: 1, coal: 1 }, out: 3, t: 4, c: 3e8 },
+  { id: 'gear', in: { fe: 2, cu: 1 }, out: 2, t: 8, c: 6e8 },
+  { id: 'pipe', in: { cu: 2, brick: 2 }, out: 2, t: 8, c: 6e8 },
   { id: 'machine', in: { gear: 3, pipe: 2, plank: 6, nails: 8 }, t: 30, c: 2e9 },
 ];
 const IND_MAKERS = [...IND_RECIPES, ...IND_PROD];
@@ -218,10 +219,11 @@ function tickInd(dt) {
     // With the thrift patent every input costs half; the leftover half-units carry over (u.c), so stocks stay whole numbers.
     const hf = indInMult(), cr = u.c || (u.c = {});
     for (const [id, q] of Object.entries(r.in)) k = Math.min(k, Math.floor((indHave(id) + (cr[id] || 0)) / (q * hf)));
-    k = Math.min(k, Math.floor(cap - (I.r[r.id] || 0)));
+    const out = r.out || 1;
+    k = Math.min(k, Math.floor((cap - (I.r[r.id] || 0)) / out));
     if (k <= 0) { u.stall = 'in'; u.p = Math.min(u.p, 1); u.sz = (u.sz || 0) + dt; continue; }
     for (const [id, q] of Object.entries(r.in)) { const need = q * k * hf - (cr[id] || 0), t = Math.max(0, Math.ceil(need - 1e-9)); indTake(id, t); cr[id] = t - need; }
-    I.r[r.id] = (I.r[r.id] || 0) + k; u.p -= k; u.sz = 0;
+    I.r[r.id] = (I.r[r.id] || 0) + k * out; u.p -= k; u.sz = 0;
   }
   indKFill();
   const ug = indUtilTotal() * dt; if (ug > 0) addGold(ug);
@@ -421,8 +423,8 @@ function indMakerCard(r, bench) {
   const st = u.n ? indStLine('m:' + r.id, indMakerSt(r)) : '';
   return `<div class="card ind-card"><div class="top"><span class="big">${indIc(r.id, 48)}</span><div class="meta"><b>${indName(r.id)}</b><small>${bench ? L`${u.n} طاولة` : L`${u.n} فرن`}</small></div></div>
     <div class="kv ind-recipe"><span>${L('يحتاج')}</span><span>${ins}</span></div>
-    <div class="kv ind-recipe"><span>${L('يعطي')}</span><span class="ind-q">1 ${indIc(r.id, 22)}</span></div>
-    <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(u.n * indSpeed(r) / r.t)} بالثانية`}</span></div>
+    <div class="kv ind-recipe"><span>${L('يعطي')}</span><span class="ind-q">${r.out || 1} ${indIc(r.id, 22)}</span></div>
+    <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(u.n * indSpeed(r) * (r.out || 1) / r.t)} بالثانية`}</span></div>
     <div class="kv"><span>${L('عندك')}</span><span><b data-ir="${r.id}">${fmt(Math.floor(ind().r[r.id] || 0))}</b></span></div>${st}
     ${u.n >= indFurnMax() && u.n < IND_FMAX ? `<p class="hint">${L`🏤 الحد ${indFurnMax()}: طوّر مبنى البلدة عشان تزيد`}</p>` : ''}
     <div class="row">${costBtn('indFurn', r.id, c, bench ? L`➕ طاولة (${fmt(c)}💰)` : L`➕ فرن (${fmt(c)}💰)`, 'gold', u.n >= indFurnMax())}${u.n ? `<button class="btn ghost sm" data-a="indFurnOn" data-v="${r.id}">${u.on ? L('⏸️ وقّف') : L('▶️ شغّل')}</button>` : ''}</div></div>`;

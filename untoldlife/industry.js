@@ -48,7 +48,7 @@ const IND_KQ = { clay: 400, stone: 400, wood: 400, coal: 200, brick: 200, block:
 const IND_VAL = { clay: 3e6, stone: 3e6, wood: 3e6, coal: 1.5e7, brick: 2.5e7, block: 2.5e7, cu: 1e8, fe: 2e8, ag: 4e8, plank: 4.8e7, nails: 4.8e8, gear: 1.6e9, pipe: 1e9, machine: 2.4e10 };
 // A delivered contract's slot waits 6 minutes for a new one (the contract trader cuts 18 s a level, down to 3 minutes).
 // Two swaps; each used swap comes back after the same wait.
-const IND_KSW = 2;
+const IND_KSW = 2, IND_KCAP = 160;
 function indKN() { return 3 + indPt('slot4'); }
 function indKWait() { return (360 - 18 * indEng('deal')) * 1000; }
 // Engineer: permanent factory upgrades bought with blueprints and products (10 levels each).
@@ -277,7 +277,8 @@ function indStLine(key, st) { return `<p class="ind-st ${st.c}" data-ist="${key}
 // Things you can already make: the three fields, plus every furnace or bench you own.
 function indPool() { return [...IND_FIELDS.map(f => f.id), ...IND_MAKERS.filter(r => indFu(r.id).n).map(r => r.id)]; }
 function indNewK() {
-  const t = ind().kd || 0, pool = indPool(), n = t >= 3 && pool.length > 1 ? 2 : 1, max = Math.floor(indCap() * 0.9), need = [];
+  // Requests (and their gold and blueprints) grow 12% a delivered contract, up to 160 contracts (×20.2), then stay there.
+  const t = Math.min(ind().kd || 0, IND_KCAP), pool = indPool(), n = t >= 3 && pool.length > 1 ? 2 : 1, max = Math.floor(indCap() * 0.9), need = [];
   // The newest things you make turn up a bit more often than raw materials.
   const pick = () => pool[Math.min(pool.length - 1, Math.floor(Math.pow(Math.random(), 0.7) * pool.length))];
   while (need.length < n) { const id = pick(); if (!need.some(x => x[0] === id)) need.push([id, Math.max(1, Math.min(max, Math.round(IND_KQ[id] * (1 + 0.12 * t))))]); }

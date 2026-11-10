@@ -208,6 +208,9 @@ const IND_NET = {};
 // For the countdowns: a snapshot of every stock once a second for the last minute, so a rate is (now − a minute ago) / time.
 // Furnaces work in batches, so the quick average above jumps too much to time anything with.
 const IND_HIST = [], IND_ETA = {};
+// Running total of what fields and furnaces added or used (ticks only): spending on a building isn't production, so the
+// countdowns measure this, not the stock (a stock that just paid for an upgrade would look like it's running out).
+const IND_CUM = {};
 let IND_UG = 0; // services gold paid so far (the away summary reads how much came in while you were gone)
 function tickInd(dt) {
   if (!indOpen()) return;
@@ -236,10 +239,11 @@ function tickInd(dt) {
   for (const id in IND_RES) IND_NET[id] = (IND_NET[id] || 0) * (1 - a) + ((I.r[id] || 0) - before[id]) / dt * a;
   // Village ores change outside this function too (the miners), so their net runs from one tick to the next.
   { const e = S.gen.earned; if (IND_PREV.gold !== undefined && e >= IND_PREV.gold) IND_NET.gold = (IND_NET.gold || 0) * (1 - a) + (e - IND_PREV.gold) / dt * a; IND_PREV.gold = e; }
-  for (const id of IND_ORES) { const v = have(id); if (IND_PREV[id] !== undefined) IND_NET[id] = (IND_NET[id] || 0) * (1 - a) + (v - IND_PREV[id]) / dt * a; IND_PREV[id] = v; }
+  for (const id in IND_RES) IND_CUM[id] = (IND_CUM[id] || 0) + (I.r[id] || 0) - before[id];
+  for (const id of IND_ORES) { const v = have(id); if (IND_PREV[id] !== undefined) { IND_NET[id] = (IND_NET[id] || 0) * (1 - a) + (v - IND_PREV[id]) / dt * a; IND_CUM[id] = (IND_CUM[id] || 0) + v - IND_PREV[id]; } IND_PREV[id] = v; }
   const now = Date.now(), last = IND_HIST[IND_HIST.length - 1];
   if (!last || now - last.t >= 1000) {
-    const v = { gold: S.gen.earned }; for (const id in IND_RES) v[id] = I.r[id] || 0; for (const id of IND_ORES) v[id] = have(id);
+    const v = { gold: S.gen.earned }; for (const id in IND_CUM) v[id] = IND_CUM[id];
     IND_HIST.push({ t: now, v }); while (IND_HIST.length > 2 && now - IND_HIST[0].t > 60000) IND_HIST.shift();
   }
 }
@@ -429,7 +433,7 @@ function indFillSt(id) {
     if (v >= cap * 0.99) return { t: L('المخزن مليان'), c: 'up' };
     delete IND_ETA['e:' + id]; return { t: L`المخزن يمتلي بعد ${indDur(indEta('f:' + id, cap - v, r))}`, c: 'up' };
   }
-  if (r < -0.0001 && v > 0) { delete IND_ETA['f:' + id]; return { t: L`المخزون يفضى بعد ${indDur(indEta('e:' + id, v, -r))}`, c: 'down' }; }
+  if (r < -0.0001 && v > 0) { delete IND_ETA['f:' + id]; return { t: L`المخزون يخلص بعد ${indDur(indEta('e:' + id, v, -r))}`, c: 'down' }; }
   return { t: v >= cap * 0.99 ? L('المخزن مليان') : L('ما يتغير حالياً'), c: '' };
 }
 function indReqs(gold, mats) {

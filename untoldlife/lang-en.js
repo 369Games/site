@@ -1239,7 +1239,7 @@
 "{0}ي {1}س": "{0}d {1}h",
 "المخزن مليان": "Warehouse full",
 "المخزن يمتلي بعد {0}": "Warehouse full in {0}",
-"المخزون يفضى بعد {0}": "Stock runs out in {0}",
+"المخزون يخلص بعد {0}": "Stock runs out in {0}",
 "ما يتغير حالياً": "Not changing right now",
 "{0} (مخزن القرية)": "{0} (village storage)",
 "📦 السعة {0}": "📦 Capacity {0}",

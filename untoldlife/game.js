@@ -462,6 +462,30 @@ achSet('fsh', '🎣', [[100, L('صياد')], [1000, L('سيد البحيرة')]]
 achSet('chl', '🏆', [[1, L('متحدٍّ')], [10, L('لا يُقهر')], [30, L('سيد التحديات')]], v => L`أنجز ${v} تحدي أجيال`, () => Object.values(S.leg.ch).reduce((a, b) => a + b, 0));
 ach('love', '💞', L('صديق القرية'), L('وصّل علاقتك مع شخص إلى 10 قلوب'), () => NPCS.some(n => (S.npc[n.id] || {}).pts >= 1000));
 ach('marry', '💍', L('فرحة الوادي'), L('تزوّج من أحد أهل القرية'), () => !!S.leg.married);
+/* Industrial Age achievements (1.15). Counters that reset with a factory renewal use lifetime totals (kt), and the
+   picture is the factory's own art in a medal frame. */
+{
+  const I = () => S.leg.ind, has = () => !!S.leg.ind;
+  const A2 = [
+    ['ind0', '⚙️', L('فجر الصناعة'), L('افتح عصر الصناعة'), () => has(), 'ind-tab-factory', 'gold'],
+    ['indk0', '📜', L('تاجر مبتدئ'), L('سلّم 10 عقود'), () => has() && Math.max(I().kt || 0, I().kd || 0) >= 10, 'ind-contract', 'bronze'],
+    ['indk1', '📜', L('تاجر الوادي'), L('سلّم 100 عقد'), () => has() && Math.max(I().kt || 0, I().kd || 0) >= 100, 'ind-contract', 'silver'],
+    ['indk2', '📜', L('إمبراطور التجارة'), L('سلّم 500 عقد'), () => has() && Math.max(I().kt || 0, I().kd || 0) >= 500, 'ind-contract', 'gold'],
+    ['indh0', '🏤', L('دار البلدة'), L('طوّر مبنى البلدة لمستوى 4'), () => has() && indHall() >= 4, 'ind-hall-2', 'bronze'],
+    ['indh1', '🏰', L('قصر البلدة'), L('طوّر مبنى البلدة لمستوى 10'), () => has() && indHall() >= 10, 'ind-hall-4', 'gold'],
+    ['indr', '🛤️', L('خط سكة كامل'), L('وصّل سكة الحديد لمستوى 10'), () => has() && indLv('rails') >= 10, 'ind-rails-4', 'silver'],
+    ['indb', '⛵', L('أسطول الوادي'), L('وصّل القارب لمستوى 10'), () => has() && indLv('boat') >= 10, 'ind-boat-4', 'silver'],
+    ['indw', '👷', L('مدينة عمّال'), L('وظّف 150 عامل في حقول المصنع'), () => has() && indWorkers() >= 150, 'ind-housing', 'silver'],
+    ['indn0', '🔁', L('بداية جديدة'), L('جدّد المصنع أول مرة'), () => has() && (I().ren || 0) >= 1, 'icon-renew', 'bronze'],
+    ['indn1', '🔁', L('مخترع عريق'), L('جدّد المصنع 5 مرات'), () => has() && (I().ren || 0) >= 5, 'icon-renew', 'gold'],
+    ['indu', '🔌', L('مدينة مضيئة'), L('وصّل الكهرباء والمياه والضرايب كلها لمستوى 10'), () => has() && IND_UTIL.every(x => indUl(x.id) >= 10), 'ind-u-power-4', 'gold'],
+    ['indp', '🗾', L('خريطة كاملة'), L('اخترع كل شي في خريطة الاختراعات'), () => has() && IND_PT.every(x => indPt(x.id) >= x.max), 'ind-inv-map', 'gold'],
+  ];
+  for (const [id, e, n, d, fn, art, metal] of A2) {
+    ach(id, e, n, d, fn);
+    if (typeof ACHIEVEMENT_ART !== 'undefined' && ART[art]) { ACHIEVEMENT_ART['ach-' + id] = { key: art, metal, category: 'ind' }; ART['ach-' + id] = ART[art]; }
+  }
+}
 const NPC_BY = Object.fromEntries(NPCS.map(n => [n.id, n]));
 const GENDER = { m: { n: L('رجل'), e: '👨', child: L('ابن') }, f: { n: L('امرأة'), e: '👩', child: L('ابنة') } };
 /* Gifts change every season: each villager loves one thing and likes another, picked at random from their kind
@@ -2963,12 +2987,15 @@ function showUpdate() {
 }
 setTimeout(checkUpdate, 60000); setInterval(checkUpdate, 600000);
 document.addEventListener('visibilitychange', checkUpdate);
-function showOffline(secs, gold, items) {
+function showOffline(secs, gold, items, fac) {
   const li = Object.entries(items).filter(([, n]) => n > 0).map(([id, n]) => `<li>${icon(ITEMS[id])} ${ITEMS[id].n} +${fmt(n)}</li>`).join('');
+  const fl = fac ? Object.entries(fac.items).filter(([, n]) => n >= 1).map(([id, n]) => `<li>${indIc(id, 22)} ${indName(id)} +${fmt(n)}</li>`).join('') : '';
+  const fh = fac && (fl || fac.util > 0) ? L`<h3>🏭 والمصنع كمان:</h3>` + (fac.util > 0 ? L`<p>🎛️ الخدمات جابت <b>+${fmt(fac.util)}</b> ذهب</p>` : '') + (fl ? `<ul class="gains">${fl}</ul>` : '') : '';
   openModal(L`<h2>🌙 أهلاً بعودتك يا ${S.name}!</h2>
   <p>غبت ${ftime(secs)}، والقرية لم تتوقف عن العمل:</p>
   ${gold > 0 ? L`<p>💰 <b>+${fmt(gold)}</b> ذهب</p>` : ''}
   ${li ? `<ul class="gains">${li}</ul>` : L('<p class="hint">لم يتغير الكثير... وظّف عمالاً في القرية ليعملوا وأنت غائب.</p>')}
+  ${fh}
   <button class="btn" data-a="closeModal" style="width:100%">رائع! 👍</button>`);
 }
 
@@ -3148,14 +3175,17 @@ function load() {
 }
 function runOffline(secs) {
   secs = Math.min(secs, offlineCap());
-  const g0 = S.gold, inv0 = { ...S.inv };
+  const g0 = S.gold, inv0 = { ...S.inv }, ind0 = indOpen() ? { ...ind().r } : null; IND_UG = 0;
   // Long absences (or a browser that put the tab to sleep) used to replay every second and freeze the page for a while.
   // Bigger steps give the same results (checked: within ~2% over an hour) in a fraction of the time.
   offline = true; simulate(secs, Math.min(10, Math.max(1, secs / 1800))); offline = false;
   const items = {};
   for (const id in S.inv) items[id] = S.inv[id] - (inv0[id] || 0);
   log(L`🌙 مرّ ${ftime(secs)} وأنت غائب`, 'season');
-  if (S.started) showOffline(secs, S.gold - g0, items);
+  // The factory's part: what its stock gained, and the gold the public services paid.
+  const indItems = {};
+  if (ind0) for (const id in IND_RES) indItems[id] = (ind().r[id] || 0) - (ind0[id] || 0);
+  if (S.started) showOffline(secs, S.gold - g0, items, ind0 ? { items: indItems, util: IND_UG } : null);
   lastSig = '';
 }
 function frame() {

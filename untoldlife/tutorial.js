@@ -21,13 +21,44 @@ const TUT_STEPS = [
   { final: true,
     text: L('🎉 ممتاز! مزرعتك صارت تشتغل لحالها. كمّل: وظّف عامل زراعة وصندوق شحن، واشترِ حيوانات من الحظيرة، واحفر في المنجم، وطوّر أدواتك عند الحداد.') },
 ];
-const TUT_COUNT = TUT_STEPS.filter(s => !s.final).length;
+// The factory has its own short guide, shown while you're in the Industrial Age (progress in S.leg.ind.tut).
+const IND_TUT = [
+  { tab: 'fields', target: '[data-a="indHire"]',
+    text: L('🗻 أهلاً في المصنع! الحقول تجمع الطين والحجر والخشب لحالها. وظّف عامل، وكل عامل جديد يروح للحقل اللي فيه أقل عمال.'),
+    done: () => ind().hired > 0 },
+  { tab: 'furn', target: '[data-a="indFurn"][data-v="coal"]',
+    text: L('🏭 المراجل تحوّل الخام لمواد. اشترِ أول فرن فحم: الفحم وقود أغلب الوصفات.'),
+    done: () => indFu('coal').n > 0 },
+  { tab: 'city', target: '[data-a="indHall"]',
+    text: L('🏤 مبنى البلدة هو المبنى الرئيسي: ما فيه مبنى ولا حقل يطلع فوق مستواه. طوّره لمستوى 1.'),
+    done: () => indHall() > 0 },
+  { tab: 'city', target: '[data-a="indBld"][data-v="rails"]',
+    text: L('🛤️ ابنِ سكة الحديد: كل مستوى يرخّص عمال المنجم في القرية. والقارب نفس الشي للصيادين.'),
+    done: () => indLv('rails') > 0 },
+  { tab: 'ws', target: '[data-a="indFurn"][data-v="plank"]',
+    text: L('🔧 الورشة تسوي المنتجات: اشترِ طاولة ألواح خشب. المنتجات تحتاجها العقود والمهندس.'),
+    done: () => indFu('plank').n > 0 },
+  { tab: 'city', target: '[data-a="indK"]',
+    text: L('📜 التجار في المدينة يطلبون أشياء تسويها. سلّم أول عقد وخذ ذهب ومخططات 📐 للمهندس.'),
+    done: () => (ind().kd || 0) > 0 },
+  { final: true,
+    text: L('🎉 مصنعك يشتغل! كمّل: وسّع المخزن، وطوّر عند المهندس، وكبّر مبنى البلدة. ولما يصير قصر تقدر تجدّد المصنع وتاخذ براءات اختراع 🎫.') },
+];
+// Which guide is on: the factory's while you're in it, else the village's.
+function tutCtx() {
+  if (typeof inInd === 'function' && inInd()) {
+    const I = ind();
+    if (!I.tut) I.tut = { step: 0, done: indHall() > 0 || (I.kd || 0) > 0 }; // a factory already under way skips it
+    return { steps: IND_TUT, st: I.tut, home: 'fields', key: 'ind' };
+  }
+  tutInit(); return { steps: TUT_STEPS, st: S.tut, home: 'farm', key: 'v' };
+}
 
 function tutInit() {
   // Players who already know the game skip the guide.
   if (!S.tut) S.tut = { step: 0, done: !!S.started && (S.stats.harvests > 20 || S.leg.gen > 1) };
 }
-function tutActive() { tutInit(); return S.started && !S.tut.done; }
+function tutActive() { return S.started && !tutCtx().st.done; }
 
 function tutPanel() {
   return `<h3>${L('📖 دليل اللاعب')}</h3><div class="row"><button class="btn ghost" data-a="tutRestart">${L('↺ أعد تشغيل الدليل')}</button></div>`;
@@ -71,22 +102,23 @@ function tutFollow() {
   requestAnimationFrame(tutFollow);
 }
 
-let tutShown = -1;
+let tutShown = '';
 function tutRender() {
   const box = tutBox();
   tutSel = ''; tutTarget = null;
   if (!tutActive() || !$('modal').classList.contains('hidden')) { box.classList.add('hidden'); return; }
-  let st = TUT_STEPS[S.tut.step];
-  if (!st) { S.tut.done = true; box.classList.add('hidden'); return; }
+  const C = tutCtx(), T = C.st;
+  let st = C.steps[T.step];
+  if (!st) { T.done = true; box.classList.add('hidden'); return; }
   if (!st.final && st.done()) {
-    S.tut.step++; st = TUT_STEPS[S.tut.step];
+    T.step++; st = C.steps[T.step];
     if (st && st.start) st.start();
     if (typeof sfx === 'function') sfx('good');
   }
-  if (!st) { S.tut.done = true; box.classList.add('hidden'); return; }
-  if (tutShown !== S.tut.step) {
-    tutShown = S.tut.step;
-    const count = st.final ? '' : `<small class="tut-count">${S.tut.step + 1} / ${TUT_COUNT}</small>`;
+  if (!st) { T.done = true; box.classList.add('hidden'); return; }
+  if (tutShown !== C.key + T.step) {
+    tutShown = C.key + T.step;
+    const count = st.final ? '' : `<small class="tut-count">${T.step + 1} / ${C.steps.filter(x => !x.final).length}</small>`;
     const btn = st.final
       ? `<button class="btn gold sm" data-a="tutDone">${L('يلا نلعب! 🚀')}</button>`
       : `<button class="btn ghost sm" data-a="tutDone">${L('تخطّي الدليل')}</button>`;
@@ -98,7 +130,7 @@ function tutRender() {
   tutSel = tab === st.tab ? st.target : `#tabs [data-v="${st.tab}"]`;
   tutTarget = tutFind();
   // Bring the target into view once per step and page, if it is off screen.
-  const key = S.tut.step + ':' + tab;
+  const key = C.key + T.step + ':' + tab;
   if (tutTarget && tutScrolled !== key) {
     tutScrolled = key;
     const r = tutTarget.getBoundingClientRect();
@@ -107,7 +139,9 @@ function tutRender() {
 }
 let tutScrolled = '';
 
-A.tutDone = () => { tutInit(); S.tut.done = true; tutRender(); };
-A.tutRestart = () => { S.tut = { step: 0, done: false }; tutShown = -1; A.tab('farm'); tutRender(); };
+A.tutDone = () => { tutCtx().st.done = true; tutRender(); };
+A.tutRestart = () => {
+  const C = tutCtx(); C.st.step = 0; C.st.done = false; tutShown = ''; A.tab(C.home); tutRender();
+};
 setInterval(tutRender, 400);
 requestAnimationFrame(tutFollow);

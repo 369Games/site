@@ -208,6 +208,7 @@ const IND_NET = {};
 // For the countdowns: a snapshot of every stock once a second for the last minute, so a rate is (now − a minute ago) / time.
 // Furnaces work in batches, so the quick average above jumps too much to time anything with.
 const IND_HIST = [], IND_ETA = {};
+let IND_UG = 0; // services gold paid so far (the away summary reads how much came in while you were gone)
 function tickInd(dt) {
   if (!indOpen()) return;
   const I = ind(), cap = indCap(), before = {};
@@ -229,7 +230,7 @@ function tickInd(dt) {
     I.r[r.id] = (I.r[r.id] || 0) + k * out; u.p -= k; u.sz = 0;
   }
   indKFill();
-  const ug = indUtilTotal() * dt; if (ug > 0) addGold(ug);
+  const ug = indUtilTotal() * dt; if (ug > 0) { addGold(ug); IND_UG += ug; }
   if (offline || dt <= 0) return; // the catch-up's big steps would skew it
   const a = Math.min(1, dt / 3);
   for (const id in IND_RES) IND_NET[id] = (IND_NET[id] || 0) * (1 - a) + ((I.r[id] || 0) - before[id]) / dt * a;
@@ -349,7 +350,7 @@ const IND_ACTIONS = {
     const I = ind(), k = (I.k || [])[+v]; if (!k || !indKCan(k)) return;
     k.need.forEach(([id, q]) => indTake(id, q));
     const g = indKGold(k); addGold(g); // gold from contracts counts as earned, like any other gold
-    I.r.bp = (I.r.bp || 0) + k.bp; I.kd = (I.kd || 0) + 1;
+    I.r.bp = (I.r.bp || 0) + k.bp; I.kd = (I.kd || 0) + 1; I.kt = Math.max(I.kt || 0, I.kd - 1) + 1; // kt: contracts ever (kd resets with a renewal)
     I.k[+v] = { at: Date.now() + indKWait() };
     log(L`📜 سلّمت عقد: +${fmt(g)}💰 و+${k.bp} 📐`, 'golden', 'ind');
   },

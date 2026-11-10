@@ -191,7 +191,8 @@ function indFurnMax() { return Math.min(IND_FMAX, 3 * (indHall() + 1)); }
 // Shown instead of the upgrade button when the town hall holds a building or field back.
 function indHallGate(next) { return next > indHall() ? `<p class="bad">${L`🏤 يحتاج مبنى البلدة مستوى ${next}`}</p>` : ''; }
 // How many of a kind are running: the player picks it (u.a, all of them when unset); a paused kind (on = 0) runs none.
-function indActive(r) { const u = indFu(r.id); return u.on ? Math.min(u.n, u.a === undefined ? u.n : u.a) : 0; }
+function indChosen(u) { return Math.min(u.n, u.a === undefined ? u.n : u.a); }
+function indActive(r) { const u = indFu(r.id); return u.on ? indChosen(u) : 0; }
 /* Smart worker split for the fields: as many workers on each raw material as the running furnaces and benches burn
    (wood for coal and planks, clay for bricks, stone for cut stone), and the rest spread so no field sits idle while
    another fills up. */
@@ -358,12 +359,8 @@ const IND_ACTIONS = {
     if (u.n >= indFurnMax() || S.gold < c) return; S.gold -= c; u.n++; if (all && u.a !== undefined) u.a = u.n; // a new one starts running only when all of them were
   },
   indFurnOn: v => { const u = indFu(v); u.on = u.on ? 0 : 1; },
-  // − / + on a furnace or bench: how many of this kind run (0 pauses it).
-  indAct: v => {
-    const [id, d] = v.split(':'), u = indFu(id); if (!u.n) return;
-    const cur = u.on ? Math.min(u.n, u.a === undefined ? u.n : u.a) : 0;
-    u.on = 1; u.a = Math.max(0, Math.min(u.n, cur + +d));
-  },
+  // − / + on a furnace or bench: how many of this kind run. The pause button stops them all and keeps this number.
+  indAct: v => { const [id, d] = v.split(':'), u = indFu(id); if (!u.n) return; u.a = Math.max(0, Math.min(u.n, indChosen(u) + +d)); },
   indSmart: () => indSmartW(),
   indAutoW: () => { const I = ind(); I.autoW = I.autoW ? 0 : 1; if (I.autoW) { IND_AW = 0; indSmartW(); } },
   indBld: v => {
@@ -516,7 +513,7 @@ function indMakerCard(r, bench) {
     <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(indActive(r) * indSpeed(r) * (r.out || 1) / r.t)} بالثانية`}</span></div>
     <div class="kv"><span>${L('عندك')}</span><span><b data-ir="${r.id}">${fmt(Math.floor(ind().r[r.id] || 0))}</b></span></div>${u.n ? `<small class="ind-fill">⏳ ${(x => `<span class="${x.c}" data-fill="${r.id}">${x.t}</span>`)(indFillSt(r.id))}</small>` : ''}${st}
     ${u.n >= indFurnMax() && u.n < IND_FMAX ? `<p class="hint">${L`🏤 الحد ${indFurnMax()}: طوّر مبنى البلدة عشان تزيد`}</p>` : ''}
-    <div class="row">${costBtn('indFurn', r.id, c, bench ? L`➕ طاولة (${fmt(c)}💰)` : L`➕ فرن (${fmt(c)}💰)`, 'gold', u.n >= indFurnMax())}</div>${u.n ? `<div class="row ind-w"><button class="btn ghost sm" data-a="indAct" data-v="${r.id}:-1" ${indActive(r) ? '' : 'disabled'}>−</button><b>${L`⚒️ ${indActive(r)} من ${u.n} شغّال`}</b><button class="btn ghost sm" data-a="indAct" data-v="${r.id}:1" ${indActive(r) < u.n ? '' : 'disabled'}>+</button></div>` : ''}</div>`;
+    <div class="row">${costBtn('indFurn', r.id, c, bench ? L`➕ طاولة (${fmt(c)}💰)` : L`➕ فرن (${fmt(c)}💰)`, 'gold', u.n >= indFurnMax())}${u.n ? `<button class="btn ghost sm" data-a="indFurnOn" data-v="${r.id}">${u.on ? L('⏸️ وقّف') : L('▶️ شغّل')}</button>` : ''}</div>${u.n ? `<div class="row ind-w"><button class="btn ghost sm" data-a="indAct" data-v="${r.id}:-1" ${indChosen(u) ? '' : 'disabled'}>−</button><b>${u.on ? L`⚒️ ${indChosen(u)} من ${u.n} شغّال` : L`⏸️ ${indChosen(u)} من ${u.n} (موقف)`}</b><button class="btn ghost sm" data-a="indAct" data-v="${r.id}:1" ${indChosen(u) < u.n ? '' : 'disabled'}>+</button></div>` : ''}</div>`;
 }
 // The workshop: products on benches and the engineer.
 function viewWs() {
@@ -626,7 +623,7 @@ function updInd() {
 function indSig() {
   const I = ind(); if (!I) return [];
   const pay = (g, m) => indCanPay(g, m);
-  return [I.hired, I.f, I.b, I.e, IND_MAKERS.map(r => [indFu(r.id).n, indActive(r)]), I.autoW, (I.b.hall || 0) < IND_MAXLV && pay(indHallCost(I.b.hall || 0).gold, indHallCost(I.b.hall || 0).mats),
+  return [I.hired, I.f, I.b, I.e, IND_MAKERS.map(r => [indFu(r.id).n, indFu(r.id).on, indChosen(indFu(r.id))]), I.autoW, (I.b.hall || 0) < IND_MAXLV && pay(indHallCost(I.b.hall || 0).gold, indHallCost(I.b.hall || 0).mats),
     IND_FIELDS.map(f => { const c = indFieldCost(I.f[f.id].l); return pay(c.gold, [[f.id, c.qty]]); }),
     IND_BLD.map(b => (I.b[b.id] || 0) < IND_MAXLV && pay(indBldCost(I.b[b.id] || 0).gold, indBldCost(I.b[b.id] || 0).mats)),
     (I.b.store || 0) < IND_MAXLV && pay(indStoreCost(I.b.store || 0).gold, indStoreCost(I.b.store || 0).mats)];

@@ -25,11 +25,11 @@ const IND_FIELDS = [
 // Furnace recipes: inputs per batch (village ores by their item id), seconds per batch per furnace, base furnace price.
 const IND_RECIPES = [
   { id: 'coal', in: { wood: 3 }, out: 2, t: 3, c: 5e7 },
-  { id: 'brick', in: { clay: 2, coal: 1 }, t: 4, c: 1e8 },
-  { id: 'block', in: { stone: 3 }, t: 4, c: 1e8 },
-  { id: 'cu', in: { copper: 3, coal: 1 }, t: 6, c: 3e8 },
-  { id: 'fe', in: { iron: 3, coal: 2 }, t: 8, c: 6e8 },
-  { id: 'ag', in: { silver: 3, coal: 2 }, t: 10, c: 1.2e9 },
+  { id: 'brick', in: { clay: 2, coal: 1 }, out: 2, t: 4, c: 1e8 },
+  { id: 'block', in: { stone: 3 }, out: 2, t: 4, c: 1e8 },
+  { id: 'cu', in: { copper: 3, coal: 1 }, out: 2, t: 6, c: 3e8 },
+  { id: 'fe', in: { iron: 3, coal: 2 }, out: 2, t: 8, c: 6e8 },
+  { id: 'ag', in: { silver: 3, coal: 2 }, out: 2, t: 10, c: 1.2e9 },
 ];
 // Workshop benches: the same mechanics as furnaces (their own count, pause, warehouse cap), making products.
 const IND_PROD = [

@@ -205,6 +205,9 @@ function indIc(id, n = 24) { return ART['ind-' + id] ? icon('ind-' + id, n) : IN
 // --- ticking (both worlds always run, so this is called from tick() whatever tab is open) ---
 // Net change per second of every material (made minus used), smoothed over a few seconds; shown next to the stock.
 const IND_NET = {};
+// For the countdowns: a snapshot of every stock once a second for the last minute, so a rate is (now − a minute ago) / time.
+// Furnaces work in batches, so the quick average above jumps too much to time anything with.
+const IND_HIST = [], IND_ETA = {};
 function tickInd(dt) {
   if (!indOpen()) return;
   const I = ind(), cap = indCap(), before = {};
@@ -233,6 +236,17 @@ function tickInd(dt) {
   // Village ores change outside this function too (the miners), so their net runs from one tick to the next.
   { const e = S.gen.earned; if (IND_PREV.gold !== undefined && e >= IND_PREV.gold) IND_NET.gold = (IND_NET.gold || 0) * (1 - a) + (e - IND_PREV.gold) / dt * a; IND_PREV.gold = e; }
   for (const id of IND_ORES) { const v = have(id); if (IND_PREV[id] !== undefined) IND_NET[id] = (IND_NET[id] || 0) * (1 - a) + (v - IND_PREV[id]) / dt * a; IND_PREV[id] = v; }
+  const now = Date.now(), last = IND_HIST[IND_HIST.length - 1];
+  if (!last || now - last.t >= 1000) {
+    const v = { gold: S.gen.earned }; for (const id in IND_RES) v[id] = I.r[id] || 0; for (const id of IND_ORES) v[id] = have(id);
+    IND_HIST.push({ t: now, v }); while (IND_HIST.length > 2 && now - IND_HIST[0].t > 60000) IND_HIST.shift();
+  }
+}
+// Net per second over the last minute (gold: gold earned). null while there are under 20 seconds of history.
+function indRateOf(id) {
+  const a = IND_HIST[0], b = IND_HIST[IND_HIST.length - 1]; if (!a || b.t - a.t < 20000) return null;
+  const r = ((b.v[id] || 0) - (a.v[id] || 0)) / ((b.t - a.t) / 1000);
+  return id === 'gold' ? Math.max(0, r) : r;
 }
 function indNetTxt(id) {
   const v = IND_NET[id] || 0, z = Math.abs(v) < 0.005;
@@ -389,17 +403,28 @@ function indTooBig(mats) { const big = Math.max(...mats.map(m => m[1])); return 
 /* Countdowns, from the smoothed net rates: how long until a requirement is met (gold uses the gold earned per second),
    and how long until a field or a furnace's output fills the warehouse. */
 function indGot(id) { return id === 'gold' ? S.gold : indHave(id); }
+// A countdown keeps its finish time and just ticks down; it only takes a new estimate when the rate really changed
+// (more than 20% off, or a minute, whichever is bigger), so it doesn't jump around every second.
+function indEta(key, left, rate) {
+  if (rate === null) return null;
+  if (!(rate > 0.0001)) { delete IND_ETA[key]; return 0; }
+  const now = Date.now(), est = now + left / rate * 1000, e = IND_ETA[key];
+  if (!e || Math.abs(est - e) > Math.max(60000, (est - now) * 0.2)) IND_ETA[key] = est;
+  return Math.max(0, (IND_ETA[key] - now) / 1000);
+}
+// [what's missing, how long] for a requirement row; the time sits on its own line under it.
 function indEtaTxt(id, need) {
-  const got = indGot(id); if (got >= need) return '✔';
-  const r = id === 'gold' ? IND_NET.gold || 0 : IND_NET[id] || 0;
-  return r > 0.0001 ? L`ينقصك ${fmt(need - got)} • بعد ${ftime((need - got) / r)}` : L`ينقصك ${fmt(need - got)}`;
+  const got = indGot(id); if (got >= need) return ['✔', ''];
+  const t = indEta('r:' + id + ':' + need, need - got, indRateOf(id));
+  return [L`ينقصك ${fmt(need - got)}`, t === null ? L('يحسب...') : t ? L`بعد ${ftime(t)}` : L('ما يزيد حالياً')];
 }
 function indFillTxt(id) {
-  const v = indHave(id), cap = indCap(), r = IND_NET[id] || 0;
-  return v >= cap * 0.99 ? L('المخزن مليان') : r > 0.0001 ? L`المخزن يمتلي بعد ${ftime((cap - v) / r)}` : L('ما يزيد حالياً');
+  const v = indHave(id), cap = indCap(); if (v >= cap * 0.99) return L('المخزن مليان');
+  const t = indEta('f:' + id, cap - v, indRateOf(id));
+  return t === null ? L('يحسب...') : t ? L`المخزن يمتلي بعد ${ftime(t)}` : L('ما يزيد حالياً');
 }
 function indReqs(gold, mats) {
-  const row = (id, need, got) => `<li class="${got >= need ? 'ok' : 'no'}"><span class="ri">${id === 'gold' ? '💰' : indIc(id, 22)}</span><span class="rn">${id === 'gold' ? L('ذهب') : indName(id)}</span><span class="rq"><b data-eg="${id}">${fmt(got)}</b> / ${fmt(need)}</span><span class="rs" data-eta="${id}:${need}">${indEtaTxt(id, need)}</span></li>`;
+  const row = (id, need, got) => `<li class="${got >= need ? 'ok' : 'no'}"><span class="ri">${id === 'gold' ? '💰' : indIc(id, 22)}</span><span class="rn">${id === 'gold' ? L('ذهب') : indName(id)}</span><span class="rq"><b data-eg="${id}">${fmt(got)}</b> / ${fmt(need)}</span><span class="rs">${(e => `<span data-eta="${id}:${need}">${e[0]}</span><span class="eta" data-etat="${id}:${need}">${e[1]}</span>`)(indEtaTxt(id, need))}</span></li>`;
   return `<ul class="reqs">${gold ? row('gold', gold, S.gold) : ''}${(mats || []).map(([id, q]) => row(id, q, indHave(id))).join('')}</ul>`;
 }
 function indStock(ids = IND_BASE) {
@@ -542,7 +567,8 @@ function updInd() {
   });
   document.querySelectorAll('[data-kw]').forEach(el => { el.textContent = indClock(+el.dataset.kw - Date.now()); });
   document.querySelectorAll('[data-eg]').forEach(el => { el.textContent = fmt(indGot(el.dataset.eg)); });
-  document.querySelectorAll('[data-eta]').forEach(el => { const [id, n] = el.dataset.eta.split(':'), t = indEtaTxt(id, +n); if (el.textContent !== t) el.textContent = t; });
+  document.querySelectorAll('[data-eta]').forEach(el => { const [id, n] = el.dataset.eta.split(':'), t = indEtaTxt(id, +n)[0]; if (el.textContent !== t) el.textContent = t; });
+  document.querySelectorAll('[data-etat]').forEach(el => { const [id, n] = el.dataset.etat.split(':'), t = indEtaTxt(id, +n)[1]; if (el.textContent !== t) el.textContent = t; });
   document.querySelectorAll('[data-fill]').forEach(el => { const t = indFillTxt(el.dataset.fill); if (el.textContent !== t) el.textContent = t; });
   document.querySelectorAll('[data-inet]').forEach(el => { const n = indNetTxt(el.dataset.inet); el.textContent = n.t; el.className = 'ind-net ' + n.c; });
 }

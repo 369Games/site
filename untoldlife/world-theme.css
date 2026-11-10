@@ -458,3 +458,8 @@ body.lite #log li.golden,body.lite #log li.egg{box-shadow:none}
 /* Village ores in the factory stock: a dashed border says they come from the village. */
 .ind-chip.vil{border-style:dashed;border-color:#8fb06a88}
 .ind-fill{display:block;min-height:1.4em;color:var(--muted);font-size:12px}
+/* Factory requirement rows: what's missing and the countdown get their own line under the name, so nothing gets squeezed. */
+.ind-card .reqs li{grid-template-areas:"i n q" "i s s"}
+.ind-card .reqs .rs{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 10px;text-align:start;white-space:normal}
+.ind-card .reqs .rs .eta{font-weight:600;color:var(--muted)}
+.ind-card .reqs .rn{overflow-wrap:normal;word-break:normal}

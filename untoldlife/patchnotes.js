@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.15.1', date: '2026-11-10', big: false, title: L('أهداف القرية صارت ذكية'), items: [
+    L('🏘️ هدف القرية اليومي صار يتعدّل لحاله: 75% من مجموع الجولة اللي قبلها، وما ينزل عن الرقم القديم. كل ما كثرتوا كبر الهدف، فصار يحتاج تعاون فعلاً.'),
+  ] },
   { v: '1.15', date: '2026-11-10', big: true, title: L('دليل المصنع وإنجازاته'), items: [
     L('📖 دليل قصير لأول دخول للمصنع: وظّف عامل، واشترِ فرن فحم، وطوّر مبنى البلدة، وابنِ سكة الحديد، واشترِ طاولة، وسلّم أول عقد. وتقدر تعيد تشغيله من «المزيد» وأنت في المصنع.'),
     L('🌙 لما ترجع للعبة، ملخص «وأنت غايب» صار يقول لك وش طلع من المصنع وكم ذهب جابت الخدمات.'),

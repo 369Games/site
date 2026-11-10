@@ -1482,6 +1482,8 @@
 "📋 الجولة الماضية: ما ساهمت": "📋 Last round: you didn't take part",
 "📋 الجولة الماضية: مركزك {0} من {1}، والهدف ما اكتمل": "📋 Last round: you placed {0} of {1}, but the goal wasn't reached",
 "📋 الجولة الماضية: مركزك {0} من {1} ← جائزة +{2}%": "📋 Last round: you placed {0} of {1} → prize +{2}%",
+"أهداف القرية صارت ذكية": "Smarter village goals",
+"🏘️ هدف القرية اليومي صار يتعدّل لحاله: 75% من مجموع الجولة اللي قبلها، وما ينزل عن الرقم القديم. كل ما كثرتوا كبر الهدف، فصار يحتاج تعاون فعلاً.": "🏘️ The daily village goal now adjusts itself: 75% of the previous round's total, and never below the old number. The more of you play, the bigger the goal, so it really takes teamwork now.",
 "دليل المصنع وإنجازاته": "Factory guide and achievements",
 "📖 دليل قصير لأول دخول للمصنع: وظّف عامل، واشترِ فرن فحم، وطوّر مبنى البلدة، وابنِ سكة الحديد، واشترِ طاولة، وسلّم أول عقد. وتقدر تعيد تشغيله من «المزيد» وأنت في المصنع.": "📖 A short guide the first time you enter the factory: hire a worker, buy a coal furnace, upgrade the town hall, build the rails, buy a bench and deliver your first contract. You can restart it from «More» while in the factory.",
 "🌙 لما ترجع للعبة، ملخص «وأنت غايب» صار يقول لك وش طلع من المصنع وكم ذهب جابت الخدمات.": "🌙 When you come back, the «while you were away» summary now shows what the factory made and how much gold the services brought in.",

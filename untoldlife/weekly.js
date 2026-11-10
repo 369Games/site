@@ -47,6 +47,21 @@ const VG = [
   { k: 'f', st: 'fish', hr: 21, n: 80000, e: '🐟', b: 'vf', t: L('السمك'), when: L('🕘 يتجدد كل يوم 18:00 UTC'), area: L('سرعة الصيد') },
 ];
 const VG_TIERS = [0.1, 0.075, 0.05], VG_ALL = 0.02; // places 1-3, then everyone else who helped
+/* The daily target follows the village (1.15.1): 75% of the previous round's total, never under the base (n), rounded
+   to two digits. Everyone reads the same totals, so everyone gets the same target. A round's target is remembered in
+   the save (S.wk.vt), so the prize check after it ends uses the same number even though the doc only keeps one round back. */
+function vgNice(x) { const p = Math.pow(10, Math.max(0, Math.floor(Math.log10(x)) - 1)); return Math.round(x / p) * p; }
+function vgNeed(g, r = vgRound(g)) {
+  const vt = S.wk.vt || (S.wk.vt = {}), m = vt[g.k] || (vt[g.k] = {});
+  if (m[r] !== undefined) return m[r];
+  if (r !== vgRound(g)) return g.n; // a round we never saw: the base
+  // Only trust totals read after this round began (an older read may hold yesterday's total before it was final).
+  const start = r * 86400000 - (3 - g.hr) * 3600000, p = WK.pullAt >= start ? vgData(g, r - 1) : null;
+  if (!p) return g.n; // not read yet: the base, until the next refresh
+  const t = Math.max(g.n, vgNice(p.n * 0.75));
+  m[r] = t; for (const k of Object.keys(m)) if (+k < r - 2) delete m[k];
+  return t;
+}
 function vgPrize(rank) { return VG_TIERS[rank - 1] || VG_ALL; }
 function vgRound(g) { return Math.floor((Date.now() + (3 - g.hr) * 3600000) / 86400000); }
 function vgLeft(g) { return Math.max(0, (vgRound(g) + 1) * 86400000 - (3 - g.hr) * 3600000 - Date.now()) / 1000; }
@@ -72,7 +87,7 @@ function wkGoal() { const t = wkTask(); return t.st === 'earned' ? S.wk.gg : t.n
 function wkRoll() {
   const w = wkNow(); if (S.wk && S.wk.id === w) return;
   const old = S.wk || {}, s = { ...S.stats };
-  S.wk = { id: w, s, b2: s, gg: Math.round(goldGoal() / 2), floor: 0, done: false, buf: old.buf || 0, vb: old.vb || 0, gx: old.gx || {} }; // gx: rounds already paid out
+  S.wk = { id: w, s, b2: s, gg: Math.round(goldGoal() / 2), floor: 0, done: false, buf: old.buf || 0, vb: old.vb || 0, gx: old.gx || {}, vt: old.vt || {} }; // gx: rounds already paid out
   for (const g of VG) { S.wk[g.b] = old[g.b] || 0; S.wk[g.b + 'p'] = old[g.b + 'p'] || 0; }
   WK.top = null; WK.pullAt = 0; WK.sentWk = -1;
   if (old.id) log(L`📅 أسبوع جديد! تحدي الأسبوع: ${wkTask().e} ${wkTask().t(wkGoal())}`, 'season');
@@ -92,7 +107,7 @@ function wkCheck() {
     const r = vgRound(g) - 1, d = vgData(g, r);
     if (!d || S.wk.gx[g.k] >= r) continue;
     const rank = vgRank(d.l, uid);
-    if (d.n < g.n || !rank) { if (WK.g && WK.g[g.k + 'd'] >= r) S.wk.gx[g.k] = r; continue; } // missed: nothing to give
+    if (d.n < vgNeed(g, r) || !rank) { if (WK.g && WK.g[g.k + 'd'] >= r) S.wk.gx[g.k] = r; continue; } // missed: nothing to give
     S.wk.gx[g.k] = r;
     const p = vgPrize(rank), cur = wkOn(g.b) ? S.wk[g.b + 'p'] || 0.1 : 0;
     if (p >= cur) { S.wk[g.b] = Date.now() + WK_MS; S.wk[g.b + 'p'] = p; } // a weaker prize never cuts a stronger one short
@@ -238,8 +253,8 @@ function weeklyPanel() {
   h += L`<div class="wk-box"><b>🏘️ أهداف القرية اليومية</b><small class="hint">كل اللاعبين يجمعون مع بعض، وكل هدف يبدأ من جديد في وقته. إذا اكتمل الهدف، الجوائز تتوزع لما ينتهي وقته حسب مساهمتك:</small>
     <small class="vg-tiers">🏆 الأول +10% • الثاني +7.5% • الثالث +5% • كل من ساهم +2% (لمدة 7 أيام)</small><div class="vgs">`;
   for (const g of VG) {
-    const d = vgData(g), done = d && d.n >= g.n, on = wkOn(g.b);
-    h += `<div class="vg"><b>${g.e} ${g.t}: ${fmt(g.n)}</b><small class="hint">${g.when} <span id="wk_vl_${g.k}"></span></small>
+    const d = vgData(g), done = d && d.n >= vgNeed(g), on = wkOn(g.b);
+    h += `<div class="vg"><b>${g.e} ${g.t}: <span id="wk_vn_${g.k}">${fmt(vgNeed(g))}</span></b><small class="hint">${g.when} <span id="wk_vl_${g.k}"></span></small>
       ${wkBar('wk_vb_' + g.k, done ? 'done' : '')}<small id="wk_vt_${g.k}"></small><small id="wk_vr_${g.k}"></small><small id="wk_vp_${g.k}" class="vg-prev"></small>
       ${on ? `<small>${L`✅ جائزتك شغالة: +${(S.wk[g.b + 'p'] || 0.1) * 100}% ${g.area}، باقي ${ftime((S.wk[g.b] - Date.now()) / 1000)}`}</small>` : ''}</div>`;
   }
@@ -256,17 +271,18 @@ function wkUpd() {
   for (const g of VG) {
     const vb = $('wk_vb_' + g.k); if (!vb) continue;
     const d = vgData(g);
-    vb.style.width = Math.min(100, ((d && d.n) || 0) / g.n * 100) + '%';
+    const need = vgNeed(g); $('wk_vn_' + g.k).textContent = fmt(need);
+    vb.style.width = Math.min(100, ((d && d.n) || 0) / need * 100) + '%'; vb.parentNode.classList.toggle('done', !!d && d.n >= need);
     $('wk_vl_' + g.k).textContent = L`(باقي ${ftime(vgLeft(g))})`;
     if (!d) { $('wk_vt_' + g.k).textContent = L('جاري التحميل…'); $('wk_vr_' + g.k).textContent = ''; continue; }
     const mine = d.l[uid] || 0, rank = vgRank(d.l, uid), n = Object.keys(d.l).length;
     // The numbers sit in their own left-to-right span so "total / goal" doesn't flip in Arabic.
-    $('wk_vt_' + g.k).innerHTML = L`${`<span dir="ltr">${fmt(d.n)} / ${fmt(g.n)}</span>`} • مساهمتك: ${fmt(mine)}`;
+    $('wk_vt_' + g.k).innerHTML = L`${`<span dir="ltr">${fmt(d.n)} / ${fmt(need)}</span>`} • مساهمتك: ${fmt(mine)}`;
     $('wk_vr_' + g.k).textContent = rank ? L`🏆 مركزك ${rank} من ${n} مساهم` : L('🏅 ساهم عشان تدخل الترتيب');
     // The round before: where this player finished and what it paid, so the prize can always be checked.
     const pd = vgData(g, vgRound(g) - 1), pr = pd ? vgRank(pd.l, uid) : 0, pn = pd ? Object.keys(pd.l).length : 0;
     $('wk_vp_' + g.k).textContent = !pd ? '' : !pr ? L('📋 الجولة الماضية: ما ساهمت')
-      : pd.n < g.n ? L`📋 الجولة الماضية: مركزك ${pr} من ${pn}، والهدف ما اكتمل`
+      : pd.n < vgNeed(g, vgRound(g) - 1) ? L`📋 الجولة الماضية: مركزك ${pr} من ${pn}، والهدف ما اكتمل`
       : L`📋 الجولة الماضية: مركزك ${pr} من ${pn} ← جائزة +${vgPrize(pr) * 100}%`;
   }
 }

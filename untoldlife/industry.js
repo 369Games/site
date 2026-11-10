@@ -416,12 +416,20 @@ function indEta(key, left, rate) {
 function indEtaTxt(id, need) {
   const got = indGot(id); if (got >= need) return ['✔', ''];
   const t = indEta('r:' + id + ':' + need, need - got, indRateOf(id));
-  return [L`ينقصك ${fmt(need - got)}`, t === null ? L('يحسب...') : t ? L`بعد ${ftime(t)}` : L('ما يزيد حالياً')];
+  return [L`ينقصك ${fmt(need - got)}`, t === null ? L('يحسب...') : t ? L`بعد ${indDur(t)}` : L('ما يزيد حالياً')];
 }
-function indFillTxt(id) {
-  const v = indHave(id), cap = indCap(); if (v >= cap * 0.99) return L('المخزن مليان');
-  const t = indEta('f:' + id, cap - v, indRateOf(id));
-  return t === null ? L('يحسب...') : t ? L`المخزن يمتلي بعد ${ftime(t)}` : L('ما يزيد حالياً');
+// Long waits read in days and hours (2686 hours → 111 days 22 hours).
+function indDur(t) { return t >= 172800 ? L`${Math.floor(t / 86400)}ي ${Math.floor(t % 86400 / 3600)}س` : ftime(t); }
+// The stock's countdown: filling (green) when it grows, emptying (red) when the furnaces eat more than comes in.
+function indFillSt(id) {
+  const v = indHave(id), cap = indCap(), r = indRateOf(id);
+  if (r === null) return { t: L('يحسب...'), c: '' };
+  if (r > 0.0001) {
+    if (v >= cap * 0.99) return { t: L('المخزن مليان'), c: 'up' };
+    delete IND_ETA['e:' + id]; return { t: L`المخزن يمتلي بعد ${indDur(indEta('f:' + id, cap - v, r))}`, c: 'up' };
+  }
+  if (r < -0.0001 && v > 0) { delete IND_ETA['f:' + id]; return { t: L`المخزون يفضى بعد ${indDur(indEta('e:' + id, v, -r))}`, c: 'down' }; }
+  return { t: v >= cap * 0.99 ? L('المخزن مليان') : L('ما يتغير حالياً'), c: '' };
 }
 function indReqs(gold, mats) {
   const row = (id, need, got) => `<li class="${got >= need ? 'ok' : 'no'}"><span class="ri">${id === 'gold' ? '💰' : indIc(id, 22)}</span><span class="rn">${id === 'gold' ? L('ذهب') : indName(id)}</span><span class="rq"><b data-eg="${id}">${fmt(got)}</b> / ${fmt(need)}</span><span class="rs">${(e => `<span data-eta="${id}:${need}">${e[0]}</span><span class="eta" data-etat="${id}:${need}">${e[1]}</span>`)(indEtaTxt(id, need))}</span></li>`;
@@ -442,7 +450,7 @@ function viewFields() {
     h += `<div class="card ind-card"><div class="top"><span class="big">${indLvIc('f-' + f.id, x.l, 48, indIc(f.id, 48))}</span><div class="meta"><b>${f.n}</b><small>${L`المستوى ${x.l} من ${IND_MAXLV}`}</small></div></div>
       <div class="kv"><span>${indName(f.id)}</span><span><b data-ir="${f.id}">${fmt(Math.floor(I.r[f.id] || 0))}</b> / ${fmt(indCap())}</span></div>
       <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(indRate(f.id))} بالثانية`}</span></div>
-      <small class="ind-fill">⏳ <span data-fill="${f.id}">${indFillTxt(f.id)}</span></small>
+      <small class="ind-fill">⏳ ${(x => `<span class="${x.c}" data-fill="${f.id}">${x.t}</span>`)(indFillSt(f.id))}</small>
       ${indStLine('f:' + f.id, indFieldSt(f.id))}
       <div class="row ind-w"><button class="btn ghost sm" data-a="indW" data-v="${f.id}:-1" ${x.w ? '' : 'disabled'}>−</button><b>${L`👷 ${x.w} عامل`}</b><button class="btn ghost sm" data-a="indW" data-v="${f.id}:1" ${used < n ? '' : 'disabled'}>+</button></div>
       ${x.l < IND_MAXLV ? `<small>${L`⬆️ التطوير: +50% إنتاج لكل عامل`}</small>${indReqs(c.gold, [[f.id, c.qty]])}${indTooBig([[f.id, c.qty]])}${indHallGate(x.l + 1)}<div class="row"><button class="btn gold" data-a="indField" data-v="${f.id}" ${indCanPay(c.gold, [[f.id, c.qty]]) && x.l < indHall() ? '' : 'disabled'}>${L('⬆️ طوّر')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
@@ -464,7 +472,7 @@ function indMakerCard(r, bench) {
     <div class="kv ind-recipe"><span>${L('يحتاج')}</span><span>${ins}</span></div>
     <div class="kv ind-recipe"><span>${L('يعطي')}</span><span class="ind-q">${r.out || 1} ${indIc(r.id, 22)}</span></div>
     <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(u.n * indSpeed(r) * (r.out || 1) / r.t)} بالثانية`}</span></div>
-    <div class="kv"><span>${L('عندك')}</span><span><b data-ir="${r.id}">${fmt(Math.floor(ind().r[r.id] || 0))}</b></span></div>${u.n ? `<small class="ind-fill">⏳ <span data-fill="${r.id}">${indFillTxt(r.id)}</span></small>` : ''}${st}
+    <div class="kv"><span>${L('عندك')}</span><span><b data-ir="${r.id}">${fmt(Math.floor(ind().r[r.id] || 0))}</b></span></div>${u.n ? `<small class="ind-fill">⏳ ${(x => `<span class="${x.c}" data-fill="${r.id}">${x.t}</span>`)(indFillSt(r.id))}</small>` : ''}${st}
     ${u.n >= indFurnMax() && u.n < IND_FMAX ? `<p class="hint">${L`🏤 الحد ${indFurnMax()}: طوّر مبنى البلدة عشان تزيد`}</p>` : ''}
     <div class="row">${costBtn('indFurn', r.id, c, bench ? L`➕ طاولة (${fmt(c)}💰)` : L`➕ فرن (${fmt(c)}💰)`, 'gold', u.n >= indFurnMax())}${u.n ? `<button class="btn ghost sm" data-a="indFurnOn" data-v="${r.id}">${u.on ? L('⏸️ وقّف') : L('▶️ شغّل')}</button>` : ''}</div></div>`;
 }
@@ -569,7 +577,7 @@ function updInd() {
   document.querySelectorAll('[data-eg]').forEach(el => { el.textContent = fmt(indGot(el.dataset.eg)); });
   document.querySelectorAll('[data-eta]').forEach(el => { const [id, n] = el.dataset.eta.split(':'), t = indEtaTxt(id, +n)[0]; if (el.textContent !== t) el.textContent = t; });
   document.querySelectorAll('[data-etat]').forEach(el => { const [id, n] = el.dataset.etat.split(':'), t = indEtaTxt(id, +n)[1]; if (el.textContent !== t) el.textContent = t; });
-  document.querySelectorAll('[data-fill]').forEach(el => { const t = indFillTxt(el.dataset.fill); if (el.textContent !== t) el.textContent = t; });
+  document.querySelectorAll('[data-fill]').forEach(el => { const x = indFillSt(el.dataset.fill); if (el.textContent !== x.t) el.textContent = x.t; if (el.className !== x.c) el.className = x.c; });
   document.querySelectorAll('[data-inet]').forEach(el => { const n = indNetTxt(el.dataset.inet); el.textContent = n.t; el.className = 'ind-net ' + n.c; });
 }
 function indSig() {

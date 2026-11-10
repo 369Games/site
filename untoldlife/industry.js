@@ -53,7 +53,7 @@ function indKN() { return 3 + indPt('slot4'); }
 function indKWait() { return (360 - 18 * indEng('deal')) * 1000; }
 // Engineer: permanent factory upgrades bought with blueprints and products (10 levels each).
 const IND_ENG = [
-  { id: 'furn', e: '⚡', a: 'ind-tab-furn', n: L('مراجل أسرع'), d: L('+15% سرعة لكل مستوى لكل المراجل') },
+  { id: 'furn', e: '🎛️', a: 'ind-tab-furn', n: L('مراجل أسرع'), d: L('+15% سرعة لكل مستوى لكل المراجل') },
   { id: 'field', e: '⛏️', a: 'ind-tab-fields', n: L('حقول أغزر'), d: L('+15% إنتاج لكل مستوى لكل الحقول') },
   { id: 'bench', e: '🔧', a: 'ind-tab-ws', n: L('ورشة أسرع'), d: L('+15% سرعة لكل مستوى لكل طاولات الورشة') },
   { id: 'crew', e: '🏠', a: 'ind-housing', n: L('سكن العمال'), d: L('+10 لحد عمال حقول المصنع لكل مستوى (من 50 لين 150)') },
@@ -90,8 +90,8 @@ const IND_HALL_STAGES = [
 ];
 function indLocked() { return indPt('util') ? {} : { util: 1 }; }
 function indTabs() {
-  return [['fields', L('⛰️ الحقول')], ['furn', L('🏭 المراجل')], ['ws', L('🔧 الورشة')], ['city', L('🏙️ المدينة')],
-    ['util', L('⚡ الخدمات')], ['pat', L('🔬 الاختراعات')], ['settings', L('⚙️ المزيد')]];
+  return [['fields', L('🗻 الحقول')], ['furn', L('🏭 المراجل')], ['ws', L('🔧 الورشة')], ['city', L('🏙️ المدينة')],
+    ['util', L('🎛️ الخدمات')], ['pat', L('🔬 الاختراعات')], ['settings', L('⚙️ المزيد')]];
 }
 // Tab emblems: the painted ones once art/industry is in, stand-ins until then.
 const indArt = (k, alt) => ART['ind-tab-' + k] ? 'ind-tab-' + k : alt;
@@ -104,7 +104,7 @@ Object.assign(NAV_ART, { fields: indArt('fields', 'rock'), furn: indArt('furn', 
 const IND_RENEW_HALL = 10;
 // A skill tree: r/col place each invention, and it opens once the one above (need) reaches level nl.
 const IND_PT = [
-  { id: 'util', r: 1, col: 2, e: '⚡', max: 1, c: [10], n: L('الخدمات العامة'), d: L('يفتح تبويب الخدمات: الكهرباء والمياه والضرايب، وكلها تجيب ذهب مباشرة') },
+  { id: 'util', r: 1, col: 2, e: '🎛️', max: 1, c: [10], n: L('الخدمات العامة'), d: L('يفتح تبويب الخدمات: الكهرباء والمياه والضرايب، وكلها تجيب ذهب مباشرة') },
   { id: 'hall', r: 2, col: 1, need: 'util', nl: 1, e: '🏤', max: 3, c: [8, 8, 8], n: L('أساس متين'), d: L('بعد كل تجديد يبدأ مبنى البلدة من مستوى أعلى (+1 لكل مستوى)') },
   { id: 'store', r: 2, col: 3, need: 'util', nl: 1, e: '📦', max: 3, c: [8, 8, 8], n: L('مخزن جاهز'), d: L('بعد كل تجديد يبدأ المخزن من مستوى أعلى (+1 لكل مستوى)') },
   { id: 'eng', r: 4, col: 1, need: 'fast', nl: 1, e: '👷', max: 1, c: [20], n: L('دفتر المهندس'), d: L('تطويرات المهندس تبقى معك بعد التجديد') },
@@ -364,7 +364,7 @@ const IND_ACTIONS = {
     const I = ind(), l = indPt(v); if (l >= x.max || indPtLocked(x) || indPats() < x.c[l]) return;
     I.pat -= x.c[l]; I.pt = I.pt || {}; I.pt[v] = l + 1;
     log(L`🔬 اخترعت ${x.e} ${x.n}${x.max > 1 ? ` (${l + 1}/${x.max})` : ''}`, 'golden', 'ind');
-    if (v === 'util') { log(L('⚡ تبويب الخدمات انفتح: ابنِ شركة الكهرباء والمياه ومكتب الضرايب، وكلها تجيب ذهب لحالها'), 'golden', 'ind'); renderTabs(); }
+    if (v === 'util') { log(L('🎛️ تبويب الخدمات انفتح: ابنِ شركة الكهرباء والمياه ومكتب الضرايب، وكلها تجيب ذهب لحالها'), 'golden', 'ind'); renderTabs(); }
   },
   indUtil: v => {
     const x = IND_UTIL.find(u => u.id === v); if (!x || !indPt('util')) return;
@@ -441,7 +441,7 @@ function indStock(ids = IND_BASE) {
 }
 function viewFields() {
   const I = ind(), n = indWorkers(), used = indUsed();
-  let h = L`<div class="panel"><div class="ph"><h2>⛰️ الحقول</h2><span class="stat">👷 ${used} / ${n} عامل</span></div>
+  let h = L`<div class="panel"><div class="ph"><h2>🗻 الحقول</h2><span class="stat">👷 ${used} / ${n} عامل</span></div>
     <p class="hint">العمال يجمعون الخام لحالهم. وزّعهم على الحقول حسب اللي تحتاجه، وغيّر التوزيع متى ما تبي ببلاش.</p>
     <div class="row">${costBtn('indHire', '', indHireCost(), L`👷 وظّف عامل (${fmt(indHireCost())}💰)`, 'gold', I.hired + 1 >= indWMax())}<button class="btn ghost" data-a="indEven">⚖️ وزّع بالتساوي</button></div>`;
   h += indStock() + '<div class="grid ind-grid">';
@@ -555,7 +555,7 @@ function viewPat() {
 }
 // Public services: three buildings that pay gold every second, straight into the purse.
 function viewUtil() {
-  let h = L`<div class="panel"><div class="ph"><h2>⚡ الخدمات</h2><span class="stat">💰 ${fmt(indUtilTotal())} بالثانية</span></div>
+  let h = L`<div class="panel"><div class="ph"><h2>🎛️ الخدمات</h2><span class="stat">💰 ${fmt(indUtilTotal())} بالثانية</span></div>
     <p class="hint">الخدمات العامة تخدم القرية وتجيب ذهب لحالها كل ثانية، بدون سوق. تبقى معك حتى لو جدّدت المصنع، ودخلها يكبر مع مضاعف الذهب في القرية.</p><div class="grid ind-grid">`;
   for (const x of IND_UTIL) {
     const l = indUl(x.id), c = l < IND_MAXLV ? indUtilCost(x, l) : null;
@@ -608,13 +608,13 @@ function indBuffsHtml() {
   // Info-only card (no multiplier line).
   const info = (title, rows) => `<div class="bf"><div class="bfh"><b>${title}</b></div>${rows.map(([n, v]) => `<div class="bfl ex"><span>${n}</span><span>${v}</span></div>`).join('')}</div>`;
   let h = '';
-  if (indPt('util')) h += g(L('⚡ ذهب الخدمات'), [[L('💰 مضاعف الذهب في القرية'), goldMult()], [L('🔌 شبكة أقوى (اختراع)'), 1 + 0.2 * indPt('grid')]],
+  if (indPt('util')) h += g(L('🎛️ ذهب الخدمات'), [[L('💰 مضاعف الذهب في القرية'), goldMult()], [L('🔌 شبكة أقوى (اختراع)'), 1 + 0.2 * indPt('grid')]],
     [row(L('💰 المجموع'), L`${fmt(indUtilTotal())} بالثانية`), ...IND_UTIL.map(x => row(`${x.e} ${x.n} (${L`مستوى ${indUl(x.id)}`})`, L`${fmt(indUtilRate(x.id))} بالثانية`))]);
   h += info(L('🔬 الاختراعات'), [row(L('🎫 براءات عندك'), indPats()), row(L('🔁 تجديدات'), I.ren || 0), row(L('🎫 لو جدّدت الحين'), '+' + indRenewGain())]);
   h += info(L('🏤 مبنى البلدة'), [row(IND_HALL_STAGES[indHallStage()].n, L`مستوى ${indHall()}`), row(L('أعلى مستوى للمباني والحقول'), indHall()), row(L('أفران وطاولات من كل نوع'), indFurnMax())]);
-  h += g(L('⛰️ إنتاج الحقول'), [[L('⛏️ حقول أغزر (المهندس)'), 1 + 0.15 * indEng('field')]],
+  h += g(L('🗻 إنتاج الحقول'), [[L('⛏️ حقول أغزر (المهندس)'), 1 + 0.15 * indEng('field')]],
     [row(L('👷 العمال'), `${indWorkers()} / ${indWMax()}`), ...IND_FIELDS.map(f => row(`${f.n} (${L`مستوى ${I.f[f.id].l}`})`, L`${indNum(indRate(f.id))} بالثانية`))]);
-  h += g(L('🏭 سرعة المراجل'), [[L('⚡ مراجل أسرع (المهندس)'), 1 + 0.15 * indEng('furn')]], [row(L('🏭 عدد الأفران'), cnt(IND_RECIPES))]);
+  h += g(L('🏭 سرعة المراجل'), [[L('🏭 مراجل أسرع (المهندس)'), 1 + 0.15 * indEng('furn')]], [row(L('🏭 عدد الأفران'), cnt(IND_RECIPES))]);
   h += g(L('🔧 سرعة الورشة'), [[L('🔧 ورشة أسرع (المهندس)'), 1 + 0.15 * indEng('bench')]], [row(L('🪚 عدد الطاولات'), cnt(IND_PROD))]);
   h += g(L('📜 ذهب العقود'), [[L('🤝 تاجر العقود (المهندس)'), 1 + 0.1 * indEng('deal')]],
     [row(L('⏳ انتظار العقد والتبديل'), indClock(indKWait())), row(L('✅ عقود مسلّمة'), fmt(I.kd || 0)), row(L('📈 حجم الطلب الجاي'), '×' + (1 + 0.12 * (I.kd || 0)).toFixed(2)), row(L('📐 مخططاتك'), fmt(I.r.bp || 0))]);

@@ -2044,6 +2044,15 @@ const TAB_UNLOCK = {
 let UNL_Q = [];
 function tabOpen(id) { return S.leg.gen > 1 || !TAB_UNLOCK[id] || !!(S.unl || {})[id]; }
 function tabName(id) { const t = TABS.find(x => x[0] === id); return t ? t[1].replace(/^\S+\s/, '') : id; }
+// The tab bar scrolls sideways on narrow screens (ten tabs and the world button), so bring the open tab into view when it
+// changes. Only then: a redraw for a badge must not yank the bar while the player is swiping it.
+let tabCentered = '';
+function tabCenter() {
+  const key = (S.world || '') + ':' + tab; if (key === tabCentered) return; tabCentered = key;
+  const t = $('tabs'), b = t && t.querySelector('button.on'); if (!b || t.scrollWidth <= t.clientWidth + 2) return;
+  const tr = t.getBoundingClientRect(), br = b.getBoundingClientRect();
+  t.scrollLeft += (br.left + br.width / 2) - (tr.left + tr.width / 2); // works the same in RTL: it moves by the visible offset
+}
 function worldSig() { return indOpen() ? S.world + (inInd() ? villageAlert() : indAlert()) : ''; }
 function unlSig() { return S.leg.gen > 1 ? 'all' : Object.entries(S.unl || {}).join(); }
 // Checked every frame. The first time a save sees this (S.unl missing), what's already earned opens quietly.
@@ -2091,6 +2100,7 @@ function renderTabs() {
   if (!list.some(t => t[0] === tab)) { tab = list[0][0]; lastSig = ''; }
   const sw = indOpen() ? `<button data-a="world" data-v="${iw ? 'village' : 'ind'}" class="world-btn"><span class="nav-emblem" aria-hidden="true">${icon(iw ? indArt('village', 'village') : indArt('factory', 'icon-auto-forge'), 40)}${(iw ? villageAlert() : indAlert()) ? '<i class="tab-dot"></i>' : ''}</span><span>${iw ? L('القرية') : L('المصنع')}</span></button>` : '';
   $('tabs').innerHTML = tabsMarkup(list, iw ? {} : badge, tab, iw ? indLocked() : locked) + sw;
+  tabCenter();
 }
 function skillBar(k) {
   return `<div class="skill"><span>${SKILL_N[k]} <b id="sk_${k}_l"></b></span><div class="bar xp"><i id="sk_${k}_b"></i></div><small id="sk_${k}_t"></small></div>`;

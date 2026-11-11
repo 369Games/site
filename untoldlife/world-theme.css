@@ -473,3 +473,14 @@ body.lite #log li.golden,body.lite #log li.egg{box-shadow:none}
 @media (max-width:480px){.ind-stock{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.ind-stock .ind-chip{padding:4px 7px;font-size:12px;gap:3px;justify-content:space-between}.ind-stock .ind-chip b{min-width:0}.ind-stock .ind-net{min-width:0;font-size:10px;margin:0}.ind-stock .ind-chip .px{width:16px;height:16px}}
 /* The generations road: the next goal stands out, and a step's conditions sit under it. */
 .rstep.next{opacity:1;border-style:solid;border-color:#e0b453;background:#e0b4531a;box-shadow:0 0 0 1px #e0b45355}.rstep .rnext{color:#e0b453;font-weight:700}.rstep .ind-conds{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;font-size:12px}.rstep .ind-conds small{opacity:.8;margin-inline-start:4px}
+/* Phones: the tab bar holds ten tabs plus the world button. Stack the picture over a small label so six fit across
+   instead of three, let long names wrap, and fade the edges so it reads as a bar that scrolls. */
+@media (max-width:600px){
+html #tabs{gap:2px;padding:5px 6px;min-height:0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent);mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
+html #tabs button{flex:0 0 auto;flex-direction:column;gap:3px;min-width:58px;max-width:70px;padding:5px 3px 6px;font-size:11px;line-height:1.2;white-space:normal;text-align:center}
+html #tabs button .nav-emblem{width:34px;height:34px}
+html #tabs button .nav-emblem .rich-icon{width:30px;height:30px}
+html #tabs .world-btn{border-inline-start:1px solid #c9a35a44;margin-inline-start:2px;padding-inline-start:5px}
+.ind-w .btn.sm{min-width:40px;min-height:38px;font-size:18px}
+.road{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.rstep{padding:8px;font-size:12px}.rstep .ind-conds{font-size:11px}
+}

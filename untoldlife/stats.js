@@ -39,7 +39,7 @@ function track(ev, value) {
   put('player', ST.id); put('event', ev); put('value', value === undefined ? '' : value);
   put('gen', typeof S !== 'undefined' && S && S.leg ? S.leg.gen : 0);
   put('minutes', Math.round(ST.active / 60)); put('lang', typeof LANG !== 'undefined' ? LANG : '');
-  put('device', typeof fbDevice === 'function' ? fbDevice() : ''); put('version', typeof fbVersion === 'function' ? fbVersion() : '');
+  put('device', typeof fbDevice === 'function' ? fbDevice() : ''); put('version', (typeof fbVersion === 'function' ? fbVersion() : '') + (siteConfig().portal ? '@' + siteConfig().portal : '')); // «1.21@itch»: which portal this copy runs on
   try { fetch(c.action, { method: 'POST', mode: 'no-cors', body: b }).catch(() => {}); } catch (e) { /* offline */ }
 }
 

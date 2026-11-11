@@ -550,6 +550,7 @@
 "مرافقة الكاهن إلى الجبل": "Escort the priest to the mountain",
 "تدمير عش الخفافيش": "Destroy the bat nest",
 "استعادة سيف الفارس": "Recover the knight's sword",
+"أحداث يومك تظهر هنا.": "Your day's events show up here.",
 "💍 الزواج": "💍 Marriage",
 "🤝 صديق العمر": "🤝 Lifelong friend",
 "🏛️ صندوق القرية ({0})": "🏛️ Village fund ({0})",

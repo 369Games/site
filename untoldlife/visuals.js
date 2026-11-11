@@ -106,7 +106,7 @@ function updateEnemyVisual(box, dungeon, hero, maxHp) {
     box.dataset.enemy=key;box._visualHTML=null;
     box.className='enemy'+(enemy.boss?' boss':'');
     // Names and stats use the same enemy state and formulas as the original view.
-    box.innerHTML=pixelHTML(L`<div class="em">${icon(enemy,enemy.boss?128:96)}</div><b>${enemy.boss?L('👑 الزعيم: '):''}${enemy.n}</b>
+    box.innerHTML=pixelHTML(L`<div class="em">${icon(enemy,enemy.boss?128:96)}</div><b>${enemy.boss?L('👑 الزعيم: '):''}${enName(enemy.n)}</b>
       <div class="kv"><span>الصحة</span><span class="enemy-hp-text"></span></div><div class="bar hp"><i class="enemy-hp-bar"></i></div>
       <div class="row" style="justify-content:center"><span class="stat">🗡️ ${fmt(enemy.atk)}</span><span class="stat">🛡️ ${fmt(enemy.def)}</span><span class="stat enemy-kills"></span></div><small class="hint enemy-retry"></small>`);
     box._enemyHP=enemy.hp;

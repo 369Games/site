@@ -636,6 +636,7 @@ function newState() {
 }
 
 let S = null;
+{ const el = document.getElementById('log'); if (el) el.dataset.empty = L('أحداث يومك تظهر هنا.'); } // the empty log's line, in the player's language (style.css reads it)
 let tab = 'farm';
 let lastSig = '';
 let offline = false;
@@ -1007,6 +1008,13 @@ function heroXp(x) {
     log(L`⚔️ ارتفع مستواك القتالي إلى ${h.lvl}!`, 'good');
   }
 }
+// An enemy saved before the language was changed keeps its old name: show it in the current language (name, then its epithet).
+function enName(n) {
+  const t = Lx(n); if (t !== n || typeof n !== 'string') return t;
+  const i = n.lastIndexOf(' '); if (i < 0) return n;
+  const a = n.slice(0, i), b = n.slice(i + 1), ta = Lx(a), tb = Lx(b);
+  return ta !== a || tb !== b ? ta + ' ' + tb : n;
+}
 function makeEnemy(f) {
   const boss = f % 10 === 0;
   let m, cyc;
@@ -1062,7 +1070,7 @@ function killEnemy() {
   const mat = Math.random() < 0.7 ? mats[mats.length - 1] : pick(mats);
   if (e.boss || Math.random() < dropCh()) give(mat.id, ((e.boss ? 3 : 1) + (Math.random() < extraCh() ? 1 : 0)) * (saddled('griffin') ? 2 : 1));
   if (e.boss && Math.random() < 0.25) give('gem');
-  if (e.boss) log(L`🏆 هزمت الزعيم ${e.e} ${e.n}!`, 'good');
+  if (e.boss) log(L`🏆 هزمت الزعيم ${e.e} ${enName(e.n)}!`, 'good');
   if (e.boss && f > (S.guild.bossTop || 0)) {
     const gp = Math.round(f / 2); S.guild.bossTop = f; S.guild.gp += gp;
     log(L`🎖️ النقابة سمعت بانتصارك على زعيم الطابق ${f}: +${gp} نقاط نقابة`, 'good');

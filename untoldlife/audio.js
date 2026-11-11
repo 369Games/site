@@ -352,11 +352,11 @@ const auSnap = () => ({
 function auIndSnap() {
   const I = S.leg && S.leg.ind; if (!I) return '';
   const H = I.hb || {};
-  return JSON.stringify([S.world, I.hired, I.ren, I.tr, I.kt, I.b, I.e, I.pt, I.u, I.sw, Object.values(I.f).map(f => f.l), Object.values(I.fu).map(u => u.n), H.l, (H.sh || []).length, H.n, H.up]);
+  return JSON.stringify([S.world, I.hired, I.ren, I.tr, I.kt, I.b, I.e, I.pt, I.u, I.sw, Object.values(I.f).map(f => f.l), Object.values(I.fu).map(u => u.n), H.l, (H.sh || []).length, H.n, H.up, I.dm]);
 }
 // The sound for a factory action that went through.
 const AU_IND = { indK: 'contract', indKSkip: 'swap', indBld: 'build', indStore: 'build', indField: 'build', indHbUpg: 'build', indHall: 'hall', indHire: 'hire',
-  indEng: 'engineer', indPt: 'patent', indHbBuy: 'patent', indRenew: 'renew', indUtil: 'service', indTrainGo: 'whistle', world: 'world', indUnlock: 'fanfare', indShip: 'sail', indShipGet: 'shipback' };
+  indEng: 'engineer', indPt: 'patent', indHbBuy: 'patent', indRenew: 'renew', indUtil: 'service', indTrainGo: 'whistle', world: 'world', indUnlock: 'fanfare', indShip: 'sail', indShipGet: 'shipback', indDmBuy: 'build', indDmUp: 'build', indDmOre: 'swap' };
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-a]');
   auBefore = b && !b.disabled && typeof S !== 'undefined' && S ? auSnap() : null;

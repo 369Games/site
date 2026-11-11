@@ -105,12 +105,12 @@ const IND_HALL_STAGES = [
 ];
 function indLocked() { const o = {}; if (!indPt('util')) o.util = 1; if (!indHbOpen()) o.port = 1; return o; }
 function indTabs() {
-  return [['fields', L('🗻 الحقول')], ['furn', L('🏭 المراجل')], ['ws', L('🔧 الورشة')], ['city', L('🏙️ المدينة')],
+  return [['fields', L('🗻 الحقول')], ['furn', L('🏭 المراجل')], ['ws', L('🔧 الورشة')], ['dmine', L('⛏️ المنجم العميق')], ['city', L('🏙️ المدينة')],
     ['util', L('🎛️ الخدمات')], ['pat', L('🔬 الاختراعات')], ['train', L('🚂 القطار')], ['port', L('⚓ الميناء')], ['settings', L('⚙️ المزيد')]];
 }
 // Tab emblems: the painted ones once art/industry is in, stand-ins until then.
 const indArt = (k, alt) => ART['ind-tab-' + k] ? 'ind-tab-' + k : alt;
-Object.assign(NAV_ART, { fields: indArt('fields', 'rock'), furn: indArt('furn', 'anvil'), ws: indArt('ws', 'icon-auto-forge'), city: indArt('city', 'icon-map'), train: indArt('train', 'ind-rails-4'), port: indArt('port', 'ind-boat-4'), util: indArt('util', 'icon-sunny'), pat: indArt('pat', 'legacy-tree') });
+Object.assign(NAV_ART, { fields: indArt('fields', 'rock'), furn: indArt('furn', 'anvil'), ws: indArt('ws', 'icon-auto-forge'), city: indArt('city', 'icon-map'), train: indArt('train', 'ind-rails-4'), dmine: indArt('dmine', 'pick'), port: indArt('port', 'ind-boat-4'), util: indArt('util', 'icon-sunny'), pat: indArt('pat', 'legacy-tree') });
 
 /* Factory renewal and patents (1.12). With the town hall at level 10 (the palace) the factory can be renewed: it starts over
    (fields, workers, furnaces and benches, warehouse, town hall, materials, contracts, and the engineer unless kept) and
@@ -172,6 +172,18 @@ const IND_HB_UP = [
   { id: 'tools', e: '⚙️', max: 10, c: 12, n: L('أدوات مستوردة'), d: L('+3% سرعة للحقول والمراجل والورشة لكل مستوى') },
   { id: 'spice', e: '💰', max: 10, c: 12, n: L('توابل للسوق'), d: L('+2% ذهب في القرية من كل المصادر لكل مستوى') },
 ];
+/* The deep mine (1.20): up to three drilling machines, each set to one ore: coal for the factory, or copper, iron or
+   silver, which go straight into the village stock the furnaces draw on. Slow and steady on purpose (1 ore a second per
+   level, not the village mine's flood). The first machine costs 100 machines, the second 500, and the third wants steam
+   engines, so it waits for the quarries. Reset by a factory renewal, like furnaces. S.leg.ind.dm = [{ o: ore, l: level, p }]. */
+const IND_DM = [
+  { g: 1e11, mats: [['machine', 100]] }, { g: 5e11, mats: [['machine', 500]] }, { g: 2e12, mats: [['engine', 50]] },
+];
+const IND_DM_ORES = ['coal', 'copper', 'iron', 'silver'];
+function indDm() { const I = ind(); return I.dm || (I.dm = []); }
+function indDmRate(m) { return m.l * indTrainB() * indHbB(); }
+function indDmUpCost(l) { return { gold: Math.round(1e11 * Math.pow(2, l)), mats: [['machine', 50 * l], ['gear', 500 * l]] }; } // l = current level (1..9)
+function indDmFull(m) { return m.o === 'coal' && indFull('coal'); }
 function indHbOpen() { return indTrain() >= 2; } // the grand station (train stage 2) brings the harbour with it
 function indHbOf() { return (S.leg.ind || {}).hb || null; } // read-only: null until the harbour is built
 function indHb() { const I = ind(); return I.hb || (I.hb = { l: 0, sh: [], fg: 0, up: {}, n: 0 }); }
@@ -326,6 +338,12 @@ function tickInd(dt) {
     if (k <= 0) { u.stall = 'in'; u.p = Math.min(u.p, 1); u.sz = (u.sz || 0) + dt; continue; }
     for (const [id, q] of Object.entries(r.in)) { const need = q * k * hf - (cr[id] || 0), t = Math.max(0, Math.ceil(need - 1e-9)); indTake(id, t); cr[id] = t - need; }
     I.r[r.id] = (I.r[r.id] || 0) + k * out; u.p -= k; u.sz = 0;
+  }
+  for (const m of I.dm || []) {
+    if (m.o === 'coal' && (I.r.coal || 0) >= cap) { m.p = 0; continue; }
+    m.p = (m.p || 0) + indDmRate(m) * dt; let k = Math.floor(m.p); if (!k) continue;
+    m.p -= k;
+    if (m.o === 'coal') I.r.coal = Math.min(cap, (I.r.coal || 0) + k); else give(m.o, k);
   }
   indKFill();
   if (I.autoW && !offline) { IND_AW += dt; if (IND_AW >= 30) { IND_AW = 0; indSmartW(); } } // auto split: every 30 seconds
@@ -488,7 +506,7 @@ const IND_ACTIONS = {
     const I = ind(), gain = indRenewGain();
     I.pat = (I.pat || 0) + gain; I.ren = (I.ren || 0) + 1;
     const keep = { rails: I.b.rails || 0, boat: I.b.boat || 0 }, fresh = newInd();
-    Object.assign(I, { hired: 0, f: fresh.f, r: {}, fu: {}, k: [], kd: 0, sw: [] });
+    Object.assign(I, { hired: 0, f: fresh.f, r: {}, fu: {}, k: [], kd: 0, sw: [], dm: [] });
     I.b = { ...keep, store: indPt('store'), hall: indPt('hall') };
     if (!indPt('eng')) I.e = {};
     log(L`🔬 جدّدت المصنع! أخذت ${gain} براءة اختراع. المصنع رجع من الصفر، والقرية محتفظة بخصوماتها`, 'golden', 'ind');
@@ -502,6 +520,18 @@ const IND_ACTIONS = {
     if (indTrainDone()) { I.trAt = Date.now(); log(L('🎉 القطار الأول طلع من المحطة! ختمت UntoldLife. المصنع صار أسرع 20% والذهب +10% للأبد.'), 'golden', 'ind'); checkAch(); indEnding(); }
   },
   indEndingShow: () => indEnding(),
+  // The deep mine: buy the next machine, upgrade one, or point one at another ore.
+  indDmBuy: () => {
+    const D = indDm(), x = IND_DM[D.length]; if (!x || !indCanPay(x.g, x.mats)) return;
+    indPay(x.g, x.mats); D.push({ o: 'coal', l: 1, p: 0 });
+    log(L`⛏️ ركّبت حفّارة رقم ${D.length} في المنجم العميق`, 'golden', 'ind');
+  },
+  indDmUp: v => {
+    const m = indDm()[+v]; if (!m || m.l >= IND_MAXLV || m.l >= indHall()) return;
+    const c = indDmUpCost(m.l); if (!indCanPay(c.gold, c.mats)) return;
+    indPay(c.gold, c.mats); m.l++;
+  },
+  indDmOre: v => { const [i, o] = v.split(':'), m = indDm()[+i]; if (m && IND_DM_ORES.includes(o)) { m.o = o; m.p = 0; } },
   // The harbour: build or upgrade it, send a ship on a route, collect a ship that is back, buy an upgrade with foreign goods.
   indHbUpg: () => {
     if (!indHbOpen()) return; const H = indHb(), l = H.l; if (l >= IND_HB_MAX) return;
@@ -688,7 +718,7 @@ function viewPat() {
   h += `<div class="card ind-card ind-renew ${ok ? 'lgcard g' : ''}"><div class="top"><span class="big">${indHallIc(64, 10)}</span><div class="meta"><b>${L('جدّد المصنع')}</b><small>${L`تجديدات: ${I.ren || 0}`}</small></div></div>
     <div class="kv"><span>${L('البراءات اللي بتاخذها الحين')}</span><span class="good">+${indRenewGain()} 🎫</span></div>
     <small>${L`10 أساس + نص مجموع مستويات مبنى البلدة والمخزن والحقول (${indRenewLv()}) + براءة لكل 20 عقد (${I.kd || 0})`}</small>
-    <p class="hint">${L('ينعاد: الحقول والعمال والأفران والطاولات والمخزن ومبنى البلدة والمواد والعقود، والمهندس (إلا لو عندك دفتر المهندس). يبقى: سكة الحديد والقارب والخدمات والاختراعات.')}</p>
+    <p class="hint">${L('ينعاد: الحقول والعمال والأفران والطاولات وحفّارات المنجم العميق والمخزن ومبنى البلدة والمواد والعقود، والمهندس (إلا لو عندك دفتر المهندس). يبقى: سكة الحديد والقارب والخدمات والاختراعات.')}</p>
     ${ok ? `<div class="row"><button class="btn ${armed ? 'red' : 'gold'}" data-a="indRenew">${armed ? L('⚠️ متأكد؟ اضغط مرة ثانية') : L('🔬 جدّد المصنع')}</button></div>` : `<p class="bad">${L`🏤 يحتاج مبنى البلدة مستوى ${IND_RENEW_HALL} (عندك ${indHall()})`}</p>`}</div>`;
   h += '</div>' + L`<div class="panel"><div class="ph"><h2>🗾 خريطة الاختراعات</h2></div><div class="pt-tree"><i class="pt-bar" aria-hidden="true"></i>`;
   for (const x of IND_PT) {
@@ -750,6 +780,32 @@ function viewTrain() {
         <div class="row"><button class="btn gold" data-a="indTrainGo" ${indTrainCan(i) ? '' : 'disabled'}>${L('🏗️ ابنِ المرحلة')}</button></div>`;
     }
     h += '</div>';
+  });
+  return h + '</div></div>';
+}
+// The deep mine page: three machine slots, each with its ore picker and its upgrade.
+function viewDmine() {
+  const D = indDm(), tot = {};
+  D.forEach(m => { tot[m.o] = (tot[m.o] || 0) + indDmRate(m); });
+  let h = L`<div class="panel"><div class="ph"><h2>⛏️ المنجم العميق</h2><span class="stat">${L`${D.length} من ${IND_DM.length} حفّارات`}</span></div>
+    <p class="hint">حفّارات تشتغل لحالها وتطلّع خام واحد تختاره: فحم يروح لمخزن المصنع، أو نحاس أو حديد أو فضة تروح لمخزون القرية اللي تسحب منه الأفران. إنتاجها ثابت وهادي: خام واحد بالثانية لكل مستوى. الحفّارات تنعاد مع تجديد المصنع.</p>`;
+  h += indStock(['coal', ...IND_ORES]) + '<div class="grid ind-grid">';
+  IND_DM.forEach((x, i) => {
+    const m = D[i];
+    if (m) {
+      const c = m.l < IND_MAXLV ? indDmUpCost(m.l) : null;
+      h += `<div class="card ind-card lgcard g"><div class="top"><span class="big">${indIc(m.o, 48)}</span><div class="meta"><b>${L`حفّارة ${i + 1}`}</b><small>${L`المستوى ${m.l} من ${IND_MAXLV}`}</small></div></div>
+        <div class="kv"><span>${L('تحفر')}</span><span>${indName(m.o)}</span></div>
+        <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(indDmRate(m))} بالثانية`}</span></div>
+        <div class="row ind-w">${IND_DM_ORES.map(o => `<button class="btn ${m.o === o ? 'gold' : 'ghost'} sm" data-a="indDmOre" data-v="${i}:${o}" title="${indName(o)}">${indIc(o, 22)}</button>`).join('')}</div>
+        ${indDmFull(m) ? `<p class="bad">${L('📦 مخزن الفحم مليان، الحفّارة واقفة')}</p>` : ''}
+        ${c ? `<small>${L('⬆️ التطوير: +1 خام بالثانية')}</small>${indReqs(c.gold, c.mats)}${indTooBig(c.mats)}${indHallGate(m.l + 1)}<div class="row"><button class="btn gold" data-a="indDmUp" data-v="${i}" ${indCanPay(c.gold, c.mats) && m.l < indHall() ? '' : 'disabled'}>${L('⬆️ طوّر')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
+    } else if (i === D.length) {
+      h += `<div class="card ind-card"><div class="top"><span class="big"><span class="ind-e big">⛏️</span></span><div class="meta"><b>${L`حفّارة ${i + 1}`}</b><small>${L('ما انشرت بعد')}</small></div></div>
+        ${indReqs(x.g, x.mats)}${indTooBig(x.mats)}<div class="row"><button class="btn gold" data-a="indDmBuy" ${indCanPay(x.g, x.mats) ? '' : 'disabled'}>${L('🏗️ ركّب الحفّارة')}</button></div></div>`;
+    } else {
+      h += `<div class="card ind-card pt-lock"><div class="top"><span class="big"><span class="ind-e big">⛏️</span></span><div class="meta"><b>${L`حفّارة ${i + 1}`}</b><small>${L('🔒 ركّب الحفّارة اللي قبلها أول')}</small></div></div>${indReqs(x.g, x.mats)}</div>`;
+    }
   });
   return h + '</div></div>';
 }
@@ -822,6 +878,10 @@ const IND_VIEWS = {
   furn: [viewFurn, updInd, indSig],
   city: [viewCity, updInd, () => { const I = ind(); return [indSig(), I.kd, (I.k || []).map(k => k.need ? [k.need, indKCan(k)] : 0), indSwaps()]; }],
   train: [viewTrain, updInd, () => { const I = ind(); return [I.tr, I.pat, indHall(), indLv('rails'), indTrain() < IND_TRAIN.length && indTrainCan(indTrain())]; }],
+  dmine: [viewDmine, updInd, () => {
+    const D = indDm(), nx = IND_DM[D.length];
+    return [D.map(m => [m.o, m.l, indDmFull(m), m.l < IND_MAXLV && indCanPay(indDmUpCost(m.l).gold, indDmUpCost(m.l).mats)]), indHall(), !!nx && indCanPay(nx.g, nx.mats)];
+  }],
   port: [viewPort, updInd, () => {
     const I = ind(), H = I.hb || { sh: [] }, now = Date.now(), l = H.l || 0;
     return [indHbOpen(), l, H.fg, H.up, indQOpen(), H.sh.map(x => [x.r, x.at <= now]), indEng('deal'), l < IND_HB_MAX && indCanPay(indHbCost(l).gold, indHbCost(l).mats), l ? IND_HB_ROUTES.map(r => indCanPay(0, indHbCargo(r))) : 0];
@@ -847,6 +907,7 @@ function indBuffsHtml() {
   else h += info(L('🚂 القطار الأول'), [row(L('المراحل المكتملة'), `${indTrain()} / ${IND_TRAIN.length}`)]);
   if (indHbLv()) h += g(L('⚓ الميناء'), [[L('⚙️ أدوات مستوردة (سرعة المصنع)'), indHbB()], [L('📜 تجار من ورا البحر (ذهب العقود)'), 1 + 0.05 * indHbUp('deal')], [L('💰 توابل للسوق (ذهب القرية)'), 1 + 0.02 * indHbUp('spice')]],
     [row(L`مستوى ${indHbLv()}`, L`${indHbShips()} سفينة`), row(L('🧳 بضاعة أجنبية'), fmt(indHbOf().fg || 0)), row(L('🚢 رحلات خلصت'), fmt(indHbOf().n || 0))]);
+  if ((I.dm || []).length) h += info(L('⛏️ المنجم العميق'), I.dm.map((m, i) => row(`${L`حفّارة ${i + 1}`} (${L`مستوى ${m.l}`})`, `${indName(m.o)}: ${L`${indNum(indDmRate(m))} بالثانية`}`)));
   h += info(L('🔬 الاختراعات'), [row(L('🎫 براءات عندك'), indPats()), row(L('🔁 تجديدات'), I.ren || 0), row(L('🎫 لو جدّدت الحين'), '+' + indRenewGain())]);
   h += info(L('🏤 مبنى البلدة'), [row(IND_HALL_STAGES[indHallStage()].n, L`مستوى ${indHall()}`), row(L('أعلى مستوى للمباني والحقول'), indHall()), row(L('أفران وطاولات من كل نوع'), indFurnMax())]);
   h += g(L('🗻 إنتاج الحقول'), [[L('⛏️ حقول أغزر (المهندس)'), 1 + 0.15 * indEng('field')]],

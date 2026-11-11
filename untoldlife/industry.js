@@ -118,15 +118,24 @@ Object.assign(NAV_ART, { fields: indArt('fields', 'rock'), furn: indArt('furn', 
    the first one opens the public services, which pay gold straight into your purse (no market). */
 const IND_RENEW_HALL = 10;
 // A skill tree: r/col place each invention, and it opens once the one above (need) reaches level nl.
+/* Three columns, each read top to bottom: the engineer and the deep mine (1), services and furnaces (2), storage and
+   trade (3). Listed parent before child, so one pass can buy the whole map. a: a stand-in picture until ind-pt-<id> is painted. */
 const IND_PT = [
   { id: 'util', r: 1, col: 2, e: '🎛️', max: 1, c: [10], n: L('الخدمات العامة'), d: L('يفتح تبويب الخدمات: الكهرباء والمياه والضرايب، وكلها تجيب ذهب مباشرة') },
   { id: 'hall', r: 2, col: 1, need: 'util', nl: 1, e: '🏤', max: 3, c: [8, 8, 8], n: L('أساس متين'), d: L('بعد كل تجديد يبدأ مبنى البلدة من مستوى أعلى (+1 لكل مستوى)') },
+  { id: 'grid', r: 2, col: 2, need: 'util', nl: 1, e: '🔌', max: 5, c: [10, 10, 10, 10, 10], n: L('شبكة أقوى'), d: L('+20% ذهب من الخدمات لكل مستوى') },
   { id: 'store', r: 2, col: 3, need: 'util', nl: 1, e: '📦', max: 3, c: [8, 8, 8], n: L('مخزن جاهز'), d: L('بعد كل تجديد يبدأ المخزن من مستوى أعلى (+1 لكل مستوى)') },
-  { id: 'eng', r: 4, col: 1, need: 'fast', nl: 1, e: '👷', max: 1, c: [20], n: L('دفتر المهندس'), d: L('تطويرات المهندس تبقى معك بعد التجديد') },
-  { id: 'slot4', r: 3, col: 3, need: 'store', nl: 1, e: '📜', max: 1, c: [15], n: L('تاجر رابع'), d: L('خانة عقد رابعة في المدينة') },
   { id: 'fast', r: 3, col: 1, need: 'hall', nl: 1, e: '⚙️', max: 5, c: [6, 6, 6, 6, 6], n: L('آلات محسّنة'), d: L('+10% سرعة لكل المراجل وطاولات الورشة لكل مستوى') },
   { id: 'thrift', r: 3, col: 2, need: 'grid', nl: 5, e: '♻️', max: 1, c: [40], n: L('مصانع موفّرة'), d: L('كل الأفران وطاولات الورشة تعطي نفس الإنتاج بنص المواد') },
-  { id: 'grid', r: 2, col: 2, need: 'util', nl: 1, e: '🔌', max: 5, c: [10, 10, 10, 10, 10], n: L('شبكة أقوى'), d: L('+20% ذهب من الخدمات لكل مستوى') },
+  { id: 'slot4', r: 3, col: 3, need: 'store', nl: 1, e: '📜', max: 1, c: [15], n: L('تاجر رابع'), d: L('خانة عقد رابعة في المدينة') },
+  { id: 'eng', r: 4, col: 1, need: 'fast', nl: 1, e: '👷', max: 1, c: [20], n: L('دفتر المهندس'), d: L('تطويرات المهندس تبقى معك بعد التجديد') },
+  { id: 'coal', r: 4, col: 2, need: 'thrift', nl: 1, e: '⚫', a: 'ind-coal', max: 1, c: [50], n: L('فحم نظيف'), d: L('أفران الفحم تعطي 3 فحم بدل 2 لنفس الخشب') },
+  { id: 'big', r: 4, col: 3, need: 'slot4', nl: 1, e: '📦', a: 'ind-store-4', max: 2, c: [25, 25], n: L('مخزن عملاق'), d: L('المخزن يتطور مستوى زيادة فوق العاشر لكل مستوى، وكل مستوى يضاعف السعة') },
+  { id: 'dmkeep', r: 5, col: 1, need: 'eng', nl: 1, e: '⛏️', a: 'ind-drill-1', max: 1, c: [30], n: L('حفّارات ثابتة'), d: L('حفّارات المنجم العميق تبقى معك بعد التجديد') },
+  { id: 'furn', r: 5, col: 2, need: 'coal', nl: 1, e: '🏭', a: 'ind-tab-furn', max: 3, c: [15, 15, 15], n: L('أفران باقية'), d: L('بعد كل تجديد تبدأ بـ3 من كل فرن وطاولة كانت عندك (+3 لكل مستوى)') },
+  { id: 'ship', r: 5, col: 3, need: 'big', nl: 1, e: '🚢', a: 'ind-boat-4', max: 1, c: [35], n: L('سفينة خامسة'), d: L('سفينة زيادة في الميناء') },
+  { id: 'dm4', r: 6, col: 1, need: 'dmkeep', nl: 1, e: '⛏️', a: 'ind-drill-3', max: 1, c: [40], n: L('حفّارة رابعة'), d: L('خانة رابعة في المنجم العميق') },
+  { id: 'crew', r: 6, col: 3, need: 'ship', nl: 1, e: '👷', a: 'ind-housing', max: 3, c: [10, 10, 10], n: L('عمال جاهزين'), d: L('بعد كل تجديد تبدأ بـ10 عمال موزعين على الحقول (+10 لكل مستوى)') },
 ];
 /* Public services: built with village gold and factory goods, kept forever (they don't reset with a renewal).
    Gold per second = base × the village gold multiplier, so they keep pace with the generations like the barn does.
@@ -139,6 +148,7 @@ const IND_UTIL = [
   { id: 'tax', e: '🧾', n: L('مكتب الضرايب'), d: L('يكبر مع عدد عمال المنجم والصيادين في القرية'), first: L('🧾 أهل القرية صاروا يدفعون ضرايب، والخزنة تمتلي'),
     g: 1e10, mats: l => [['block', 5000 * (l + 1)], ['plank', 2000 * (l + 1)]] },
 ];
+function indOut(r) { return (r.out || 1) + (r.id === 'coal' && indPt('coal') ? 1 : 0); } // «clean coal»: 3 coal a batch
 function indInMult() { return indPt('thrift') ? 0.5 : 1; }
 /* The First Train (1.16): the game's finale. Five stages, each a huge order of gold and factory goods; progress is kept
    through factory renewals (S.leg.ind.tr), so it's the long goal that spans them. Finishing it shows the ending, gives
@@ -178,13 +188,15 @@ const IND_HB_UP = [
    engines, so it waits for the quarries. Reset by a factory renewal, like furnaces. S.leg.ind.dm = [{ o: ore, l: level, p }]. */
 const IND_DM = [
   { g: 1e11, mats: [['machine', 100]] }, { g: 5e11, mats: [['machine', 500]] }, { g: 2e12, mats: [['engine', 50]] },
+  { g: 1e13, mats: [['engine', 200]] }, // the fourth slot comes from the «fourth drill» invention
 ];
+function indDmSlots() { return 3 + indPt('dm4'); }
 const IND_DM_ORES = ['coal', 'copper', 'iron', 'silver'];
 function indDm() { const I = ind(); return I.dm || (I.dm = []); }
 // 2 ores a second at level 1, climbing evenly to 30 at level 10 (2, 5, 8, 11, 14, 18, 21, 24, 27, 30).
 function indDmBase(l) { return Math.round(2 + (l - 1) * 28 / 9); }
 function indDmRate(m) { return indDmBase(m.l) * indTrainB() * indHbB(); }
-function indDmIc(i, n) { return ART['ind-drill-' + (i + 1)] ? icon('ind-drill-' + (i + 1), n) : '<span class="ind-e big">⛏️</span>'; }
+function indDmIc(i, n) { i = Math.min(i, 2); return ART['ind-drill-' + (i + 1)] ? icon('ind-drill-' + (i + 1), n) : '<span class="ind-e big">⛏️</span>'; }
 function indDmUpCost(l) { return { gold: Math.round(1e11 * Math.pow(2, l)), mats: [['machine', 50 * l], ['gear', 500 * l]] }; } // l = current level (1..9)
 function indDmFull(m) { return m.o === 'coal' && indFull('coal'); }
 function indHbOpen() { return indTrain() >= 2; } // the grand station (train stage 2) brings the harbour with it
@@ -193,7 +205,7 @@ function indHb() { const I = ind(); return I.hb || (I.hb = { l: 0, sh: [], fg: 0
 function indHbLv() { const h = indHbOf(); return h ? h.l || 0 : 0; }
 function indHbUp(id) { const h = indHbOf(); return h && h.up ? h.up[id] || 0 : 0; }
 function indHbShipsAt(l) { return l ? 1 + Math.floor((l - 1) / 3) : 0; }
-function indHbShips() { return indHbShipsAt(indHbLv()); }
+function indHbShips() { const l = indHbLv(); return indHbShipsAt(l) + (l ? indPt('ship') : 0); }
 function indHbFree() { const h = indHbOf(); return indHbShips() - (h ? h.sh.length : 0); }
 function indHbBack() { const h = indHbOf(), now = Date.now(); return !!h && h.sh.some(x => x.at <= now); }
 function indHbCost(l) { return { gold: Math.round(1e13 * Math.pow(1.8, l)), mats: [['plank', 50000 * (l + 1)], ['fe', 30000 * (l + 1)], ['machine', 500 * (l + 1)]] }; }
@@ -259,6 +271,8 @@ function indSig2(n) { const p = Math.pow(10, Math.max(0, Math.floor(Math.log10(n
 function indStoreCost(l) { const q = indSig2(1000 * Math.pow(2, l) * 15 / 16); return { gold: Math.round(2e8 * Math.pow(3, l)), mats: [['wood', q], ['stone', q]] }; }
 function indBldCost(l) { return { gold: Math.round(5e8 * Math.pow(2, l)), mats: IND_BLD_MATS[l] }; } // l = current level (0..9)
 function indHall() { return ind().b.hall || 0; }
+function indStoreMax() { return IND_MAXLV + indPt('big'); }
+function indStoreGate() { return indHall() + (indHall() >= IND_MAXLV ? indPt('big') : 0); } // the highest warehouse level the town hall allows
 // Half of the original price at every level (1.13.6): gold 500M × 3^L and half the materials.
 function indHallCost(l) { return { gold: Math.round(5e8 * Math.pow(3, l)), mats: IND_HALL_MATS[l].map(([id, q]) => [id, Math.round(q / 2)]) }; }
 function indHallStage(l = indHall()) { let i = 0; IND_HALL_STAGES.forEach((x, k) => { if (l >= x.from) i = k; }); return i; }
@@ -336,7 +350,7 @@ function tickInd(dt) {
     // With the thrift patent every input costs half; the leftover half-units carry over (u.c), so stocks stay whole numbers.
     const hf = indInMult(), cr = u.c || (u.c = {});
     for (const [id, q] of Object.entries(r.in)) k = Math.min(k, Math.floor((indHave(id) + (cr[id] || 0)) / (q * hf)));
-    const out = r.out || 1;
+    const out = indOut(r);
     k = Math.min(k, Math.floor((cap - (I.r[r.id] || 0)) / out));
     if (k <= 0) { u.stall = 'in'; u.p = Math.min(u.p, 1); u.sz = (u.sz || 0) + dt; continue; }
     for (const [id, q] of Object.entries(r.in)) { const need = q * k * hf - (cr[id] || 0), t = Math.max(0, Math.ceil(need - 1e-9)); indTake(id, t); cr[id] = t - need; }
@@ -460,7 +474,7 @@ const IND_ACTIONS = {
     log(L`${b.e} ${b.n} صارت مستوى ${B[v]}: ${b.who} في القرية أرخص ${Math.round(indDisc(v) * 100)}%`, 'golden', 'ind');
   },
   indStore: () => {
-    const B = ind().b, l = B.store || 0; if (l >= IND_MAXLV || l >= indHall()) return;
+    const B = ind().b, l = B.store || 0; if (l >= indStoreMax() || l >= indStoreGate()) return;
     const c = indStoreCost(l); if (!indCanPay(c.gold, c.mats)) return; indPay(c.gold, c.mats); B.store = l + 1; indStageLog(L('المخزن'), B.store);
   },
   indHall: () => {
@@ -509,7 +523,10 @@ const IND_ACTIONS = {
     const I = ind(), gain = indRenewGain();
     I.pat = (I.pat || 0) + gain; I.ren = (I.ren || 0) + 1;
     const keep = { rails: I.b.rails || 0, boat: I.b.boat || 0 }, fresh = newInd();
-    Object.assign(I, { hired: 0, f: fresh.f, r: {}, fu: {}, k: [], kd: 0, sw: [], dm: [] });
+    const oldFu = I.fu || {}, nf = 3 * indPt('furn');
+    Object.assign(I, { hired: 10 * indPt('crew'), f: fresh.f, r: {}, fu: {}, k: [], kd: 0, sw: [], dm: indPt('dmkeep') ? I.dm || [] : [] });
+    if (nf) for (const id in oldFu) { const n = Math.min(oldFu[id].n || 0, nf); if (n) I.fu[id] = { n, on: 1, p: 0 }; } // «furnaces that stay»
+    if (I.hired) IND_ACTIONS.indEven(); // «ready workers» start spread over the fields
     I.b = { ...keep, store: indPt('store'), hall: indPt('hall') };
     if (!indPt('eng')) I.e = {};
     log(L`🔬 جدّدت المصنع! أخذت ${gain} براءة اختراع. المصنع رجع من الصفر، والقرية محتفظة بخصوماتها`, 'golden', 'ind');
@@ -525,7 +542,7 @@ const IND_ACTIONS = {
   indEndingShow: () => indEnding(),
   // The deep mine: buy the next machine, upgrade one, or point one at another ore.
   indDmBuy: () => {
-    const D = indDm(), x = IND_DM[D.length]; if (!x || !indCanPay(x.g, x.mats)) return;
+    const D = indDm(), x = D.length < indDmSlots() ? IND_DM[D.length] : null; if (!x || !indCanPay(x.g, x.mats)) return;
     indPay(x.g, x.mats); D.push({ o: 'coal', l: 1, p: 0 });
     log(L`⛏️ ركّبت حفّارة رقم ${D.length} في المنجم العميق`, 'golden', 'ind');
   },
@@ -646,12 +663,12 @@ function indMakerCard(r, bench) {
   const st = u.n ? indStLine('m:' + r.id, indMakerSt(r)) : '';
   if (r.q && !indQOpen()) return `<div class="card ind-card pt-lock"><div class="top"><span class="big">${indIc(r.id, 48)}</span><div class="meta"><b>${indName(r.id)}</b><small>${bench ? L`${u.n} طاولة` : L`${u.n} فرن`}</small></div></div>
     <div class="kv ind-recipe"><span>${L('يحتاج')}</span><span>${ins}</span></div>
-    <div class="kv ind-recipe"><span>${L('يعطي')}</span><span class="ind-q">${r.out || 1} ${indIc(r.id, 22)}</span></div>
+    <div class="kv ind-recipe"><span>${L('يعطي')}</span><span class="ind-q">${indOut(r)} ${indIc(r.id, 22)}</span></div>
     <p class="bad">${L('🔒 ينفتح مع المحطة الكبرى، المرحلة الثانية من القطار الأول')}</p></div>`;
   return `<div class="card ind-card"><div class="top"><span class="big">${indIc(r.id, 48)}</span><div class="meta"><b>${indName(r.id)}</b><small>${bench ? L`${u.n} طاولة` : L`${u.n} فرن`}</small></div></div>
     <div class="kv ind-recipe"><span>${L('يحتاج')}</span><span>${ins}</span></div>
-    <div class="kv ind-recipe"><span>${L('يعطي')}</span><span class="ind-q">${r.out || 1} ${indIc(r.id, 22)}</span></div>
-    <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(indActive(r) * indSpeed(r) * (r.out || 1) / r.t)} بالثانية`}</span></div>
+    <div class="kv ind-recipe"><span>${L('يعطي')}</span><span class="ind-q">${indOut(r)} ${indIc(r.id, 22)}</span></div>
+    <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(indActive(r) * indSpeed(r) * indOut(r) / r.t)} بالثانية`}</span></div>
     <div class="kv"><span>${L('عندك')}</span><span><b data-ir="${r.id}">${fmt(Math.floor(ind().r[r.id] || 0))}</b></span></div>${u.n ? `<small class="ind-fill">⏳ ${(x => `<span class="${x.c}" data-fill="${r.id}">${x.t}</span>`)(indFillSt(r.id))}</small>` : ''}${st}
     ${u.n >= indFurnMax() && u.n < IND_FMAX ? `<p class="hint">${L`🏤 الحد ${indFurnMax()}: طوّر مبنى البلدة عشان تزيد`}</p>` : ''}
     <div class="row">${costBtn('indFurn', r.id, c, bench ? L`➕ طاولة (${fmt(c)}💰)` : L`➕ فرن (${fmt(c)}💰)`, 'gold', u.n >= indFurnMax())}${u.n ? `<button class="btn ghost sm" data-a="indFurnOn" data-v="${r.id}">${u.on ? L('⏸️ وقّف') : L('▶️ شغّل')}</button>` : ''}</div>${u.n ? `<div class="row ind-w"><button class="btn ghost sm" data-a="indAct" data-v="${r.id}:-1" ${indChosen(u) ? '' : 'disabled'}>−</button><b>${u.on ? L`⚒️ ${indChosen(u)} من ${u.n} شغّال` : L`⏸️ ${indChosen(u)} من ${u.n} (موقف)`}</b><button class="btn ghost sm" data-a="indAct" data-v="${r.id}:1" ${indChosen(u) < u.n ? '' : 'disabled'}>+</button></div>` : ''}</div>`;
@@ -707,15 +724,16 @@ function viewCity() {
       <div class="kv"><span>${L`${b.who} في القرية`}</span><span class="good">${L`خصم ${Math.round(indDisc(b.id) * 100)}% • ×${indGrowth(b.id).toFixed(3)}`}</span></div>
       ${c ? `<small>${L`⬆️ المستوى ${l + 1}: خصم ${Math.round(0.09 * (l + 1) * 100)}% • ×${(1.45 - 0.033 * (l + 1)).toFixed(3)}`}</small>${indReqs(c.gold, c.mats)}${indTooBig(c.mats)}${indHallGate(l + 1)}<div class="row"><button class="btn gold" data-a="indBld" data-v="${b.id}" ${indCanPay(c.gold, c.mats) && l < indHall() ? '' : 'disabled'}>${L('🏗️ ابنِ')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
   }
-  const sl = B.store || 0, sc = sl < IND_MAXLV ? indStoreCost(sl) : null;
-  h += `<div class="card ind-card"><div class="top"><span class="big">${indLvIc('store', sl, 48, '<span class="ind-e big">📦</span>')}</span><div class="meta"><b>${L('المخزن')}</b><small>${L`المستوى ${sl} من ${IND_MAXLV}`}</small></div></div>
+  const sl = B.store || 0, sc = sl < indStoreMax() ? indStoreCost(sl) : null;
+  h += `<div class="card ind-card"><div class="top"><span class="big">${indLvIc('store', sl, 48, '<span class="ind-e big">📦</span>')}</span><div class="meta"><b>${L('المخزن')}</b><small>${L`المستوى ${sl} من ${indStoreMax()}`}</small></div></div>
     <div class="kv"><span>${L('السعة لكل مادة')}</span><span>${fmt(indCap())}</span></div>
-    ${sc ? `<small>${L('⬆️ التطوير يضاعف السعة')}</small>${indReqs(sc.gold, sc.mats)}${indHallGate(sl + 1)}<div class="row"><button class="btn gold" data-a="indStore" ${indCanPay(sc.gold, sc.mats) && sl < indHall() ? '' : 'disabled'}>${L('🏗️ وسّع')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
+    ${sc ? `<small>${L('⬆️ التطوير يضاعف السعة')}</small>${indReqs(sc.gold, sc.mats)}${sl < IND_MAXLV ? indHallGate(sl + 1) : ''}<div class="row"><button class="btn gold" data-a="indStore" ${indCanPay(sc.gold, sc.mats) && sl < indStoreGate() ? '' : 'disabled'}>${L('🏗️ وسّع')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
   return h + '</div></div>' + indContracts();
 }
 // Inventions: the renewal card and the patent tree.
 function viewPat() {
   const I = ind(), ok = indHall() >= IND_RENEW_HALL, armed = indRenewArm && Date.now() < indRenewArm;
+  const ptTotal = IND_PT.reduce((t, x) => t + x.c.reduce((u, v) => u + v, 0), 0), ptSpent = IND_PT.reduce((t, x) => t + x.c.slice(0, indPt(x.id)).reduce((u, v) => u + v, 0), 0), ptLeft = ptTotal - ptSpent;
   let h = L`<div class="panel"><div class="ph"><h2>🔬 الاختراعات</h2><span class="stat">🎫 ${indPats()} براءة</span></div>
     <p class="hint">لما يصير مبنى البلدة قصر (المستوى ${IND_RENEW_HALL})، تقدر تجدّد المصنع: يرجع من الصفر وتاخذ براءات اختراع حسب وين وصلت. البراءات تشتري فيها اختراعات تبقى معك للأبد. سكة الحديد والقارب ما ينعادون، فخصومات القرية باقية.</p>`;
   h += `<div class="card ind-card ind-renew ${ok ? 'lgcard g' : ''}"><div class="top"><span class="big">${indHallIc(64, 10)}</span><div class="meta"><b>${L('جدّد المصنع')}</b><small>${L`تجديدات: ${I.ren || 0}`}</small></div></div>
@@ -723,13 +741,15 @@ function viewPat() {
     <small>${L`10 أساس + نص مجموع مستويات مبنى البلدة والمخزن والحقول (${indRenewLv()}) + براءة لكل 20 عقد (${I.kd || 0})`}</small>
     <p class="hint">${L('ينعاد: الحقول والعمال والأفران والطاولات وحفّارات المنجم العميق والمخزن ومبنى البلدة والمواد والعقود، والمهندس (إلا لو عندك دفتر المهندس). يبقى: سكة الحديد والقارب والخدمات والاختراعات.')}</p>
     ${ok ? `<div class="row"><button class="btn ${armed ? 'red' : 'gold'}" data-a="indRenew">${armed ? L('⚠️ متأكد؟ اضغط مرة ثانية') : L('🔬 جدّد المصنع')}</button></div>` : `<p class="bad">${L`🏤 يحتاج مبنى البلدة مستوى ${IND_RENEW_HALL} (عندك ${indHall()})`}</p>`}</div>`;
-  h += '</div>' + L`<div class="panel"><div class="ph"><h2>🗾 خريطة الاختراعات</h2></div><div class="pt-tree"><i class="pt-bar" aria-hidden="true"></i>`;
+  h += '</div>' + L`<div class="panel"><div class="ph"><h2>🗾 خريطة الاختراعات</h2><span class="stat">🎫 ${ptSpent} / ${ptTotal}</span></div><p class="hint">${ptLeft ? L`صرفت ${ptSpent} براءة في الخريطة، وباقي ${ptLeft} عشان تكملها.` : L('✅ كملت خريطة الاختراعات كلها.')}</p><div class="pt-tree"><i class="pt-bar" aria-hidden="true"></i>`;
   for (const x of IND_PT) {
     const l = indPt(x.id), lock = indPtLocked(x), c = l < x.max ? x.c[l] : 0, nd = x.need && IND_PT.find(p => p.id === x.need);
-    h += `<div class="card ind-card pt-node ${x.need ? 'has-need' : 'pt-root'} ${l ? 'lgcard g on' : ''} ${lock ? 'pt-lock' : ''}" style="grid-row:${x.r};grid-column:${x.col}"><div class="top"><span class="big">${ART['ind-pt-' + x.id] ? icon('ind-pt-' + x.id, 48) : x.id === 'hall' ? indHallIc(48, 4) : `<span class="ind-e big">${x.e}</span>`}</span><div class="meta"><b>${x.n}</b><small>${L`المستوى ${l} من ${x.max}`}</small></div></div>
+    const pic = ART['ind-pt-' + x.id] ? icon('ind-pt-' + x.id, 40) : x.id === 'hall' ? indHallIc(40, 4) : x.a && ART[x.a] ? icon(x.a, 40) : `<span class="ind-e big">${x.e}</span>`;
+    const pips = `<span class="pt-pips" title="${l} / ${x.max}">${'●'.repeat(l)}<i>${'●'.repeat(x.max - l)}</i></span>`;
+    h += `<div class="card ind-card pt-node ${x.need ? 'has-need' : 'pt-root'} ${l ? 'lgcard g on' : ''} ${lock ? 'pt-lock' : ''}" style="grid-row:${x.r};grid-column:${x.col}"><div class="top"><span class="big">${pic}</span><div class="meta"><b>${x.n}</b>${pips}</div></div>
       <p class="hint">${x.d}</p>
-      ${l >= x.max ? `<p class="good">${L('✅ أعلى مستوى')}</p>` : lock ? `<p class="bad">${x.nl > 1 ? L`🔒 يحتاج ${nd.n} ${x.nl}/${nd.max}` : L`🔒 يحتاج ${nd.n}`}</p>`
-        : `<div class="row"><button class="btn gold" data-a="indPt" data-v="${x.id}" ${indPats() >= c ? '' : 'disabled'}>${L`🔬 اخترع (${c} 🎫)`}</button></div>`}</div>`;
+      ${l >= x.max ? `<p class="good">${L('✅ أعلى مستوى')}</p>` : lock ? `<p class="bad">${x.nl > 1 ? L`🔒 يحتاج ${nd.n}: ${indPt(nd.id)} من ${x.nl}` : L`🔒 يحتاج ${nd.n}`}</p>`
+        : `<div class="row"><button class="btn gold sm" data-a="indPt" data-v="${x.id}" ${indPats() >= c ? '' : 'disabled'}>${L`🔬 اخترع (${c} 🎫)`}</button></div>`}</div>`;
   }
   return h + '</div></div>';
 }
@@ -790,10 +810,10 @@ function viewTrain() {
 function viewDmine() {
   const D = indDm(), tot = {};
   D.forEach(m => { tot[m.o] = (tot[m.o] || 0) + indDmRate(m); });
-  let h = L`<div class="panel"><div class="ph"><h2>⛏️ المنجم العميق</h2><span class="stat">${L`${D.length} من ${IND_DM.length} حفّارات`}</span></div>
+  let h = L`<div class="panel"><div class="ph"><h2>⛏️ المنجم العميق</h2><span class="stat">${L`${D.length} من ${indDmSlots()} حفّارات`}</span></div>
     <p class="hint">حفّارات تشتغل لحالها وتطلّع خام واحد تختاره: فحم يروح لمخزن المصنع، أو نحاس أو حديد أو فضة تروح لمخزون القرية اللي تسحب منه الأفران. إنتاجها ثابت وهادي: تبدأ من 2 خام بالثانية وتوصل 30 في المستوى 10. الحفّارات تنعاد مع تجديد المصنع.</p>`;
   h += indStock(['coal', ...IND_ORES]) + '<div class="grid ind-grid">';
-  IND_DM.forEach((x, i) => {
+  IND_DM.slice(0, indDmSlots()).forEach((x, i) => {
     const m = D[i];
     if (m) {
       const c = m.l < IND_MAXLV ? indDmUpCost(m.l) : null;
@@ -874,7 +894,7 @@ function indSig() {
   return [indQOpen(), I.hired, I.f, I.b, I.e, IND_MAKERS.map(r => [indFu(r.id).n, indFu(r.id).on, indChosen(indFu(r.id))]), I.autoW, (I.b.hall || 0) < IND_MAXLV && pay(indHallCost(I.b.hall || 0).gold, indHallCost(I.b.hall || 0).mats),
     IND_FIELDS.map(f => { const c = indFieldCost(I.f[f.id].l); return pay(c.gold, [[f.id, c.qty]]); }),
     IND_BLD.map(b => (I.b[b.id] || 0) < IND_MAXLV && pay(indBldCost(I.b[b.id] || 0).gold, indBldCost(I.b[b.id] || 0).mats)),
-    (I.b.store || 0) < IND_MAXLV && pay(indStoreCost(I.b.store || 0).gold, indStoreCost(I.b.store || 0).mats)];
+    (I.b.store || 0) < indStoreMax() && pay(indStoreCost(I.b.store || 0).gold, indStoreCost(I.b.store || 0).mats), indPt('big'), indPt('coal')];
 }
 const IND_VIEWS = {
   fields: [viewFields, updInd, indSig],
@@ -882,8 +902,8 @@ const IND_VIEWS = {
   city: [viewCity, updInd, () => { const I = ind(); return [indSig(), I.kd, (I.k || []).map(k => k.need ? [k.need, indKCan(k)] : 0), indSwaps()]; }],
   train: [viewTrain, updInd, () => { const I = ind(); return [I.tr, I.pat, indHall(), indLv('rails'), indTrain() < IND_TRAIN.length && indTrainCan(indTrain())]; }],
   dmine: [viewDmine, updInd, () => {
-    const D = indDm(), nx = IND_DM[D.length];
-    return [D.map(m => [m.o, m.l, indDmFull(m), m.l < IND_MAXLV && indCanPay(indDmUpCost(m.l).gold, indDmUpCost(m.l).mats)]), indHall(), !!nx && indCanPay(nx.g, nx.mats)];
+    const D = indDm(), nx = D.length < indDmSlots() ? IND_DM[D.length] : null;
+    return [indDmSlots(), D.map(m => [m.o, m.l, indDmFull(m), m.l < IND_MAXLV && indCanPay(indDmUpCost(m.l).gold, indDmUpCost(m.l).mats)]), indHall(), !!nx && indCanPay(nx.g, nx.mats)];
   }],
   port: [viewPort, updInd, () => {
     const I = ind(), H = I.hb || { sh: [] }, now = Date.now(), l = H.l || 0;

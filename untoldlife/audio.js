@@ -338,7 +338,7 @@ function sfx(name) {
 }
 
 /* ---------- hooks: player clicks and big events ---------- */
-let auBefore = null;
+let auBefore = null, auClickAt = -1e9, auAutoAt = -1e9; // when the player last pressed a button, and when an event last played a sound by itself
 const auSnap = () => ({
   gold: S.gold, harvests: S.stats.harvests, blocks: S.stats.blocks, fish: S.stats.fish,
   planted: S.farm.plots.filter(p => p.c).length, wet: S.farm.plots.filter(p => p.w).length,
@@ -356,6 +356,7 @@ const AU_IND = { indK: 'contract', indKSkip: 'swap', indBld: 'build', indStore: 
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-a]');
   auBefore = b && !b.disabled && typeof S !== 'undefined' && S ? auSnap() : null;
+  if (b) auClickAt = performance.now();
 }, true);
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-a]'); if (!b || !auBefore) return;
@@ -382,6 +383,10 @@ if (typeof log === 'function') {
   log = function (msg, type) {
     baseLog.apply(this, arguments);
     if (typeof offline !== 'undefined' && offline) return;
+    /* Events the workers cause (a golden crop, a gem, a level) used to ring one after another. Now an event only sounds
+       when it follows a press of yours; the «automatic event sounds» setting brings the rest back, at most one every 5 s. */
+    const now = performance.now();
+    if (now - auClickAt > 1500) { if (!AU.set.auto || now - auAutoAt < 5000) return; auAutoAt = now; }
     if (type === 'season') sfx('fanfare');
     else if (type === 'golden') { if (arguments[2] !== 'ind') sfx('gift'); } // factory moments have their own sounds (AU_IND)
     else if (type === 'good' && arguments[2] === 'ind') { /* its button already made a sound */ }
@@ -397,7 +402,8 @@ function audioPanel() {
   return `<h3>${L('🔊 الصوت')}</h3>
   <div class="kv au-row"><label for="auMusic">${L('🎵 الموسيقى')}</label><input type="range" id="auMusic" min="0" max="100" value="${pct(AU.set.music)}"></div>
   <div class="kv au-row"><label for="auSfx">${L('🔔 المؤثرات')}</label><input type="range" id="auSfx" min="0" max="100" value="${pct(AU.set.sfx)}"></div>
-  <div class="row"><button class="btn ghost" data-a="muteToggle">${AU.set.muted ? L('🔊 شغّل الصوت') : L('🔇 كتم الصوت')}</button></div>`;
+  <div class="row"><button class="btn ghost" data-a="muteToggle">${AU.set.muted ? L('🔊 شغّل الصوت') : L('🔇 كتم الصوت')}</button><button class="btn ghost" data-a="auAutoToggle">${AU.set.auto ? '✅' : '⬜'} ${L('أصوات الأحداث التلقائية')}</button></div>
+  <p class="hint">${L('مطفية: تسمع الصوت بس لما تضغط أنت. شغّالة: تسمع المحصول الذهبي والجواهر والمستويات حتى لو جت من العمال، بحد أقصى صوت كل 5 ثواني.')}</p>`;
 }
 function auUpdateButton() {
   const b = document.getElementById('muteBtn'); if (!b) return;
@@ -409,6 +415,7 @@ document.addEventListener('input', e => {
   if (e.target.id === 'auSfx') { AU.set.sfx = e.target.value / 100; auApplyVolumes(); auSave(); }
 });
 document.addEventListener('change', e => { if (e.target.id === 'auSfx') sfx('coin'); });
+A.auAutoToggle = () => { AU.set.auto = !AU.set.auto; auSave(); if (typeof lastSig !== 'undefined') lastSig = ''; };
 A.muteToggle = () => {
   AU.set.muted = !AU.set.muted; auSave(); auApplyVolumes(); auUpdateButton();
   if (AU.ctx && !AU.set.muted && !document.hidden) AU.ctx.resume().catch(() => {});

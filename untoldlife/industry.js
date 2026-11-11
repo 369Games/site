@@ -65,14 +65,14 @@ const IND_VAL = { clay: 3e6, stone: 3e6, wood: 3e6, coal: 1.5e7, brick: 2.5e7, b
 // Two swaps; each used swap comes back after the same wait.
 const IND_KSW = 2, IND_KCAP = 300;
 function indKN() { return 3 + indPt('slot4'); }
-function indKWait() { return (360 - 18 * indEng('deal')) * 1000; }
+function indKWait() { return (600 - 30 * indEng('deal')) * 1000; }
 // Engineer: permanent factory upgrades bought with blueprints and products (10 levels each).
 const IND_ENG = [
   { id: 'furn', e: '🎛️', a: 'ind-tab-furn', n: L('مراجل أسرع'), d: L('+15% سرعة لكل مستوى لكل المراجل') },
   { id: 'field', e: '⛏️', a: 'ind-tab-fields', n: L('حقول أغزر'), d: L('+15% إنتاج لكل مستوى لكل الحقول') },
   { id: 'bench', e: '🔧', a: 'ind-tab-ws', n: L('ورشة أسرع'), d: L('+15% سرعة لكل مستوى لكل طاولات الورشة') },
   { id: 'crew', e: '🏠', a: 'ind-housing', n: L('سكن العمال'), d: L('+10 لحد عمال حقول المصنع لكل مستوى (من 50 لين 150)') },
-  { id: 'deal', e: '🤝', a: 'ind-trader', n: L('تاجر العقود'), d: L('+10% ذهب من العقود و−18 ثانية من انتظار العقود والتبديل لكل مستوى (من 6 دقايق لين 3)') },
+  { id: 'deal', e: '🤝', a: 'ind-trader', n: L('تاجر العقود'), d: L('+10% ذهب من العقود و−30 ثانية من انتظار العقود والتبديل لكل مستوى (من 10 دقايق لين 5)') },
 ];
 const IND_ENG_BP = [1, 2, 3, 4, 6, 8, 10, 13, 16, 20];
 // City: rails (village miners) and boat (village fishers). Level L: gold 5e8 × 2^(L-1) plus these materials.
@@ -147,9 +147,9 @@ function indInMult() { return indPt('thrift') ? 0.5 : 1; }
 const IND_TRAIN = [
   { e: '🚂', a: 'ind-rails-2', n: L('الخط الرئيسي'), d: L('سكة تربط الوادي بالمدن البعيدة'), g: 5e12, mats: [['block', 200000], ['fe', 150000], ['plank', 100000]], need: () => indLv('rails') >= 10, why: L('سكة الحديد مستوى 10') },
   { e: '🚂', a: 'ind-hall-3', n: L('المحطة الكبرى'), d: L('محطة من طوب وحديد وزجاج في قلب المدينة'), g: 1e13, mats: [['brick', 300000], ['block', 300000], ['pipe', 20000], ['gear', 20000]], need: () => indHall() >= 10, why: L('مبنى البلدة قصر (مستوى 10)') },
-  { e: '🚂', a: 'ind-rails-4', n: L('القاطرة'), d: L('قلب القطار: مرجل بخار وعجلات من حديد'), g: 2e13, mats: [['fe', 400000], ['cu', 300000], ['gear', 50000], ['machine', 2000]] },
-  { e: '🚂', a: 'ind-rails-3', n: L('العربات'), d: L('عربات للركاب والبضايع'), g: 3e13, mats: [['plank', 400000], ['nails', 300000], ['ag', 300000], ['machine', 3000]] },
-  { e: '🎉', a: 'icon-celebrate', n: L('الرحلة الأولى'), d: L('فحم للطريق، وآخر التجهيزات، وبراءات تشغيل القطار'), g: 5e13, mats: [['coal', 500000], ['machine', 5000]], pat: 50 },
+  { e: '🚂', a: 'ind-rails-4', n: L('القاطرة'), d: L('قلب القطار: مرجل بخار وعجلات من حديد'), g: 4e13, mats: [['steel', 300000], ['cu', 300000], ['gear', 50000], ['engine', 500]] },
+  { e: '🚂', a: 'ind-rails-3', n: L('العربات'), d: L('عربات للركاب والبضايع'), g: 6e13, mats: [['plank', 400000], ['beam', 100000], ['window', 100000], ['ag', 300000]] },
+  { e: '🎉', a: 'icon-celebrate', n: L('الرحلة الأولى'), d: L('فحم للطريق، وآخر التجهيزات، وبراءات تشغيل القطار'), g: 1e14, mats: [['coal', 500000], ['glass', 300000], ['engine', 2000]], pat: 50 },
 ];
 function indTrain() { return indOpen() ? ind().tr || 0 : 0; }
 function indTrainDone() { return indTrain() >= IND_TRAIN.length; }
@@ -189,6 +189,7 @@ function indHbGold(r) { return Math.round(indHbCargo(r).reduce((a, [id, q]) => a
 function indHbFg(r) { return Math.round(r.fg * indHbLv() * (1 + 0.1 * indHbUp('hold'))); }
 function indHbCanSend(r) { return indHbOpen() && indHbLv() > 0 && indHbFree() > 0 && indCanPay(0, indHbCargo(r)); }
 function indHbB() { return 1 + 0.03 * indHbUp('tools'); }
+function indRouteIc(r) { return ART['ind-route-' + r.id] ? icon('ind-route-' + r.id, 48) : `<span class="ind-e big">${r.e}</span>`; }
 function indHbIc(n, l = indHbLv()) { const i = indStage(l) + 1; return ART['ind-port-' + i] ? icon('ind-port-' + i, n) : ART['ind-boat-' + i] ? icon('ind-boat-' + i, n) : '<span class="ind-e big">⚓</span>'; }
 function indPt(id) { const t = (S.leg.ind || {}).pt; return t ? t[id] || 0 : 0; }
 function indPtLocked(x) { return !!x.need && indPt(x.need) < x.nl; }
@@ -586,8 +587,9 @@ function viewFields() {
     <div class="row">${costBtn('indHire', '', indHireCost(), L`👷 وظّف عامل (${fmt(indHireCost())}💰)`, 'gold', I.hired + 1 >= indWMax())}<button class="btn ghost" data-a="indEven">⚖️ وزّع بالتساوي</button><button class="btn ghost" data-a="indSmart">👷 وزّع ذكي</button><button class="tog ${I.autoW ? 'on' : ''}" data-a="indAutoW">🤖 ${I.autoW ? L('تلقائي: شغّال') : L('تلقائي: موقف')}</button></div>
     <p class="hint">${L('«وزّع ذكي» يحط على كل حقل عمال قد اللي تاكله الأفران والطاولات الشغّالة منه، والباقي على الحقول اللي ما امتلت. و«تلقائي» يعيد التوزيع كل 30 ثانية.')}</p>`;
   h += indStock() + '<div class="grid ind-grid">';
-  for (const f of indFields()) {
+  for (const f of IND_FIELDS) {
     const x = I.f[f.id], c = indFieldCost(x.l);
+    if (f.q && !indQOpen()) { h += `<div class="card ind-card pt-lock"><div class="top"><span class="big">${indLvIc('f-' + f.id, 0, 48, indIc(f.id, 48))}</span><div class="meta"><b>${f.n}</b><small>${indName(f.id)}</small></div></div><p class="bad">${L('🔒 ينفتح مع المحطة الكبرى، المرحلة الثانية من القطار الأول')}</p></div>`; continue; }
     h += `<div class="card ind-card"><div class="top"><span class="big">${indLvIc('f-' + f.id, x.l, 48, indIc(f.id, 48))}</span><div class="meta"><b>${f.n}</b><small>${L`المستوى ${x.l} من ${IND_MAXLV}`}</small></div></div>
       <div class="kv"><span>${indName(f.id)}</span><span><b data-ir="${f.id}">${fmt(Math.floor(I.r[f.id] || 0))}</b> / ${fmt(indCap())}</span></div>
       <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(indRate(f.id))} بالثانية`}</span></div>
@@ -601,7 +603,7 @@ function viewFields() {
 function viewFurn() {
   let h = L`<div class="panel"><div class="ph"><h2>🏭 المراجل</h2></div>
     <p class="hint">المراجل تحوّل الخام لمواد صناعة. كل فرن يشتغل لحاله ما دام عنده مواد. النحاس والحديد والفضة تنسحب من مخزون القرية مباشرة، والفحم وقود أغلب الوصفات.</p>`;
-  h += indStock([...indBase(), ...IND_ORES]) + '<div class="grid ind-grid">' + indRecipes().map(r => indMakerCard(r, false)).join('');
+  h += indStock([...indBase(), ...IND_ORES]) + '<div class="grid ind-grid">' + IND_RECIPES.map(r => indMakerCard(r, false)).join('');
   return h + '</div></div>';
 }
 // One furnace or workbench card: recipe, output per second, stock, state, and buy/pause.
@@ -609,6 +611,10 @@ function indMakerCard(r, bench) {
   const u = indFu(r.id), c = indFurnCost(r);
   const ins = Object.entries(r.in).map(([id, q]) => `<span class="ind-q" title="${indName(id)}">${indNum(q * indInMult())} ${indIc(id, 22)}</span>`).join(' + ');
   const st = u.n ? indStLine('m:' + r.id, indMakerSt(r)) : '';
+  if (r.q && !indQOpen()) return `<div class="card ind-card pt-lock"><div class="top"><span class="big">${indIc(r.id, 48)}</span><div class="meta"><b>${indName(r.id)}</b><small>${bench ? L`${u.n} طاولة` : L`${u.n} فرن`}</small></div></div>
+    <div class="kv ind-recipe"><span>${L('يحتاج')}</span><span>${ins}</span></div>
+    <div class="kv ind-recipe"><span>${L('يعطي')}</span><span class="ind-q">${r.out || 1} ${indIc(r.id, 22)}</span></div>
+    <p class="bad">${L('🔒 ينفتح مع المحطة الكبرى، المرحلة الثانية من القطار الأول')}</p></div>`;
   return `<div class="card ind-card"><div class="top"><span class="big">${indIc(r.id, 48)}</span><div class="meta"><b>${indName(r.id)}</b><small>${bench ? L`${u.n} طاولة` : L`${u.n} فرن`}</small></div></div>
     <div class="kv ind-recipe"><span>${L('يحتاج')}</span><span>${ins}</span></div>
     <div class="kv ind-recipe"><span>${L('يعطي')}</span><span class="ind-q">${r.out || 1} ${indIc(r.id, 22)}</span></div>
@@ -622,7 +628,7 @@ function viewWs() {
   const I = ind();
   let h = L`<div class="panel"><div class="ph"><h2>🔧 الورشة</h2><span class="stat">📐 ${fmt(I.r.bp || 0)} مخطط</span></div>
     <p class="hint">طاولات الورشة تحوّل الطوب والسبايك لمنتجات. المنتجات تسلّمها في العقود، والمهندس يحتاجها مع المخططات عشان يطوّر المصنع.</p>`;
-  h += indStock([...indBase(), ...indProds().map(p => p.id), 'bp']) + '<div class="grid ind-grid">' + indProds().map(r => indMakerCard(r, true)).join('') + '</div></div>';
+  h += indStock([...indBase(), ...indProds().map(p => p.id), 'bp']) + '<div class="grid ind-grid">' + IND_PROD.map(r => indMakerCard(r, true)).join('') + '</div></div>';
   h += L`<div class="panel"><div class="ph"><h2>${indIc('engineer', 28)} المهندس</h2></div>
     <p class="hint">المهندس يطوّر المصنع للأبد بالمخططات والمنتجات. أول المستويات تحتاج ألواح ومسامير، بعدها تروس وأنابيب، وآخرها آلات.</p><div class="grid ind-grid">`;
   for (const g of IND_ENG) {
@@ -764,7 +770,7 @@ function viewPort() {
     h += '<div class="grid ind-grid">';
     H.sh.forEach((x, i) => {
       const r = IND_HB_ROUTES.find(q => q.id === x.r) || IND_HB_ROUTES[0], home = x.at <= now;
-      h += `<div class="card ind-card ${home ? 'lgcard g' : ''}"><div class="top"><span class="big"><span class="ind-e big">${r.e}</span></span><div class="meta"><b>${r.n}</b><small>${home ? L('رجعت للميناء') : L('في البحر')}</small></div></div>
+      h += `<div class="card ind-card ${home ? 'lgcard g' : ''}"><div class="top"><span class="big">${indRouteIc(r)}</span><div class="meta"><b>${r.n}</b><small>${home ? L('رجعت للميناء') : L('في البحر')}</small></div></div>
         <div class="kv"><span>${L('المكافأة')}</span><span class="good"><bdi>+${fmt(x.g)}</bdi>💰 • <bdi>+${fmt(x.fg)}</bdi> 🧳</span></div>
         ${home ? `<div class="row"><button class="btn gold" data-a="indShipGet" data-v="${i}">${L('🎁 استلم')}</button></div>` : `<div class="kv"><span>${L('⏳ ترجع بعد')}</span><b data-hbt="${x.at}">${ftime((x.at - now) / 1000)}</b></div>`}</div>`;
     });
@@ -773,7 +779,7 @@ function viewPort() {
   h += '</div>' + L`<div class="panel"><div class="ph"><h2>🧭 الرحلات</h2></div><div class="grid ind-grid">`;
   for (const r of IND_HB_ROUTES) {
     const cargo = indHbCargo(r);
-    h += `<div class="card ind-card"><div class="top"><span class="big"><span class="ind-e big">${r.e}</span></span><div class="meta"><b>${r.n}</b><small>${r.d}</small></div></div>
+    h += `<div class="card ind-card"><div class="top"><span class="big">${indRouteIc(r)}</span><div class="meta"><b>${r.n}</b><small>${r.d}</small></div></div>
       <div class="kv"><span>${L('⏳ مدة الرحلة')}</span><span>${ftime(indHbTime(r) / 1000)}</span></div>
       <div class="kv"><span>${L('المكافأة')}</span><span class="good"><bdi>+${fmt(indHbGold(r))}</bdi>💰 • <bdi>+${fmt(indHbFg(r))}</bdi> 🧳</span></div>
       ${indReqs(0, cargo)}${indTooBig(cargo)}

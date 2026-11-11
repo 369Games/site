@@ -1650,6 +1650,7 @@
 "⚫ فحم نظيف: أفران الفحم تعطي 3 بدل 2. 🏭 أفران باقية: تبدأ بعد التجديد بأفران وطاولات جاهزة. 👷 عمال جاهزين: تبدأ بعد التجديد بعمال موزعين.": "⚫ Clean coal: coal furnaces give 3 instead of 2. 🏭 Furnaces that stay: you start a renewal with furnaces and benches ready. 👷 Ready workers: you start a renewal with workers already placed.",
 "⛏️ حفّارات ثابتة: الحفّارات ما تنعاد مع التجديد. وحفّارة رابعة: خانة زيادة في المنجم العميق بـ200 محرك بخاري.": "⛏️ Fixed drills: drills are no longer reset by a renewal. And a fourth drill: one more slot in the deep mine, for 200 steam engines.",
 "📦 مخزن عملاق: المخزن يوصل المستوى 12 (السعة ×4). 🚢 سفينة خامسة في الميناء.": "📦 Giant warehouse: the warehouse can reach level 12 (4× the capacity). 🚢 A fifth ship in the harbor.",
+"🎨 أيقونة خاصة لكل اختراع من السبعة الجدد.": "🎨 An icon of its own for each of the seven new inventions.",
 "المنجم العميق": "The deep mine",
 "⛏️ تبويب جديد في المصنع: المنجم العميق. لين ثلاث حفّارات تشتغل لحالها، وكل وحدة تختار لها خام: فحم لمخزن المصنع، أو نحاس أو حديد أو فضة لمخزون القرية اللي تسحب منه الأفران.": "⛏️ A new factory tab: the deep mine. Up to three drills that run by themselves, and you pick an ore for each: coal for the factory warehouse, or copper, iron or silver for the village stock the furnaces draw on.",
 "🐢 إنتاجها ثابت وهادي: الحفّارة تبدأ من 2 خام بالثانية وتوصل 30 في المستوى 10. تغيير الخام ببلاش ومتى ما تبي.": "🐢 Their output is slow and steady: a drill starts at 2 ores a second and reaches 30 at level 10. Changing the ore is free, any time.",

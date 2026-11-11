@@ -440,12 +440,32 @@ const CHALLENGES = [
   { id: 'slow', n: L('الزمن البطيء'), e: '🐌', rule: L('كل الإنتاج بنصف السرعة'), type: 'gold', base: 1e6, rew: l => L`+${10 * l}% سرعة كل الإنتاج` },
   { id: 'underground', n: L('تحت الأرض'), e: '🕳️', rule: L('لا زراعة ولا حيوانات — المنجم والزنزانة والبحيرة فقط'), type: 'depth', base: 40, rew: l => L`+${20 * l}% قوة التعدين والجواهر` },
 ];
+/* The generations road (legacy tab): every milestone from the second generation to the end of the game, in order.
+   A step is done by its generation (g) or its own check (ok); the first one not done is marked as the next goal, and a
+   step with conds lists what it still needs, with progress. */
 const ROADMAP = [
-  [2, L('🎣 البحيرة وصيد السمك + السنارة عند الحداد')],
-  [3, L('🌟 المحاصيل النادرة: زعفران، تمر، مانجو، أناناس')],
-  [4, L('🕳️ الأعماق المنسية: طوابق بعد 100، وكل زعيم فيها يعطيك نجمة إرث')],
-  [5, L('💍 الزواج و🤝 صداقة العمر مع أهل القرية + 🏆 تحديات الأجيال اللانهائية')],
+  { g: 2, t: L('🎣 البحيرة وصيد السمك + السنارة عند الحداد') },
+  { g: 3, t: L('🌟 المحاصيل النادرة: زعفران، تمر، مانجو، أناناس') },
+  { g: 4, t: L('🕳️ الأعماق المنسية: طوابق بعد 100، وكل زعيم فيها يعطيك نجمة إرث') },
+  { g: 5, t: L('💍 الزواج و🤝 صداقة العمر مع أهل القرية + 🏆 تحديات الأجيال اللانهائية') },
+  { lab: L('رتبة S في النقابة'), t: L('🎖️ ألقاب النقابة: 10 ألقاب، وكل لقب له بونص دائم يبقى للعائلة'), ok: () => titleOpen() || Object.keys((S.leg.titles || {}).have || {}).length > 0 },
+  { g: IND_GEN, t: L('⚙️ عصر الصناعة: عالم ثاني تبني فيه حقول وأفران ومصانع، وتدخله من زر «المصنع» في آخر التبويبات'), ok: () => indOpen(),
+    conds: () => { const fin = PERKS.filter(p => p.max !== Infinity), got = fin.filter(p => P(p.id) >= p.max).length; return [
+      [S.leg.gen >= IND_GEN, L`الجيل ${IND_GEN} أو أكثر`, Math.min(S.leg.gen, IND_GEN) + ' / ' + IND_GEN],
+      [indPerksDone(), L('كل شجرة الإرث على الحد الأقصى (ما عدا بركة الوادي)'), got + ' / ' + fin.length],
+      [S.leg.stars >= IND_COST, L`${fmt(IND_COST)} نجمة إرث`, fmt(Math.min(S.leg.stars, IND_COST)) + ' / ' + fmt(IND_COST)]]; } },
+  { lab: L('مبنى البلدة مستوى 10'), t: L('🔬 تجديد المصنع: براءات اختراع، وخدمات الكهرباء والمياه والضرايب اللي تجيب ذهب لحالها'), ok: () => indOpen() && ((ind().ren || 0) > 0 || indPt('util') > 0) },
+  { lab: L('المحطة الكبرى'), t: L('⚓ الميناء: سفن ترسلها رحلات وترجع بذهب وبضاعة أجنبية'), ok: () => indHbOpen() },
+  { lab: L('خاتمة اللعبة'), t: L('🚂 القطار الأول: المشروع الأخير، وبه تختم اللعبة'), ok: () => indTrainDone() },
 ];
+function roadHtml() {
+  let found = false;
+  return L`<div class="panel"><h2>🗺️ طريق الأجيال</h2><p class="hint">كل محطة تفتح لك شي جديد، من الجيل الثاني لين خاتمة اللعبة. المحطة المميزة هي هدفك الجاي.</p><div class="road">` + ROADMAP.map(x => {
+    const done = x.ok ? x.ok() : S.leg.gen >= x.g, next = !done && !found; if (next) found = true;
+    const conds = !done && x.conds ? `<ul class="ind-conds">${x.conds().map(([ok, t, p]) => `<li class="${ok ? 'ok' : 'no'}">${ok ? '✅' : '⬜'} ${t} <small dir="ltr">${p}</small></li>`).join('')}</ul>` : '';
+    return `<div class="rstep ${done ? 'done' : next ? 'next' : ''}"><b>${done ? '✅' : next ? '🎯' : '🔒'} ${x.lab || L`الجيل ${x.g}`}</b>${next ? `<small class="rnext">${L('هدفك الجاي')}</small>` : ''}<span>${x.t}</span>${conds}</div>`;
+  }).join('') + '</div></div>';
+}
 const ACH = [];
 function ach(id, e, n, d, fn) { ACH.push({ id, e, n, d, fn }); }
 function achSet(key, e, list, d, fn) { list.forEach(([v, n], i) => ach(key + i, e, n, d(v), () => fn() >= v)); }
@@ -2750,8 +2770,8 @@ function viewLegacy() {
     <button class="btn gold" data-a="retire" id="lg_btn">🌅 التقاعد وتسليم المزرعة</button><small class="hint" id="lg_why"></small></div></div>
   ${ch ? L`<div class="chbox"><b>${icon(ch)} تحدي هذا الجيل: ${ch.n}</b> — ${ch.rule}<div class="kv"><span>🎯 ${goalText(ch)}</span><span id="lg_chp"></span></div><div class="bar gp"><i id="lg_chb"></i></div></div>` : ''}
   </div>`;
+  h += roadHtml();
   h += indLegacyCard();
-  h += L`<div class="panel"><h2>🗺️ ما تفتحه الأجيال</h2><div class="road">${ROADMAP.map(([g, t]) => L`<div class="rstep ${LG.gen >= g ? 'done' : ''}"><b>${LG.gen >= g ? '✅' : '🔒'} الجيل ${g}</b><span>${t}</span></div>`).join('')}</div></div>`;
   h += L`<div class="panel"><div class="ph"><h2>${icon("legacy-tree",32)} شجرة الإرث</h2><span class="stat starchip">${icon("legacy-crown",24)} ${fmt(LG.stars)}</span></div><p class="hint">ابدأ من أول مهارة في كل فرع: كل 3 مستويات تفتح لك فرع جديد، ولما تصرف ${KS_NEED} مستويات في فرع تنفتح مهارته الخاصة ⭐. المهارات المعلّمة بـ 🌱 تطبق من بداية الجيل القادم، إلا لو اشتريتها في أول يومين من الجيل فتطبق عليك فوراً. الباقي يشتغل فوراً دائماً.</p>
   <div class="row"><button class="btn ghost sm" data-a="respec" ${S.gen.respec || !perkSpent() ? 'disabled' : ''}>↺ إعادة توزيع النقاط</button><small class="hint">${S.gen.respec ? L('استخدمتها في هذا الجيل') : L('مجانية، مرة وحدة كل جيل')}</small></div>`;
   for (const [b, bn] of Object.entries(BRANCHES)) {

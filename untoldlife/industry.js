@@ -772,7 +772,7 @@ function viewUtil() {
 function indEnding() {
   const I = ind(), st = S.stats;
   if (typeof auEnding === 'function') auEnding(); // the ending's own music (audio.js)
-  openModal(L`<h2>🚂 القطار الأول طلع من المحطة!</h2>
+  openModal('<img class="ending-pic" src="assets/art/ending-train.webp" alt="" width="1280" height="720">' + L`<h2>🚂 القطار الأول طلع من المحطة!</h2>
     <div class="letter"><p>من مزرعة صغيرة متعبة تركها لك جدك، إلى قطار يربط وادي الصدى بالعالم.</p>
     <p>عائلتك كتبت قصتها، جيل بعد جيل. <b>ختمت UntoldLife.</b></p></div>
     <ul class="gains">
@@ -789,7 +789,7 @@ function viewTrain() {
   const I = ind(), cur = indTrain(), done = indTrainDone();
   let h = L`<div class="panel"><div class="ph"><h2>🚂 القطار الأول</h2><span class="stat">${L`المرحلة ${Math.min(cur + 1, IND_TRAIN.length)} من ${IND_TRAIN.length}`}</span></div>
     <p class="hint">المشروع الكبير: أول قطار يربط وادي الصدى بالعالم. خمس مراحل، وكل مرحلة تحتاج كل اللي تسويه مصانعك. تقدمك فيه ما ينعاد مع تجديد المصنع، ولما يكتمل تكون ختمت اللعبة وتاخذ جائزة للأبد.</p>`;
-  if (done) h += `<div class="card ind-card lgcard g"><div class="top"><span class="big">${indLvIc('train', 10, 64, '<span class="ind-e big">🚂</span>')}</span><div class="meta"><b>${L('القطار الأول يشتغل')}</b><small>${L('ختمت UntoldLife')}</small></div></div>
+  if (done) h += `<div class="card ind-card lgcard g"><div class="top"><span class="big">${ART['ind-train-5'] ? icon('ind-train-5', 64) : '<span class="ind-e big">🚂</span>'}</span><div class="meta"><b>${L('القطار الأول يشتغل')}</b><small>${L('ختمت UntoldLife')}</small></div></div>
       <p class="good">${L('🎁 جائزتك للأبد: المصنع أسرع 20%، والذهب +10% من كل المصادر.')}</p>
       <div class="row"><button class="btn gold" data-a="indEndingShow">${L('🎬 شوف الخاتمة')}</button></div></div>`;
   h += '<div class="grid ind-grid">';
@@ -868,7 +868,7 @@ function viewPort() {
   h += '</div></div>' + L`<div class="panel"><div class="ph"><h2>🧳 متجر البضاعة الأجنبية</h2><span class="stat">🧳 ${fmt(H.fg || 0)}</span></div><p class="hint">تطويرات تبقى معك للأبد، وما تنشرى بالذهب.</p><div class="grid ind-grid">`;
   for (const x of IND_HB_UP) {
     const ul = indHbUp(x.id), uc = indHbUpCost(x, ul);
-    h += `<div class="card ind-card ${ul ? 'lgcard g' : ''}"><div class="top"><span class="big"><span class="ind-e big">${x.e}</span></span><div class="meta"><b>${x.n}</b><small>${L`المستوى ${ul} من ${x.max}`}</small></div></div>
+    h += `<div class="card ind-card ${ul ? 'lgcard g' : ''}"><div class="top"><span class="big">${ART['ind-hbu-' + x.id] ? icon('ind-hbu-' + x.id, 48) : `<span class="ind-e big">${x.e}</span>`}</span><div class="meta"><b>${x.n}</b><small>${L`المستوى ${ul} من ${x.max}`}</small></div></div>
       <p class="hint">${x.d}</p>
       ${ul >= x.max ? `<p class="good">${L('✅ أعلى مستوى')}</p>` : `<div class="row"><button class="btn gold" data-a="indHbBuy" data-v="${x.id}" ${(H.fg || 0) >= uc ? '' : 'disabled'}>${L`🧳 اشترِ (${fmt(uc)})`}</button></div>`}</div>`;
   }

@@ -819,7 +819,7 @@ function harvest(i) {
   give(c.id, n);
   if (Math.random() < Math.max(0, 0.01 * P('f_golden') + spv('noura', 'gold'))) {
     const g = sellPrice(c.id) * 10; addGold(g);
-    if (!LITE) log(L`✨ محصول ذهبي! ${c.e} ${c.n} يلمع ذهب: +${fmt(g)}💰 (×10 سعره)`, 'golden');
+    // No log line: with workers a golden crop comes every few seconds and buried the log (the field still shines).
     if (!offline && typeof goldenVisual === 'function') goldenVisual(i, g);
   } addXp('farm', c.price / 5 * n); S.stats.harvests += n;
   p.c = null; p.p = 0; p.w = false;
@@ -971,7 +971,7 @@ function blockDone() {
   let r = Math.random() * ws.reduce((a, b) => a + b, 0), o = av[av.length - 1];
   for (let i = 0; i < av.length; i++) { r -= ws[i]; if (r <= 0) { o = av[i]; break; } }
   give(o.id, 1 + Math.floor(d / 40));
-  if (Math.random() < (0.004 + d * 0.0001) * (1 + 0.5 * P('m_gem')) * (1 + 0.2 * CC('underground')) * Math.max(0, 1 + spv('smith', 'gem'))) { give('gem'); log(L('💎 عثرت على جوهرة نادرة!'), 'good'); }
+  if (Math.random() < (0.004 + d * 0.0001) * (1 + 0.5 * P('m_gem')) * (1 + 0.2 * CC('underground')) * Math.max(0, 1 + spv('smith', 'gem'))) give('gem'); // no log line: with many miners it flooded the log
   // XP follows how hard the block is, plus a bonus for depth, so deeper always levels faster (it used to be the other way:
   // hardness grows with depth², the old XP only with depth, so floor 1 gave 40× the XP of the deepest floor).
   addXp('mine', 0.25 * hardness() * (1 + d / 100)); S.stats.blocks++;

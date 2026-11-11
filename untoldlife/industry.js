@@ -173,15 +173,18 @@ const IND_HB_UP = [
   { id: 'spice', e: '💰', max: 10, c: 12, n: L('توابل للسوق'), d: L('+2% ذهب في القرية من كل المصادر لكل مستوى') },
 ];
 /* The deep mine (1.20): up to three drilling machines, each set to one ore: coal for the factory, or copper, iron or
-   silver, which go straight into the village stock the furnaces draw on. Slow and steady on purpose (1 ore a second per
-   level, not the village mine's flood). The first machine costs 100 machines, the second 500, and the third wants steam
+   silver, which go straight into the village stock the furnaces draw on. Slow and steady on purpose (2 ores a second at
+   level 1 up to 30 at level 10, not the village mine's flood). The first machine costs 100 machines, the second 500, and the third wants steam
    engines, so it waits for the quarries. Reset by a factory renewal, like furnaces. S.leg.ind.dm = [{ o: ore, l: level, p }]. */
 const IND_DM = [
   { g: 1e11, mats: [['machine', 100]] }, { g: 5e11, mats: [['machine', 500]] }, { g: 2e12, mats: [['engine', 50]] },
 ];
 const IND_DM_ORES = ['coal', 'copper', 'iron', 'silver'];
 function indDm() { const I = ind(); return I.dm || (I.dm = []); }
-function indDmRate(m) { return m.l * indTrainB() * indHbB(); }
+// 2 ores a second at level 1, climbing evenly to 30 at level 10 (2, 5, 8, 11, 14, 18, 21, 24, 27, 30).
+function indDmBase(l) { return Math.round(2 + (l - 1) * 28 / 9); }
+function indDmRate(m) { return indDmBase(m.l) * indTrainB() * indHbB(); }
+function indDmIc(i, n) { return ART['ind-drill-' + (i + 1)] ? icon('ind-drill-' + (i + 1), n) : '<span class="ind-e big">⛏️</span>'; }
 function indDmUpCost(l) { return { gold: Math.round(1e11 * Math.pow(2, l)), mats: [['machine', 50 * l], ['gear', 500 * l]] }; } // l = current level (1..9)
 function indDmFull(m) { return m.o === 'coal' && indFull('coal'); }
 function indHbOpen() { return indTrain() >= 2; } // the grand station (train stage 2) brings the harbour with it
@@ -788,23 +791,23 @@ function viewDmine() {
   const D = indDm(), tot = {};
   D.forEach(m => { tot[m.o] = (tot[m.o] || 0) + indDmRate(m); });
   let h = L`<div class="panel"><div class="ph"><h2>⛏️ المنجم العميق</h2><span class="stat">${L`${D.length} من ${IND_DM.length} حفّارات`}</span></div>
-    <p class="hint">حفّارات تشتغل لحالها وتطلّع خام واحد تختاره: فحم يروح لمخزن المصنع، أو نحاس أو حديد أو فضة تروح لمخزون القرية اللي تسحب منه الأفران. إنتاجها ثابت وهادي: خام واحد بالثانية لكل مستوى. الحفّارات تنعاد مع تجديد المصنع.</p>`;
+    <p class="hint">حفّارات تشتغل لحالها وتطلّع خام واحد تختاره: فحم يروح لمخزن المصنع، أو نحاس أو حديد أو فضة تروح لمخزون القرية اللي تسحب منه الأفران. إنتاجها ثابت وهادي: تبدأ من 2 خام بالثانية وتوصل 30 في المستوى 10. الحفّارات تنعاد مع تجديد المصنع.</p>`;
   h += indStock(['coal', ...IND_ORES]) + '<div class="grid ind-grid">';
   IND_DM.forEach((x, i) => {
     const m = D[i];
     if (m) {
       const c = m.l < IND_MAXLV ? indDmUpCost(m.l) : null;
-      h += `<div class="card ind-card lgcard g"><div class="top"><span class="big">${indIc(m.o, 48)}</span><div class="meta"><b>${L`حفّارة ${i + 1}`}</b><small>${L`المستوى ${m.l} من ${IND_MAXLV}`}</small></div></div>
-        <div class="kv"><span>${L('تحفر')}</span><span>${indName(m.o)}</span></div>
+      h += `<div class="card ind-card lgcard g"><div class="top"><span class="big">${indDmIc(i, 48)}</span><div class="meta"><b>${L`حفّارة ${i + 1}`}</b><small>${L`المستوى ${m.l} من ${IND_MAXLV}`}</small></div></div>
+        <div class="kv"><span>${L('تحفر')}</span><span>${indIc(m.o, 22)} ${indName(m.o)}</span></div>
         <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(indDmRate(m))} بالثانية`}</span></div>
         <div class="row ind-w">${IND_DM_ORES.map(o => `<button class="btn ${m.o === o ? 'gold' : 'ghost'} sm" data-a="indDmOre" data-v="${i}:${o}" title="${indName(o)}">${indIc(o, 22)}</button>`).join('')}</div>
         ${indDmFull(m) ? `<p class="bad">${L('📦 مخزن الفحم مليان، الحفّارة واقفة')}</p>` : ''}
-        ${c ? `<small>${L('⬆️ التطوير: +1 خام بالثانية')}</small>${indReqs(c.gold, c.mats)}${indTooBig(c.mats)}${indHallGate(m.l + 1)}<div class="row"><button class="btn gold" data-a="indDmUp" data-v="${i}" ${indCanPay(c.gold, c.mats) && m.l < indHall() ? '' : 'disabled'}>${L('⬆️ طوّر')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
+        ${c ? `<small>${L`⬆️ المستوى ${m.l + 1}: ${indNum(indDmBase(m.l + 1) * indTrainB() * indHbB())} بالثانية`}</small>${indReqs(c.gold, c.mats)}${indTooBig(c.mats)}${indHallGate(m.l + 1)}<div class="row"><button class="btn gold" data-a="indDmUp" data-v="${i}" ${indCanPay(c.gold, c.mats) && m.l < indHall() ? '' : 'disabled'}>${L('⬆️ طوّر')}</button></div>` : `<p class="good">${L('✅ أعلى مستوى')}</p>`}</div>`;
     } else if (i === D.length) {
-      h += `<div class="card ind-card"><div class="top"><span class="big"><span class="ind-e big">⛏️</span></span><div class="meta"><b>${L`حفّارة ${i + 1}`}</b><small>${L('ما انشرت بعد')}</small></div></div>
+      h += `<div class="card ind-card"><div class="top"><span class="big">${indDmIc(i, 48)}</span><div class="meta"><b>${L`حفّارة ${i + 1}`}</b><small>${L('ما انشرت بعد')}</small></div></div>
         ${indReqs(x.g, x.mats)}${indTooBig(x.mats)}<div class="row"><button class="btn gold" data-a="indDmBuy" ${indCanPay(x.g, x.mats) ? '' : 'disabled'}>${L('🏗️ ركّب الحفّارة')}</button></div></div>`;
     } else {
-      h += `<div class="card ind-card pt-lock"><div class="top"><span class="big"><span class="ind-e big">⛏️</span></span><div class="meta"><b>${L`حفّارة ${i + 1}`}</b><small>${L('🔒 ركّب الحفّارة اللي قبلها أول')}</small></div></div>${indReqs(x.g, x.mats)}</div>`;
+      h += `<div class="card ind-card pt-lock"><div class="top"><span class="big">${indDmIc(i, 48)}</span><div class="meta"><b>${L`حفّارة ${i + 1}`}</b><small>${L('🔒 ركّب الحفّارة اللي قبلها أول')}</small></div></div>${indReqs(x.g, x.mats)}</div>`;
     }
   });
   return h + '</div></div>';

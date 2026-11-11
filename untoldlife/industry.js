@@ -139,14 +139,15 @@ const IND_PT = [
 ];
 /* Public services: built with village gold and factory goods, kept forever (they don't reset with a renewal).
    Gold per second = base × the village gold multiplier, so they keep pace with the generations like the barn does.
-   All three at level 10 come to about 3× a strong generation-13 barn. */
+   1.21.1: ×50. Measured on a real generation-13 save, all three at level 10 paid 335B an hour against 82T an hour
+   from contracts (under 1%); now about 17T an hour, 33T with the full grid, so they are worth building. */
 const IND_UTIL = [
   { id: 'power', e: '🔌', n: L('شركة الكهرباء'), d: L('أكبر دخل، ويكبر مع مستوى مبنى البلدة'), first: L('🔌 قريتك صار فيها كهرب! الأنوار تشتغل في الليل'),
-    g: 2e10, mats: l => [['cu', 2000 * (l + 1)], ['machine', 5 * (l + 1)]] },
+    g: 2e11, mats: l => [['cu', 2000 * (l + 1)], ['machine', 5 * (l + 1)]] },
   { id: 'water', e: '💧', n: L('المياه والصرف'), d: L('دخل ثابت، والقرية صارت أنظف'), first: L('💧 قريتك صارت أنظف! المياه وصلت كل بيت'),
-    g: 1.5e10, mats: l => [['pipe', 200 * (l + 1)], ['brick', 5000 * (l + 1)]] },
+    g: 1.5e11, mats: l => [['pipe', 200 * (l + 1)], ['brick', 5000 * (l + 1)]] },
   { id: 'tax', e: '🧾', n: L('مكتب الضرايب'), d: L('يكبر مع عدد عمال المنجم والصيادين في القرية'), first: L('🧾 أهل القرية صاروا يدفعون ضرايب، والخزنة تمتلي'),
-    g: 1e10, mats: l => [['block', 5000 * (l + 1)], ['plank', 2000 * (l + 1)]] },
+    g: 1e11, mats: l => [['block', 5000 * (l + 1)], ['plank', 2000 * (l + 1)]] },
 ];
 function indOut(r) { return (r.out || 1) + (r.id === 'coal' && indPt('coal') ? 1 : 0); } // «clean coal»: 3 coal a batch
 function indInMult() { return indPt('thrift') ? 0.5 : 1; }
@@ -227,9 +228,9 @@ function indUl(id) { const u = ind().u; return u ? u[id] || 0 : 0; }
 function indUtilCost(x, l) { return { gold: Math.round(x.g * Math.pow(1.6, l)), mats: x.mats(l) }; }
 // Base gold per second of one service at level l (before the village gold multiplier and the grid patent).
 function indUtilBase(id, l = indUl(id)) {
-  if (id === 'power') return 4e5 * l * (1 + indHall() / 10);
-  if (id === 'water') return 4e5 * l;
-  return 1125 * l * Math.min(VILLAGE_WMAX * 2, S.mine.miners + S.lake.fishers);
+  if (id === 'power') return 2e7 * l * (1 + indHall() / 10);
+  if (id === 'water') return 2e7 * l;
+  return 56250 * l * Math.min(VILLAGE_WMAX * 2, S.mine.miners + S.lake.fishers);
 }
 function indUtilMult() { return goldMult() * (1 + 0.2 * indPt('grid')); }
 function indUtilRate(id) { return indUtilBase(id) * indUtilMult(); }

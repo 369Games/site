@@ -1386,8 +1386,9 @@ function checkAch() {
 
 /* Generation tasks (1.18): three tasks drawn for every generation, so each one has its own goal besides the retirement
    goal. A finished task adds 5% of the generation's star cap to the stars at retirement, and all three add 20%; the bonus
-   sits on top of the cap. Counting tasks ask for 60% of what the family did per generation so far (never under the base),
-   so they grow with the player. S.gen.gq = [{ id, n: needed, b: the counter when the task was drawn, d: done }]. */
+   sits on top of the cap. Counting tasks ask for 60% of what the last generation did (S.leg.prev), or of the family's
+   average per generation when that is higher or unknown, and never under the base: the average alone lagged far behind
+   a strong late generation (a 460K-rock task took 15 minutes at 30K rocks a minute). S.gen.gq = [{ id, n: needed, b: the counter when the task was drawn, d: done }]. */
 const GEN_TASKS = [
   { id: 'har', e: '🧺', stat: 'harvests', base: 200, t: n => L`احصد ${fmt(n)} محصول` },
   { id: 'pro', e: '🥚', stat: 'products', base: 100, t: n => L`اجمع ${fmt(n)} منتج حيواني` },
@@ -1396,14 +1397,18 @@ const GEN_TASKS = [
   { id: 'qst', e: '📜', stat: 'quests', base: 10, t: n => L`أنجز ${fmt(n)} مهمة` },
   { id: 'fsh', e: '🎣', stat: 'fish', base: 60, gen: 2, t: n => L`اصطد ${fmt(n)} سمكة` },
   { id: 'dun', e: '🕳️', need: () => Math.ceil(dunGoal() * 1.2), val: () => S.dun.max, t: n => L`انزل للطابق ${fmt(n)} في الزنزانة` },
-  { id: 'gld', e: '💰', need: () => genNice(Math.max(goldGoal() * 3, (S.stats.earned || 0) / S.leg.gen * 0.6)), val: () => S.gen.earned, t: n => L`اكسب ${fmt(n)} ذهب في هذا الجيل` },
+  { id: 'gld', e: '💰', need: () => genNice(Math.max(goldGoal() * 3, genRef('earned') * 0.6)), val: () => S.gen.earned, t: n => L`اكسب ${fmt(n)} ذهب في هذا الجيل` },
 ];
 const GEN_TASK_N = 3, GEN_TASK_PCT = 0.05, GEN_TASK_ALL = 0.05;
 function genNice(n) { const p = Math.pow(10, Math.max(0, Math.floor(Math.log10(Math.max(1, n))) - 1)); return Math.max(1, Math.round(n / p) * p); }
+const GEN_STATS = ['harvests', 'products', 'blocks', 'kills', 'quests', 'fish'];
+// What a counting task is sized from: the last generation's total, or the family's average per generation if higher.
+function genRef(k) { const pv = S.leg.prev || {}, avg = (k === 'earned' ? S.stats.earned || 0 : S.stats[k] || 0) / S.leg.gen; return Math.max(pv[k] || 0, avg); }
 function genTasks() {
-  const g = S.gen; if (g.gq && g.gq.length) return g.gq;
+  const g = S.gen; if (!g.s0) g.s0 = Object.fromEntries(GEN_STATS.map(k => [k, S.stats[k] || 0])); // the counters when this generation began (or when this was first seen)
+  if (g.gq && g.gq.length) return g.gq;
   const pool = GEN_TASKS.filter(x => !x.gen || S.leg.gen >= x.gen).sort(() => Math.random() - 0.5).slice(0, GEN_TASK_N);
-  g.gq = pool.map(x => x.stat ? { id: x.id, n: genNice(Math.max(x.base, (S.stats[x.stat] || 0) / S.leg.gen * 0.6)), b: S.stats[x.stat] || 0 } : { id: x.id, n: x.need() });
+  g.gq = pool.map(x => x.stat ? { id: x.id, n: genNice(Math.max(x.base, genRef(x.stat) * 0.6)), b: S.stats[x.stat] || 0 } : { id: x.id, n: x.need() });
   return g.gq;
 }
 function genTaskDef(q) { return GEN_TASKS.find(x => x.id === q.id); }
@@ -1555,6 +1560,7 @@ function doRetire() {
     friend: NPCS.reduce((b, n) => ((S.npc[n.id] || {}).pts || 0) > ((S.npc[b.id] || {}).pts || 0) ? n : b, NPCS[0]), spouse: S.spouse };
   LG.best.dun = Math.max(LG.best.dun, S.dun.max); LG.best.mine = Math.max(LG.best.mine, S.mine.max);
   LG.stars += gain; LG.totalStars += gain;
+  { const s0 = S.gen.s0; LG.prev = { earned: S.gen.earned }; if (s0) GEN_STATS.forEach(k => { LG.prev[k] = Math.max(0, (S.stats[k] || 0) - (s0[k] || 0)); }); } // sizes the next generation's tasks
   LG.history.push({ gen: LG.gen, name: S.name, earned: S.gen.earned, dun: S.dun.max, stars: gain });
   const heir = RS.heir ? HEIRLOOMS.find(x => x.id === RS.heir) : null;
   if (heir) LG.heir[heir.id] = H(heir.id) + 1;

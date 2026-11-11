@@ -1533,7 +1533,7 @@ const A = {
   tab: v => {
     if (!tabOpen(v)) return toast(L`🔒 «${tabName(v)}» يفتح لما: ${TAB_UNLOCK[v].why}`);
     if (v === 'util' && !indPt('util')) return toast(L('🔒 «الخدمات» تنفتح باختراع «الخدمات العامة» من تبويب الاختراعات'));
-    if (v === 'port' && !indTrainDone()) return toast(L('🔒 «الميناء» ينفتح بعد ما يطلع القطار الأول من المحطة'));
+    if (v === 'port' && !indHbOpen()) return toast(L('🔒 «الميناء» ينفتح لما تبني المحطة الكبرى في القطار الأول'));
     if ((S.unl || {})[v] === 2) S.unl[v] = 1;
     tab = v; lastSig = ''; if (v === 'guild') S.leg.eggNew = 0; const y = $('wrap').getBoundingClientRect().top + scrollY - $('tabs').offsetHeight - 16; if (scrollY > y) scrollTo(0, Math.max(0, y)); },
   seed: v => { S.farm.seed = v; },

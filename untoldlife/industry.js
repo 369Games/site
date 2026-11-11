@@ -88,7 +88,7 @@ const IND_HALL_STAGES = [
   { from: 0, n: L('بيت البلدة'), e: '🏤' }, { from: 4, n: L('دار البلدة الكبيرة'), e: '🏤' },
   { from: 7, n: L('مقر البلدة الفخم'), e: '🏤' }, { from: 10, n: L('قصر البلدة'), e: '🏤' },
 ];
-function indLocked() { const o = {}; if (!indPt('util')) o.util = 1; if (!indTrainDone()) o.port = 1; return o; }
+function indLocked() { const o = {}; if (!indPt('util')) o.util = 1; if (!indHbOpen()) o.port = 1; return o; }
 function indTabs() {
   return [['fields', L('🗻 الحقول')], ['furn', L('🏭 المراجل')], ['ws', L('🔧 الورشة')], ['city', L('🏙️ المدينة')],
     ['util', L('🎛️ الخدمات')], ['pat', L('🔬 الاختراعات')], ['train', L('🚂 القطار')], ['port', L('⚓ الميناء')], ['settings', L('⚙️ المزيد')]];
@@ -156,6 +156,7 @@ const IND_HB_UP = [
   { id: 'tools', e: '⚙️', max: 10, c: 12, n: L('أدوات مستوردة'), d: L('+3% سرعة للحقول والمراجل والورشة لكل مستوى') },
   { id: 'spice', e: '💰', max: 10, c: 12, n: L('توابل للسوق'), d: L('+2% ذهب في القرية من كل المصادر لكل مستوى') },
 ];
+function indHbOpen() { return indTrain() >= 2; } // the grand station (train stage 2) brings the harbour with it
 function indHbOf() { return (S.leg.ind || {}).hb || null; } // read-only: null until the harbour is built
 function indHb() { const I = ind(); return I.hb || (I.hb = { l: 0, sh: [], fg: 0, up: {}, n: 0 }); }
 function indHbLv() { const h = indHbOf(); return h ? h.l || 0 : 0; }
@@ -170,7 +171,7 @@ function indHbCargo(r) { return r.cargo.map(([id, q]) => [id, q * indHbLv()]); }
 function indHbTime(r) { return r.h * 3600e3 * (1 - 0.04 * indHbUp('sail')); }
 function indHbGold(r) { return Math.round(indHbCargo(r).reduce((a, [id, q]) => a + q * IND_VAL[id], 0) * 2.5 * (1 + 0.1 * indEng('deal')) * (1 + 0.05 * indHbUp('deal'))); }
 function indHbFg(r) { return Math.round(r.fg * indHbLv() * (1 + 0.1 * indHbUp('hold'))); }
-function indHbCanSend(r) { return indTrainDone() && indHbLv() > 0 && indHbFree() > 0 && indCanPay(0, indHbCargo(r)); }
+function indHbCanSend(r) { return indHbOpen() && indHbLv() > 0 && indHbFree() > 0 && indCanPay(0, indHbCargo(r)); }
 function indHbB() { return 1 + 0.03 * indHbUp('tools'); }
 function indHbIc(n, l = indHbLv()) { const i = indStage(l) + 1; return ART['ind-port-' + i] ? icon('ind-port-' + i, n) : ART['ind-boat-' + i] ? icon('ind-boat-' + i, n) : '<span class="ind-e big">⚓</span>'; }
 function indPt(id) { const t = (S.leg.ind || {}).pt; return t ? t[id] || 0 : 0; }
@@ -480,12 +481,13 @@ const IND_ACTIONS = {
     const I = ind(), i = indTrain(), x = IND_TRAIN[i]; if (!x || !indTrainCan(i)) return;
     indPay(x.g, x.mats); if (x.pat) I.pat -= x.pat; I.tr = i + 1;
     log(L`🚂 خلصت مرحلة «${x.n}» من القطار الأول (${i + 1} من ${IND_TRAIN.length})`, 'golden', 'ind');
+    if (I.tr === 2) { log(L('⚓ تبويب الميناء انفتح: ابنِ ميناء الوادي وأرسل سفنك رحلات'), 'golden', 'ind'); renderTabs(); }
     if (indTrainDone()) { I.trAt = Date.now(); log(L('🎉 القطار الأول طلع من المحطة! ختمت UntoldLife. المصنع صار أسرع 20% والذهب +10% للأبد.'), 'golden', 'ind'); checkAch(); indEnding(); }
   },
   indEndingShow: () => indEnding(),
   // The harbour: build or upgrade it, send a ship on a route, collect a ship that is back, buy an upgrade with foreign goods.
   indHbUpg: () => {
-    if (!indTrainDone()) return; const H = indHb(), l = H.l; if (l >= IND_HB_MAX) return;
+    if (!indHbOpen()) return; const H = indHb(), l = H.l; if (l >= IND_HB_MAX) return;
     const c = indHbCost(l); if (!indCanPay(c.gold, c.mats)) return;
     indPay(c.gold, c.mats); H.l = l + 1;
     log(l ? L`⚓ الميناء صار مستوى ${H.l}: حمولة السفينة ×${H.l}، وعندك ${indHbShips()} سفينة` : L('⚓ بنيت ميناء الوادي! عندك أول سفينة: حمّلها وأرسلها رحلة'), 'golden', 'ind');
@@ -730,7 +732,7 @@ function viewTrain() {
 }
 // The harbour page: the harbour itself, the ships, the three routes, and the foreign goods shop.
 function viewPort() {
-  if (!indTrainDone()) return L`<div class="panel"><div class="ph"><h2>⚓ الميناء</h2><span class="stat">🔒</span></div><p class="hint">الميناء ينفتح بعد ما يطلع القطار الأول من المحطة.</p></div>`;
+  if (!indHbOpen()) return L`<div class="panel"><div class="ph"><h2>⚓ الميناء</h2><span class="stat">🔒</span></div><p class="hint">الميناء ينفتح لما تبني المحطة الكبرى، المرحلة الثانية من القطار الأول.</p></div>`;
   const H = indHb(), l = H.l, now = Date.now(), free = indHbFree(), c = l < IND_HB_MAX ? indHbCost(l) : null;
   let h = L`<div class="panel"><div class="ph"><h2>⚓ الميناء</h2><span class="stat">🧳 ${fmt(H.fg || 0)} بضاعة أجنبية</span></div>
     <p class="hint">حمّل سفنك من مخزن المصنع وأرسلها رحلات. الرحلة تاخذ ساعات حقيقية وتكمل واللعبة مقفلة، وترجع بذهب وبضاعة أجنبية تشتري فيها تطويرات للأبد. الميناء وسفنه وتطويراته ما ينعادون مع تجديد المصنع.</p>`;
@@ -799,7 +801,7 @@ const IND_VIEWS = {
   train: [viewTrain, updInd, () => { const I = ind(); return [I.tr, I.pat, indHall(), indLv('rails'), indTrain() < IND_TRAIN.length && indTrainCan(indTrain())]; }],
   port: [viewPort, updInd, () => {
     const I = ind(), H = I.hb || { sh: [] }, now = Date.now(), l = H.l || 0;
-    return [I.tr, l, H.fg, H.up, H.sh.map(x => [x.r, x.at <= now]), indEng('deal'), l < IND_HB_MAX && indCanPay(indHbCost(l).gold, indHbCost(l).mats), l ? IND_HB_ROUTES.map(r => indCanPay(0, indHbCargo(r))) : 0];
+    return [indHbOpen(), l, H.fg, H.up, H.sh.map(x => [x.r, x.at <= now]), indEng('deal'), l < IND_HB_MAX && indCanPay(indHbCost(l).gold, indHbCost(l).mats), l ? IND_HB_ROUTES.map(r => indCanPay(0, indHbCargo(r))) : 0];
   }],
   pat: [viewPat, updInd, () => { const I = ind(); return [I.pat, I.pt, I.ren, indHall(), indRenewGain(), !!(indRenewArm && Date.now() < indRenewArm)]; }],
   util: [viewUtil, updInd, () => { const I = ind(); return [I.u, I.pt, Math.floor(indUtilTotal() / 1e3), IND_UTIL.map(x => indUl(x.id) < IND_MAXLV && indCanPay(indUtilCost(x, indUl(x.id)).gold, indUtilCost(x, indUl(x.id)).mats))]; }],

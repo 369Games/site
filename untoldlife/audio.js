@@ -218,6 +218,7 @@ function compose(id) {
 function auWantedSong() {
   if (typeof S === 'undefined' || !S || !S.started) return (window.MUSIC_FILES || {}).theme ? 'theme' : 'spring';
   if (S.dun && S.dun.active && typeof tab !== 'undefined' && tab === 'guild') return 'dungeon';
+  if ((window.MUSIC_FILES || {}).factory && typeof inInd === 'function' && inInd()) return 'factory'; // the factory's own track, once it is recorded
   return ['spring', 'summer', 'autumn', 'winter'][S.season] || 'spring';
 }
 function auIsNight() { const top = document.getElementById('top'); return !!top && top.dataset.phase === 'night'; }
@@ -292,7 +293,24 @@ const SFX = {
   levelup: () => [0, 4, 7, 11, 12].forEach((s, i) => later(i * 0.06, () => blip('square', mtof(72 + s), 0.18, 0.045))),
   bad: () => { blip('triangle', 220, 0.3, 0.08); later(0.12, () => blip('triangle', 196, 0.4, 0.08)); },
   error: () => blip('square', 160, 0.12, 0.04),
+  // The factory (1.17): each action has its own sound, built from the same few voices as the village's.
+  contract: () => { thud(140, 0.1); later(0.1, () => SFX.coin()); },
+  swap: () => { swish(0.16, 2600, 0.06); later(0.09, () => swish(0.12, 3400, 0.05)); },
+  build: () => { thud(170, 0.09); later(0.14, () => thud(170, 0.09)); later(0.3, () => blip('triangle', mtof(84), 0.22, 0.07)); },
+  hall: () => { thud(60, 0.32); [0.28, 0.62].forEach(d => later(d, () => bell(660, 0.8, 0.05))); },
+  furnace: () => { bell(300, 0.35, 0.07); later(0.08, () => swish(0.5, 500, 0.11)); },
+  bench: () => { thud(210, 0.08); [0.12, 0.19, 0.26].forEach(d => later(d, () => blip('square', 900, 0.02, 0.03))); },
+  hire: () => { blip('square', 1000, 0.03, 0.04); later(0.1, () => blip('sine', 1568, 0.1, 0.06)); later(0.22, () => blip('sine', 2093, 0.16, 0.06)); },
+  engineer: () => { swish(0.25, 4000, 0.04); later(0.22, () => blip('sine', 2093, 0.18, 0.05)); },
+  patent: () => { swish(0.15, 5000, 0.03); [0, 4, 7, 12, 16].forEach((s, i) => later(0.1 + i * 0.06, () => blip('sine', mtof(84 + s), 0.2, 0.05))); },
+  renew: () => { swish(0.9, 700, 0.1); [0, 4, 7, 12].forEach((s, i) => later(1.05 + i * 0.09, () => blip('triangle', mtof(72 + s), 0.35, 0.08))); },
+  service: () => { thud(90, 0.14); later(0.1, () => { blip('sine', 220, 0.7, 0.05); blip('sawtooth', 110, 0.7, 0.02); }); },
+  whistle: () => { thud(150, 0.08); later(0.14, () => thud(150, 0.08)); later(0.34, () => [784, 988].forEach(f => blip('triangle', f, 0.75, 0.06))); },
+  world: () => { swish(0.3, 1500, 0.06); later(0.12, () => bell(1320, 0.5, 0.035)); },
+  sail: () => { blip('sine', 147, 0.8, 0.07); blip('sawtooth', 147, 0.8, 0.025); later(0.25, () => swish(0.6, 700, 0.06)); },
+  shipback: () => { blip('sine', 196, 0.35, 0.06); later(0.3, () => SFX.coin()); },
 };
+function bell(freq, dur, vol) { [1, 2.76, 5.4].forEach(r => blip('sine', freq * r, dur, vol / r)); }
 // While the page is hidden the sound is paused, so new sounds would queue up and all play at once on return. Skip them.
 const auLive = () => AU.ctx && AU.ctx.state === 'running' && !document.hidden && !AU.set.muted;
 function later(s, fn) { setTimeout(() => { if (auLive()) fn(); }, s * 1000); }
@@ -324,7 +342,17 @@ let auBefore = null;
 const auSnap = () => ({
   gold: S.gold, harvests: S.stats.harvests, blocks: S.stats.blocks, fish: S.stats.fish,
   planted: S.farm.plots.filter(p => p.c).length, wet: S.farm.plots.filter(p => p.w).length,
+  ind: auIndSnap(),
 });
+// Everything a factory button can change, as one string: a different string after the click means the action went through.
+function auIndSnap() {
+  const I = S.leg && S.leg.ind; if (!I) return '';
+  const H = I.hb || {};
+  return JSON.stringify([S.world, I.hired, I.ren, I.tr, I.kt, I.b, I.e, I.pt, I.u, I.sw, Object.values(I.f).map(f => f.l), Object.values(I.fu).map(u => u.n), H.l, (H.sh || []).length, H.n, H.up]);
+}
+// The sound for a factory action that went through.
+const AU_IND = { indK: 'contract', indKSkip: 'swap', indBld: 'build', indStore: 'build', indField: 'build', indHbUpg: 'build', indHall: 'hall', indHire: 'hire',
+  indEng: 'engineer', indPt: 'patent', indHbBuy: 'patent', indRenew: 'renew', indUtil: 'service', indTrainGo: 'whistle', world: 'world', indUnlock: 'fanfare', indShip: 'sail', indShipGet: 'shipback' };
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-a]');
   auBefore = b && !b.disabled && typeof S !== 'undefined' && S ? auSnap() : null;
@@ -341,6 +369,8 @@ document.addEventListener('click', e => {
   if (a === 'upgrade' && N.gold < B.gold) return sfx('anvil');
   if (a === 'gift') return sfx('gift');
   if (a === 'pet') return sfx('pet');
+  if (N.ind !== B.ind && a === 'indFurn') return sfx(typeof IND_PROD !== 'undefined' && IND_PROD.some(r => r.id === b.dataset.v) ? 'bench' : 'furnace');
+  if (N.ind !== B.ind && AU_IND[a]) return sfx(AU_IND[a]);
   if (N.gold < B.gold) return sfx('buy');
   if (a === 'tab') return sfx('tab');
   if (a === 'muteToggle') return;
@@ -353,7 +383,8 @@ if (typeof log === 'function') {
     baseLog.apply(this, arguments);
     if (typeof offline !== 'undefined' && offline) return;
     if (type === 'season') sfx('fanfare');
-    else if (type === 'golden') sfx('gift');
+    else if (type === 'golden') { if (arguments[2] !== 'ind') sfx('gift'); } // factory moments have their own sounds (AU_IND)
+    else if (type === 'good' && arguments[2] === 'ind') { /* its button already made a sound */ }
     else if (type === 'good') sfx(/⭐|⚔️/.test(msg) ? 'levelup' : 'good');
     else if (type === 'bad') sfx('bad');
     else if (/^⭐/.test(msg)) sfx('levelup');

@@ -13,15 +13,25 @@ const IND_RES = {
   // Workshop products (phase 2) and the blueprints contracts pay with.
   plank: { n: L('ألواح خشب'), e: '📏' }, nails: { n: L('مسامير'), e: '📌' }, gear: { n: L('ترس'), e: '⚙️' },
   pipe: { n: L('أنبوب'), e: '🚰' }, machine: { n: L('آلة'), e: '🛠️' }, bp: { n: L('مخطط'), e: '📐' },
+  // The quarries (1.19): a fourth raw material and what is made from it. Open from the grand station (train stage 2).
+  sand: { n: L('رمل'), e: '🟡' }, glass: { n: L('زجاج'), e: '🔹' }, steel: { n: L('فولاذ'), e: '🔩' },
+  window: { n: L('نافذة'), e: '🪟' }, beam: { n: L('عارضة فولاذ'), e: '🪜' }, engine: { n: L('محرك بخاري'), e: '♨️' },
 };
 // The raw and furnace materials, shown on the fields, furnaces and city pages.
 const IND_BASE = ['clay', 'stone', 'wood', 'coal', 'brick', 'block', 'cu', 'fe', 'ag'];
+const IND_QBASE = ['sand', 'glass', 'steel']; // added to the stock row once the quarries are open
+function indBase() { return indQOpen() ? [...IND_BASE, ...IND_QBASE] : IND_BASE; }
 // The village ores the furnaces draw on, shown next to the factory stock (their net counts the village mining too).
 const IND_ORES = ['copper', 'iron', 'silver'];
 const IND_PREV = {};
 const IND_FIELDS = [
   { id: 'clay', n: L('حفرة الطين') }, { id: 'stone', n: L('جبل الحجر') }, { id: 'wood', n: L('الغابة') },
+  { id: 'sand', n: L('محجر الرمل'), q: 1 }, // q: part of the quarries, hidden until they open
 ];
+function indQOpen() { return indTrain() >= 2; }
+function indFields() { return indQOpen() ? IND_FIELDS : IND_FIELDS.filter(f => !f.q); }
+function indRecipes() { return indQOpen() ? IND_RECIPES : IND_RECIPES.filter(r => !r.q); }
+function indProds() { return indQOpen() ? IND_PROD : IND_PROD.filter(r => !r.q); }
 // Furnace recipes: inputs per batch (village ores by their item id), seconds per batch per furnace, base furnace price.
 const IND_RECIPES = [
   { id: 'coal', in: { wood: 3 }, out: 2, t: 3, c: 5e7 },
@@ -30,6 +40,8 @@ const IND_RECIPES = [
   { id: 'cu', in: { copper: 3, coal: 1 }, out: 2, t: 6, c: 3e8 },
   { id: 'fe', in: { iron: 3, coal: 2 }, out: 2, t: 8, c: 6e8 },
   { id: 'ag', in: { silver: 3, coal: 2 }, out: 2, t: 10, c: 1.2e9 },
+  { id: 'glass', in: { sand: 3, coal: 1 }, out: 2, t: 5, c: 2e9, q: 1 },
+  { id: 'steel', in: { fe: 2, coal: 2 }, out: 2, t: 10, c: 4e9, q: 1 },
 ];
 // Workshop benches: the same mechanics as furnaces (their own count, pause, warehouse cap), making products.
 const IND_PROD = [
@@ -39,13 +51,16 @@ const IND_PROD = [
   { id: 'gear', in: { fe: 2, cu: 1 }, out: 2, t: 8, c: 6e8 },
   { id: 'pipe', in: { cu: 2, brick: 2 }, out: 2, t: 8, c: 6e8 },
   { id: 'machine', in: { gear: 3, pipe: 2, plank: 6, nails: 8 }, t: 30, c: 2e9 },
+  { id: 'window', in: { glass: 2, plank: 1 }, t: 8, c: 3e9, q: 1 },
+  { id: 'beam', in: { steel: 2, nails: 2 }, t: 10, c: 4e9, q: 1 },
+  { id: 'engine', in: { machine: 1, beam: 4, window: 2 }, t: 60, c: 1e10, q: 1 },
 ];
 const IND_MAKERS = [...IND_RECIPES, ...IND_PROD];
 // Contracts: three at a time, each asks for one or two things you already make. Base amount per material, and the gold
 // a unit is worth (the reward is 1.5× that). Amounts grow 12% per finished contract and never pass 90% of the warehouse.
-const IND_KQ = { clay: 400, stone: 400, wood: 400, coal: 200, brick: 200, block: 200, cu: 60, fe: 50, ag: 40, plank: 80, nails: 40, gear: 15, pipe: 15, machine: 3 };
+const IND_KQ = { clay: 400, stone: 400, wood: 400, coal: 200, brick: 200, block: 200, cu: 60, fe: 50, ag: 40, plank: 80, nails: 40, gear: 15, pipe: 15, machine: 3, sand: 400, glass: 200, steel: 50, window: 40, beam: 15, engine: 1 };
 // Contracts are the factory's big gold source; the further down the chain, the more a unit pays.
-const IND_VAL = { clay: 3e6, stone: 3e6, wood: 3e6, coal: 1.5e7, brick: 2.5e7, block: 2.5e7, cu: 1e8, fe: 2e8, ag: 4e8, plank: 4.8e7, nails: 4.8e8, gear: 1.6e9, pipe: 1e9, machine: 2.4e10 };
+const IND_VAL = { clay: 3e6, stone: 3e6, wood: 3e6, coal: 1.5e7, brick: 2.5e7, block: 2.5e7, cu: 1e8, fe: 2e8, ag: 4e8, plank: 4.8e7, nails: 4.8e8, gear: 1.6e9, pipe: 1e9, machine: 2.4e10, sand: 3e6, glass: 3e7, steel: 4e8, window: 1.5e8, beam: 2.2e9, engine: 5e10 };
 // A delivered contract's slot waits 6 minutes for a new one (the contract trader cuts 18 s a level, down to 3 minutes).
 // Two swaps; each used swap comes back after the same wait.
 const IND_KSW = 2, IND_KCAP = 300;
@@ -147,7 +162,8 @@ const IND_HB_MAX = 10;
 const IND_HB_ROUTES = [
   { id: 'coast', e: '⛵', n: L('الساحل القريب'), d: L('رحلة قصيرة لقرى الساحل'), h: 1, fg: 1, cargo: [['plank', 2000], ['brick', 3000], ['nails', 500]] },
   { id: 'isles', e: '🧭', n: L('جزر التوابل'), d: L('أسواق الجزر تحب المسامير والتروس'), h: 4, fg: 5, cargo: [['nails', 3000], ['gear', 800], ['cu', 3000]] },
-  { id: 'far', e: '🚢', n: L('الموانئ البعيدة'), d: L('أبعد رحلة وأكبر مكافأة'), h: 8, fg: 12, cargo: [['machine', 150], ['pipe', 1500], ['ag', 3000]] },
+  { id: 'far', e: '🚢', n: L('الموانئ البعيدة'), d: L('رحلة طويلة ومكافأة كبيرة'), h: 8, fg: 12, cargo: [['machine', 150], ['pipe', 1500], ['ag', 3000]] },
+  { id: 'new', e: '🌍', n: L('القارة الجديدة'), d: L('أبعد رحلة: تبي محركات ونوافذ وفولاذ من المحاجر'), h: 12, fg: 24, cargo: [['engine', 150], ['window', 2000], ['steel', 5000]] },
 ];
 const IND_HB_UP = [
   { id: 'deal', e: '📜', max: 10, c: 8, n: L('تجار من ورا البحر'), d: L('+5% ذهب من العقود لكل مستوى') },
@@ -191,9 +207,9 @@ function indUtilMult() { return goldMult() * (1 + 0.2 * indPt('grid')); }
 function indUtilRate(id) { return indUtilBase(id) * indUtilMult(); }
 function indUtilTotal() { return indOpen() && indPt('util') ? IND_UTIL.reduce((a, x) => a + indUtilRate(x.id), 0) : 0; }
 function newInd() {
-  return { hired: 0, f: { clay: { w: 0, l: 0 }, stone: { w: 0, l: 0 }, wood: { w: 1, l: 0 } }, r: {}, fu: {}, b: { rails: 0, boat: 0, store: 0 } };
+  return { hired: 0, f: { clay: { w: 0, l: 0 }, stone: { w: 0, l: 0 }, wood: { w: 1, l: 0 }, sand: { w: 0, l: 0 } }, r: {}, fu: {}, b: { rails: 0, boat: 0, store: 0 } };
 }
-function ind() { return S.leg.ind; }
+function ind() { const I = S.leg.ind; if (I && !I.f.sand) I.f.sand = { w: 0, l: 0 }; return I; } // older saves get the sand pit
 function indOpen() { return !!S.leg.ind; }
 function inInd() { return indOpen() && S.world === 'ind'; }
 // --- unlock ---
@@ -247,15 +263,15 @@ function indActive(r) { const u = indFu(r.id); return u.on ? indChosen(u) : 0; }
    another fills up. */
 function indSmartW() {
   const I = ind(), n = indWorkers(), f = I.f, need = {}, want = {};
-  IND_FIELDS.forEach(x => { need[x.id] = 0; });
+  const FL = indFields(); FL.forEach(x => { need[x.id] = 0; });
   for (const r of IND_MAKERS) {
     const per = indActive(r) * indSpeed(r) / r.t;
     if (per) for (const [id, q] of Object.entries(r.in)) if (id in need) need[id] += per * q * indInMult();
   }
-  const perW = x => 0.5 * (1 + 0.5 * f[x].l) * (1 + 0.15 * indEng('field')) * indTrainB();
-  let tot = 0; IND_FIELDS.forEach(x => { want[x.id] = need[x.id] / perW(x.id); tot += want[x.id]; });
-  const ids = IND_FIELDS.map(x => x.id), out = {};
-  if (tot <= 0) { ids.forEach((id, i) => { out[id] = Math.floor(n / 3) + (i < n % 3 ? 1 : 0); }); }
+  const perW = x => 0.5 * (1 + 0.5 * f[x].l) * (1 + 0.15 * indEng('field')) * indTrainB() * indHbB();
+  let tot = 0; FL.forEach(x => { want[x.id] = need[x.id] / perW(x.id); tot += want[x.id]; });
+  const ids = FL.map(x => x.id), out = {}, m = ids.length;
+  if (tot <= 0) { ids.forEach((id, i) => { out[id] = Math.floor(n / m) + (i < n % m ? 1 : 0); }); }
   else {
     const scale = Math.min(1, n / tot); let left = n;
     ids.forEach(id => { out[id] = Math.min(left, Math.floor(want[id] * scale)); left -= out[id]; });
@@ -354,7 +370,7 @@ function indStLine(key, st) { return `<p class="ind-st ${st.c}" data-ist="${key}
 
 // --- contracts ---
 // Things you can already make: the three fields, plus every furnace or bench you own.
-function indPool() { return [...IND_FIELDS.map(f => f.id), ...IND_MAKERS.filter(r => indFu(r.id).n).map(r => r.id)]; }
+function indPool() { return [...indFields().map(f => f.id), ...IND_MAKERS.filter(r => indFu(r.id).n).map(r => r.id)]; }
 function indNewK() {
   // Requests (and their gold and blueprints) grow 12% a delivered contract, up to 300 contracts (×37), then stay there.
   const t = Math.min(ind().kd || 0, IND_KCAP), pool = indPool(), n = t >= 3 && pool.length > 1 ? 2 : 1, max = Math.floor(indCap() * 0.9), need = [];
@@ -394,19 +410,19 @@ const IND_ACTIONS = {
     logDirty = true; logDrawT = 0; lastBuffs = ''; renderSide(); // the side panel follows the world
   },
   // A new worker goes straight to the field with the fewest workers; move them any time.
-  indHire: () => { const c = indHireCost(); if (ind().hired + 1 >= indWMax() || S.gold < c) return; S.gold -= c; ind().hired++; const f = ind().f; IND_FIELDS.map(x => f[x.id]).sort((a, b) => a.w - b.w)[0].w++; },
+  indHire: () => { const c = indHireCost(); if (ind().hired + 1 >= indWMax() || S.gold < c) return; S.gold -= c; ind().hired++; const f = ind().f; indFields().map(x => f[x.id]).sort((a, b) => a.w - b.w)[0].w++; },
   indW: v => {
-    const [id, d] = v.split(':'), f = ind().f[id]; if (!f) return;
+    const [id, d] = v.split(':'), f = ind().f[id]; if (!f || !indFields().some(x => x.id === id)) return;
     if (+d > 0 && indUsed() < indWorkers()) f.w++; else if (+d < 0 && f.w > 0) f.w--;
   },
-  indEven: () => { const n = indWorkers(), f = ind().f; IND_FIELDS.forEach((x, i) => { f[x.id].w = Math.floor(n / 3) + (i < n % 3 ? 1 : 0); }); },
+  indEven: () => { const n = indWorkers(), f = ind().f, FL = indFields(), m = FL.length; FL.forEach((x, i) => { f[x.id].w = Math.floor(n / m) + (i < n % m ? 1 : 0); }); },
   indField: v => {
-    const f = ind().f[v]; if (!f || f.l >= IND_MAXLV || f.l >= indHall()) return;
+    const f = ind().f[v]; if (!f || !indFields().some(x => x.id === v) || f.l >= IND_MAXLV || f.l >= indHall()) return;
     const c = indFieldCost(f.l), mats = [[v, c.qty]]; if (!indCanPay(c.gold, mats)) return;
     indPay(c.gold, mats); f.l++; indStageLog(IND_FIELDS.find(x => x.id === v).n, f.l);
   },
   indFurn: v => {
-    const r = IND_MAKERS.find(x => x.id === v); if (!r) return; const u = indFu(v), c = indFurnCost(r), all = u.a === undefined || u.a >= u.n;
+    const r = IND_MAKERS.find(x => x.id === v); if (!r || (r.q && !indQOpen())) return; const u = indFu(v), c = indFurnCost(r), all = u.a === undefined || u.a >= u.n;
     if (u.n >= indFurnMax() || S.gold < c) return; S.gold -= c; u.n++; if (all && u.a !== undefined) u.a = u.n; // a new one starts running only when all of them were
   },
   indFurnOn: v => { const u = indFu(v); u.on = u.on ? 0 : 1; },
@@ -481,7 +497,7 @@ const IND_ACTIONS = {
     const I = ind(), i = indTrain(), x = IND_TRAIN[i]; if (!x || !indTrainCan(i)) return;
     indPay(x.g, x.mats); if (x.pat) I.pat -= x.pat; I.tr = i + 1;
     log(L`🚂 خلصت مرحلة «${x.n}» من القطار الأول (${i + 1} من ${IND_TRAIN.length})`, 'golden', 'ind');
-    if (I.tr === 2) { log(L('⚓ تبويب الميناء انفتح: ابنِ ميناء الوادي وأرسل سفنك رحلات'), 'golden', 'ind'); renderTabs(); }
+    if (I.tr === 2) { log(L('⚓ تبويب الميناء انفتح: ابنِ ميناء الوادي وأرسل سفنك رحلات'), 'golden', 'ind'); log(L('🟡 المحاجر انفتحت: محجر الرمل في الحقول، وأفران الزجاج والفولاذ، وثلاث طاولات جديدة في الورشة'), 'golden', 'ind'); renderTabs(); }
     if (indTrainDone()) { I.trAt = Date.now(); log(L('🎉 القطار الأول طلع من المحطة! ختمت UntoldLife. المصنع صار أسرع 20% والذهب +10% للأبد.'), 'golden', 'ind'); checkAch(); indEnding(); }
   },
   indEndingShow: () => indEnding(),
@@ -559,7 +575,7 @@ function indReqs(gold, mats) {
   const row = (id, need, got) => `<li class="${got >= need ? 'ok' : 'no'}"><span class="ri">${id === 'gold' ? '💰' : indIc(id, 22)}</span><span class="rn">${id === 'gold' ? L('ذهب') : indName(id)}</span><span class="rq"><b data-eg="${id}">${fmt(got)}</b> / ${fmt(need)}</span><span class="rs">${(e => `<span data-eta="${id}:${need}">${e[0]}</span><span class="eta" data-etat="${id}:${need}">${e[1]}</span>`)(indEtaTxt(id, need))}</span></li>`;
   return `<ul class="reqs">${gold ? row('gold', gold, S.gold) : ''}${(mats || []).map(([id, q]) => row(id, q, indHave(id))).join('')}</ul>`;
 }
-function indStock(ids = IND_BASE) {
+function indStock(ids = indBase()) {
   const cap = indCap();
   return `<div class="ind-stock">${ids.map(id => `<span class="ind-chip${IND_RES[id] ? '' : ' vil'}" title="${IND_RES[id] ? indName(id) : L`${indName(id)} (مخزن القرية)`}">${indIc(id, 20)} <b data-ir="${id}">${fmt(Math.floor(indHave(id)))}</b><small class="ind-net" data-inet="${id}"></small></span>`).join('')}<span class="ind-chip ghost">${L`📦 السعة ${fmt(cap)}`}</span><span class="ind-chip ghost wide">${L('📈 الرقم الملوّن: الصافي بالثانية بعد اللي تاكله المراجل')}</span></div>`;
 }
@@ -570,7 +586,7 @@ function viewFields() {
     <div class="row">${costBtn('indHire', '', indHireCost(), L`👷 وظّف عامل (${fmt(indHireCost())}💰)`, 'gold', I.hired + 1 >= indWMax())}<button class="btn ghost" data-a="indEven">⚖️ وزّع بالتساوي</button><button class="btn ghost" data-a="indSmart">👷 وزّع ذكي</button><button class="tog ${I.autoW ? 'on' : ''}" data-a="indAutoW">🤖 ${I.autoW ? L('تلقائي: شغّال') : L('تلقائي: موقف')}</button></div>
     <p class="hint">${L('«وزّع ذكي» يحط على كل حقل عمال قد اللي تاكله الأفران والطاولات الشغّالة منه، والباقي على الحقول اللي ما امتلت. و«تلقائي» يعيد التوزيع كل 30 ثانية.')}</p>`;
   h += indStock() + '<div class="grid ind-grid">';
-  for (const f of IND_FIELDS) {
+  for (const f of indFields()) {
     const x = I.f[f.id], c = indFieldCost(x.l);
     h += `<div class="card ind-card"><div class="top"><span class="big">${indLvIc('f-' + f.id, x.l, 48, indIc(f.id, 48))}</span><div class="meta"><b>${f.n}</b><small>${L`المستوى ${x.l} من ${IND_MAXLV}`}</small></div></div>
       <div class="kv"><span>${indName(f.id)}</span><span><b data-ir="${f.id}">${fmt(Math.floor(I.r[f.id] || 0))}</b> / ${fmt(indCap())}</span></div>
@@ -585,7 +601,7 @@ function viewFields() {
 function viewFurn() {
   let h = L`<div class="panel"><div class="ph"><h2>🏭 المراجل</h2></div>
     <p class="hint">المراجل تحوّل الخام لمواد صناعة. كل فرن يشتغل لحاله ما دام عنده مواد. النحاس والحديد والفضة تنسحب من مخزون القرية مباشرة، والفحم وقود أغلب الوصفات.</p>`;
-  h += indStock([...IND_BASE, ...IND_ORES]) + '<div class="grid ind-grid">' + IND_RECIPES.map(r => indMakerCard(r, false)).join('');
+  h += indStock([...indBase(), ...IND_ORES]) + '<div class="grid ind-grid">' + indRecipes().map(r => indMakerCard(r, false)).join('');
   return h + '</div></div>';
 }
 // One furnace or workbench card: recipe, output per second, stock, state, and buy/pause.
@@ -606,7 +622,7 @@ function viewWs() {
   const I = ind();
   let h = L`<div class="panel"><div class="ph"><h2>🔧 الورشة</h2><span class="stat">📐 ${fmt(I.r.bp || 0)} مخطط</span></div>
     <p class="hint">طاولات الورشة تحوّل الطوب والسبايك لمنتجات. المنتجات تسلّمها في العقود، والمهندس يحتاجها مع المخططات عشان يطوّر المصنع.</p>`;
-  h += indStock([...IND_BASE, ...IND_PROD.map(p => p.id), 'bp']) + '<div class="grid ind-grid">' + IND_PROD.map(r => indMakerCard(r, true)).join('') + '</div></div>';
+  h += indStock([...indBase(), ...indProds().map(p => p.id), 'bp']) + '<div class="grid ind-grid">' + indProds().map(r => indMakerCard(r, true)).join('') + '</div></div>';
   h += L`<div class="panel"><div class="ph"><h2>${indIc('engineer', 28)} المهندس</h2></div>
     <p class="hint">المهندس يطوّر المصنع للأبد بالمخططات والمنتجات. أول المستويات تحتاج ألواح ومسامير، بعدها تروس وأنابيب، وآخرها آلات.</p><div class="grid ind-grid">`;
   for (const g of IND_ENG) {
@@ -645,7 +661,7 @@ function viewCity() {
   const B = ind().b;
   let h = L`<div class="panel"><div class="ph"><h2>🏙️ المدينة</h2></div>
     <p class="hint">مباني المدينة تخدم القرية: كل مستوى يرخّص العمال هناك، لين خصم 90% وزيادة سعر العامل تنزل من ×1.45 إلى ×1.12. يعني توصل 200 عامل في المنجم و200 في البحيرة.</p>`;
-  h += indStock([...IND_BASE, ...IND_PROD.map(p => p.id)]) + '<div class="grid ind-grid">' + indHallCard();
+  h += indStock([...indBase(), ...indProds().map(p => p.id)]) + '<div class="grid ind-grid">' + indHallCard();
   for (const b of IND_BLD) {
     const l = B[b.id] || 0, c = l < IND_MAXLV ? indBldCost(l) : null;
     h += `<div class="card ind-card ${l ? 'lgcard g' : ''}"><div class="top"><span class="big">${indLvIc(b.id, l, 48, `<span class="ind-e big">${b.e}</span>`)}</span><div class="meta"><b>${b.n}</b><small>${L`المستوى ${l} من ${IND_MAXLV}`}</small></div></div>
@@ -790,7 +806,7 @@ function updInd() {
 function indSig() {
   const I = ind(); if (!I) return [];
   const pay = (g, m) => indCanPay(g, m);
-  return [I.hired, I.f, I.b, I.e, IND_MAKERS.map(r => [indFu(r.id).n, indFu(r.id).on, indChosen(indFu(r.id))]), I.autoW, (I.b.hall || 0) < IND_MAXLV && pay(indHallCost(I.b.hall || 0).gold, indHallCost(I.b.hall || 0).mats),
+  return [indQOpen(), I.hired, I.f, I.b, I.e, IND_MAKERS.map(r => [indFu(r.id).n, indFu(r.id).on, indChosen(indFu(r.id))]), I.autoW, (I.b.hall || 0) < IND_MAXLV && pay(indHallCost(I.b.hall || 0).gold, indHallCost(I.b.hall || 0).mats),
     IND_FIELDS.map(f => { const c = indFieldCost(I.f[f.id].l); return pay(c.gold, [[f.id, c.qty]]); }),
     IND_BLD.map(b => (I.b[b.id] || 0) < IND_MAXLV && pay(indBldCost(I.b[b.id] || 0).gold, indBldCost(I.b[b.id] || 0).mats)),
     (I.b.store || 0) < IND_MAXLV && pay(indStoreCost(I.b.store || 0).gold, indStoreCost(I.b.store || 0).mats)];
@@ -802,7 +818,7 @@ const IND_VIEWS = {
   train: [viewTrain, updInd, () => { const I = ind(); return [I.tr, I.pat, indHall(), indLv('rails'), indTrain() < IND_TRAIN.length && indTrainCan(indTrain())]; }],
   port: [viewPort, updInd, () => {
     const I = ind(), H = I.hb || { sh: [] }, now = Date.now(), l = H.l || 0;
-    return [indHbOpen(), l, H.fg, H.up, H.sh.map(x => [x.r, x.at <= now]), indEng('deal'), l < IND_HB_MAX && indCanPay(indHbCost(l).gold, indHbCost(l).mats), l ? IND_HB_ROUTES.map(r => indCanPay(0, indHbCargo(r))) : 0];
+    return [indHbOpen(), l, H.fg, H.up, indQOpen(), H.sh.map(x => [x.r, x.at <= now]), indEng('deal'), l < IND_HB_MAX && indCanPay(indHbCost(l).gold, indHbCost(l).mats), l ? IND_HB_ROUTES.map(r => indCanPay(0, indHbCargo(r))) : 0];
   }],
   pat: [viewPat, updInd, () => { const I = ind(); return [I.pat, I.pt, I.ren, indHall(), indRenewGain(), !!(indRenewArm && Date.now() < indRenewArm)]; }],
   util: [viewUtil, updInd, () => { const I = ind(); return [I.u, I.pt, Math.floor(indUtilTotal() / 1e3), IND_UTIL.map(x => indUl(x.id) < IND_MAXLV && indCanPay(indUtilCost(x, indUl(x.id)).gold, indUtilCost(x, indUl(x.id)).mats))]; }],
@@ -828,7 +844,7 @@ function indBuffsHtml() {
   h += info(L('🔬 الاختراعات'), [row(L('🎫 براءات عندك'), indPats()), row(L('🔁 تجديدات'), I.ren || 0), row(L('🎫 لو جدّدت الحين'), '+' + indRenewGain())]);
   h += info(L('🏤 مبنى البلدة'), [row(IND_HALL_STAGES[indHallStage()].n, L`مستوى ${indHall()}`), row(L('أعلى مستوى للمباني والحقول'), indHall()), row(L('أفران وطاولات من كل نوع'), indFurnMax())]);
   h += g(L('🗻 إنتاج الحقول'), [[L('⛏️ حقول أغزر (المهندس)'), 1 + 0.15 * indEng('field')]],
-    [row(L('👷 العمال'), `${indWorkers()} / ${indWMax()}`), ...IND_FIELDS.map(f => row(`${f.n} (${L`مستوى ${I.f[f.id].l}`})`, L`${indNum(indRate(f.id))} بالثانية`))]);
+    [row(L('👷 العمال'), `${indWorkers()} / ${indWMax()}`), ...indFields().map(f => row(`${f.n} (${L`مستوى ${I.f[f.id].l}`})`, L`${indNum(indRate(f.id))} بالثانية`))]);
   h += g(L('🏭 سرعة المراجل'), [[L('🏭 مراجل أسرع (المهندس)'), 1 + 0.15 * indEng('furn')]], [row(L('🏭 عدد الأفران'), cnt(IND_RECIPES))]);
   h += g(L('🔧 سرعة الورشة'), [[L('🔧 ورشة أسرع (المهندس)'), 1 + 0.15 * indEng('bench')]], [row(L('🪚 عدد الطاولات'), cnt(IND_PROD))]);
   h += g(L('📜 ذهب العقود'), [[L('🤝 تاجر العقود (المهندس)'), 1 + 0.1 * indEng('deal')]],

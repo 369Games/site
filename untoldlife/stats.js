@@ -8,7 +8,14 @@
      tutorial  the new-player guide was finished
      playN     N minutes of active play (10, 30, 60, 180, 600)
      genN      reached generation N; value = active minutes so far
-     marry, floor30, floor100  big milestones */
+     marry, floor30, floor100, floor250, floor500, floor1000  big milestones
+   1.21.3, to see where players stop:
+     state-DATE  once per day; value = where the player was when last seen, e.g. «g13|ind:port|h10t2p1r1»
+                 (generation | world:tab they left on | factory: town hall, train stage, harbour level, renewals)
+     perks-all   the whole legacy tree is at max (the last gate before the factory)
+     tasks1, tasks3  finished one / all three generation tasks in a generation
+     ind-open, ind-hall1/4/10, ind-k1/k10, ind-util, ind-renew, ind-train1..5, ind-quarry, ind-drill, ind-port,
+     ind-voyage  the factory funnel, in the order players meet it; value = active minutes so far */
 const STATS_KEY = 'untoldlife_stats';
 const ST = (() => { try { return JSON.parse(localStorage.getItem(STATS_KEY)) || {}; } catch (e) { return {}; } })();
 if (!ST.id) ST.id = Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
@@ -36,11 +43,21 @@ function track(ev, value) {
   try { fetch(c.action, { method: 'POST', mode: 'no-cors', body: b }).catch(() => {}); } catch (e) { /* offline */ }
 }
 
+// Where the player is, in a few characters. Read on the next visit, so it tells where they stopped.
+function statsState() {
+  const I = S.leg.ind, w = S.world === 'ind' && I ? 'ind' : 'vil';
+  let s = 'g' + S.leg.gen + '|' + w + ':' + (typeof tab === 'string' ? tab : '');
+  if (I) s += '|h' + (I.b.hall || 0) + 't' + (I.tr || 0) + 'p' + ((I.hb || {}).l || 0) + 'r' + (I.ren || 0);
+  return s;
+}
 function statsCheck() {
   if (typeof S === 'undefined' || !S) return;
   const today = new Date().toISOString().slice(0, 10);
   track('visit-' + today, Math.floor((Date.now() - ST.first) / 864e5));
   if (!S.started) return;
+  // The day's first check sends what was saved at the end of the last session; after that the note follows the player.
+  track('state-' + today, ST.last || statsState());
+  ST.last = statsState();
   track('start');
   if (S.tut && S.tut.done) track('tutorial');
   for (const m of [10, 30, 60, 180, 600]) if (ST.active >= m * 60) track('play' + m);
@@ -50,6 +67,23 @@ function statsCheck() {
   const best = Math.max(S.dun.max, S.leg.best.dun || 0);
   if (best >= 30) track('floor30');
   if (best >= 100) track('floor100');
+  for (const f of [250, 500, 1000]) if (best >= f) track('floor' + f);
+  const mins = Math.round(ST.active / 60);
+  if (typeof indPerksDone === 'function' && indPerksDone()) track('perks-all', mins);
+  if (typeof genTaskDone === 'function') { const d = genTaskDone(); if (d >= 1) track('tasks1', S.leg.gen); if (d >= 3) track('tasks3', S.leg.gen); }
+  const I = S.leg.ind;
+  if (I) {
+    track('ind-open', mins);
+    const hall = I.b.hall || 0, k = Math.max(I.kt || 0, I.kd || 0), H = I.hb || {};
+    for (const l of [1, 4, 10]) if (hall >= l) track('ind-hall' + l, mins);
+    if (k >= 1) track('ind-k1', mins); if (k >= 10) track('ind-k10', mins);
+    if ((I.pt || {}).util) track('ind-util', mins);
+    if ((I.ren || 0) >= 1) track('ind-renew', mins);
+    for (let n = 1; n <= (I.tr || 0) && n <= 5; n++) track('ind-train' + n, mins);
+    if (((I.fu || {}).glass || {}).n || ((I.fu || {}).steel || {}).n) track('ind-quarry', mins);
+    if ((I.dm || []).length) track('ind-drill', mins);
+    if (H.l >= 1) track('ind-port', mins); if (H.n >= 1) track('ind-voyage', mins);
+  }
 }
 
 // Count active play time: only while the page is visible and a game is running.

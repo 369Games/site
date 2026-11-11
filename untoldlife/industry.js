@@ -695,6 +695,7 @@ function viewUtil() {
 // The ending: shown once when the last stage is built, and again from the train page.
 function indEnding() {
   const I = ind(), st = S.stats;
+  if (typeof auEnding === 'function') auEnding(); // the ending's own music (audio.js)
   openModal(L`<h2>🚂 القطار الأول طلع من المحطة!</h2>
     <div class="letter"><p>من مزرعة صغيرة متعبة تركها لك جدك، إلى قطار يربط وادي الصدى بالعالم.</p>
     <p>عائلتك كتبت قصتها، جيل بعد جيل. <b>ختمت UntoldLife.</b></p></div>

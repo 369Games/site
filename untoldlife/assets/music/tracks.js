@@ -8,4 +8,6 @@ window.MUSIC_FILES = {
   autumn: 'autumn.mp3',
   winter: 'winter.mp3',
   dungeon: 'dungeon.mp3',
+  factory: 'factory.mp3', // plays while the player is in the factory
+  ending: 'ending.mp3', // plays once on the First Train ending screen
 };

@@ -216,11 +216,14 @@ function compose(id) {
 
 /* ---------- playback ---------- */
 function auWantedSong() {
+  if (AU.ending) return 'ending'; // the First Train ending plays its own piece once, then the usual music comes back
   if (typeof S === 'undefined' || !S || !S.started) return (window.MUSIC_FILES || {}).theme ? 'theme' : 'spring';
   if (S.dun && S.dun.active && typeof tab !== 'undefined' && tab === 'guild') return 'dungeon';
   if ((window.MUSIC_FILES || {}).factory && typeof inInd === 'function' && inInd()) return 'factory'; // the factory's own track, once it is recorded
   return ['spring', 'summer', 'autumn', 'winter'][S.season] || 'spring';
 }
+// Called by the ending screen (industry.js). Nothing happens if the piece isn't recorded or the sound is off.
+function auEnding() { if ((window.MUSIC_FILES || {}).ending && AU.ctx && !AU.set.muted) AU.ending = true; }
 function auIsNight() { const top = document.getElementById('top'); return !!top && top.dataset.phase === 'night'; }
 function auFileFor(id) { const F = window.MUSIC_FILES || {}; return F[id] ? 'assets/music/' + F[id] : ''; }
 
@@ -254,11 +257,12 @@ function auSwitch(id) {
     // A recorded track replaces the generated theme. Each track is kept, so it resumes where it stopped.
     AU.files = AU.files || {};
     const a = AU.files[id] || (AU.files[id] = new Audio(src));
-    a.loop = true; a.volume = 0; AU.file = a; AU.song = null;
+    a.loop = id !== 'ending'; a.volume = 0; AU.file = a; AU.song = null;
+    if (id === 'ending') { try { a.currentTime = 0; } catch (e) {} a.onended = () => { AU.ending = false; }; }
     auFilePlay(a);
     let v = 0; const target = () => AU.set.muted ? 0 : AU.set.music * 0.6;
     const f = setInterval(() => { if (AU.file !== a) return clearInterval(f); v = Math.min(target(), v + 0.03); a.volume = v; if (v >= target()) clearInterval(f); }, 80);
-    a.onerror = () => { if (AU.file === a) { AU.file = null; auStartSong(id, t); } };
+    a.onerror = () => { if (id === 'ending') { AU.ending = false; return; } if (AU.file === a) { AU.file = null; auStartSong(id, t); } };
     return;
   }
   auStartSong(id, t);

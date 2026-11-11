@@ -1373,6 +1373,7 @@ function checkChallenge() {
 }
 function checkAch() {
   if (!S || !S.started) return;
+  genTaskCheck();
   for (const a of ACH) {
     if (!S.leg.ach[a.id] && a.fn()) {
       S.leg.ach[a.id] = 1;
@@ -1380,6 +1381,50 @@ function checkAch() {
       toast(L`🏅 إنجاز: ${a.n}`);
     }
   }
+}
+
+/* Generation tasks (1.18): three tasks drawn for every generation, so each one has its own goal besides the retirement
+   goal. A finished task adds 5% of the generation's star cap to the stars at retirement, and all three add 20%; the bonus
+   sits on top of the cap. Counting tasks ask for 60% of what the family did per generation so far (never under the base),
+   so they grow with the player. S.gen.gq = [{ id, n: needed, b: the counter when the task was drawn, d: done }]. */
+const GEN_TASKS = [
+  { id: 'har', e: '🧺', stat: 'harvests', base: 200, t: n => L`احصد ${fmt(n)} محصول` },
+  { id: 'pro', e: '🥚', stat: 'products', base: 100, t: n => L`اجمع ${fmt(n)} منتج حيواني` },
+  { id: 'blk', e: '⛏️', stat: 'blocks', base: 150, t: n => L`اكسر ${fmt(n)} صخرة` },
+  { id: 'kil', e: '⚔️', stat: 'kills', base: 150, t: n => L`اهزم ${fmt(n)} وحش` },
+  { id: 'qst', e: '📜', stat: 'quests', base: 10, t: n => L`أنجز ${fmt(n)} مهمة` },
+  { id: 'fsh', e: '🎣', stat: 'fish', base: 60, gen: 2, t: n => L`اصطد ${fmt(n)} سمكة` },
+  { id: 'dun', e: '🕳️', need: () => Math.ceil(dunGoal() * 1.2), val: () => S.dun.max, t: n => L`انزل للطابق ${fmt(n)} في الزنزانة` },
+  { id: 'gld', e: '💰', need: () => genNice(Math.max(goldGoal() * 3, (S.stats.earned || 0) / S.leg.gen * 0.6)), val: () => S.gen.earned, t: n => L`اكسب ${fmt(n)} ذهب في هذا الجيل` },
+];
+const GEN_TASK_N = 3, GEN_TASK_PCT = 0.05, GEN_TASK_ALL = 0.05;
+function genNice(n) { const p = Math.pow(10, Math.max(0, Math.floor(Math.log10(Math.max(1, n))) - 1)); return Math.max(1, Math.round(n / p) * p); }
+function genTasks() {
+  const g = S.gen; if (g.gq && g.gq.length) return g.gq;
+  const pool = GEN_TASKS.filter(x => !x.gen || S.leg.gen >= x.gen).sort(() => Math.random() - 0.5).slice(0, GEN_TASK_N);
+  g.gq = pool.map(x => x.stat ? { id: x.id, n: genNice(Math.max(x.base, (S.stats[x.stat] || 0) / S.leg.gen * 0.6)), b: S.stats[x.stat] || 0 } : { id: x.id, n: x.need() });
+  return g.gq;
+}
+function genTaskDef(q) { return GEN_TASKS.find(x => x.id === q.id); }
+function genTaskVal(q) { const x = genTaskDef(q); return q.d ? q.n : Math.max(0, x.stat ? (S.stats[x.stat] || 0) - q.b : x.val()); }
+function genTaskDone() { return (S.gen.gq || []).filter(q => q.d).length; }
+function genTaskPct() { const d = genTaskDone(); return d * GEN_TASK_PCT + (d >= GEN_TASK_N ? GEN_TASK_ALL : 0); }
+function genTaskStars() { return Math.round(starCap() * genTaskPct()); }
+function genTaskCheck() {
+  for (const q of genTasks()) {
+    if (q.d || genTaskVal(q) < q.n) continue;
+    q.d = 1; const x = genTaskDef(q), all = genTaskDone() >= GEN_TASK_N;
+    log(L`🎯 خلصت مهمة الجيل: ${x.e} ${x.t(q.n)}. جائزتك عند التقاعد صارت +${fmt(genTaskStars())} نجمة`, 'golden');
+    if (all) log(L('🏆 خلصت مهام الجيل الثلاث كلها!'), 'golden');
+    toast(L`🎯 خلصت مهمة: ${x.t(q.n)}`); lastSig = '';
+  }
+}
+function genTasksHtml() {
+  const qs = genTasks();
+  return L`<div class="panel"><div class="ph"><h2>🎯 مهام الجيل</h2><span class="stat">${genTaskDone()} / ${GEN_TASK_N}</span></div>
+    <p class="hint">ثلاث مهام تتغير كل جيل. كل مهمة تخلصها تزيد نجومك عند التقاعد 5% من حد الجيل، والثلاث مع بعض 20%، وهذي الزيادة فوق الحد.</p>` +
+    qs.map((q, i) => { const x = genTaskDef(q); return `<div class="kv gq ${q.d ? 'good' : ''}"><span>${q.d ? '✅' : x.e} ${x.t(q.n)}</span><span id="gq_v${i}"></span></div><div class="bar gp"><i id="gq_b${i}"></i></div>`; }).join('') +
+    `<div class="kv"><span>${L('🎁 جائزة المهام عند التقاعد')}</span><span class="good">+<b id="gq_r"></b> ${L('نجمة')}</span></div></div>`;
 }
 
 /* ---------------- التقاعد ---------------- */
@@ -1407,7 +1452,7 @@ function starParts() {
     mine: Math.min(MINE_STAR_CAP, Math.max(0, S.mine.max - 20) / 10 * m) };
 }
 function starsBase() { const p = starParts(); return (p.gold + p.dun + p.mine) / starMult(); }
-function starsGain() { const p = starParts(); return Math.min(starCap(), Math.floor(p.gold + p.dun + p.mine)); }
+function starsGain() { const p = starParts(); return Math.min(starCap(), Math.floor(p.gold + p.dun + p.mine)) + genTaskStars(); } // generation tasks add on top of the cap
 function perkCost(p, l) { return Math.ceil(p.cost * Math.pow(p.mult, l)); }
 const KS_NEED = 10;
 function branchLv(b) { return PERKS.filter(p => p.b === b && !p.ks).reduce((n, p) => n + P(p.id), 0); }
@@ -1483,7 +1528,8 @@ function openRetire() {
 }
 function showRetire() {
   const LG = S.leg, gain = starsGain(), hb = heartStart() / 100;
-  openModal(L`<h2>🌅 التقاعد وتسليم المزرعة</h2>
+  const gqNote = genTaskStars() ? `<p class="good" style="text-align:center">${L`🎯 منها ${fmt(genTaskStars())} نجمة من مهام الجيل (${genTaskDone()} من ${GEN_TASK_N})`}</p>` : '';
+  openModal((L`<h2>🌅 التقاعد وتسليم المزرعة</h2>
   <div class="retirestar">${icon("legacy-crown",48)} +${fmt(gain)} <small>نجمة إرث</small></div>
   <p class="hint">❌ يروح: الذهب والمخزن والأحواض والحيوانات والأدوات والمباني والمستويات.<br>
   ✅ يبقى: النجوم وشجرة الإرث وقطع الإرث والإنجازات والإحصائيات، وأهل القرية يبدؤون معك من ${hb} قلوب لأنهم يذكرون عائلتك.</p>
@@ -1498,7 +1544,7 @@ function showRetire() {
   </div>` : L('<p class="hint">🏆 تحديات الأجيال تنفتح لما تتقاعد من الجيل الخامس.</p>')}
   <h3>👶 من يستلم المزرعة؟</h3><div class="row genderpick">${['m', 'f'].map(g => `<button class="btn ${RS.gender === g ? 'gold' : 'ghost'} sm" data-a="rsGender" data-v="${g}">${GENDER[g].e} ${GENDER[g].child}</button>`).join('')}</div>
   <label><b>اسم ${GENDER[RS.gender].child === L('ابن') ? L('الابن') : L('الابنة')}</b></label><input id="childIn" maxlength="24" value="${esc(RS.name)}">
-  <div class="row"><button class="btn gold" data-a="retireGo" style="flex:1">🌅 سلّم المزرعة وابدأ الجيل ${LG.gen + 1}</button><button class="btn ghost" data-a="closeModal">إلغاء</button></div>`);
+  <div class="row"><button class="btn gold" data-a="retireGo" style="flex:1">🌅 سلّم المزرعة وابدأ الجيل ${LG.gen + 1}</button><button class="btn ghost" data-a="closeModal">إلغاء</button></div>`).replace('</small></div>', '</small></div>' + gqNote)); // under the star count
   setTimeout(() => { const i = $('childIn'); if (i) i.oninput = () => { RS.name = i.value; }; }, 30);
 }
 function doRetire() {
@@ -1519,7 +1565,7 @@ function doRetire() {
   S = newState(); Object.assign(S, keep);
   for (const o of [...ORES.filter(x => !x.sale).map(x => x.id), 'gem']) S.locked[o] = 1; // ores start locked again every generation
   S.name = nm; S.gender = RS.gender; S.started = true; S.gen.ch = RS.ch; S.gen.prevTools = oldTools;
-  applyGenStart(oldTools); fillBoard();
+  applyGenStart(oldTools); fillBoard(); genTasks(); // the new generation's three tasks
   S.last = Date.now(); logs = []; logDirty = true; zoneMode = false; lastSig = ''; tab = 'farm';
   log(L`🌱 بدأ الجيل ${LG.gen}: ${S.name} ${gv(L('يستلم'), L('تستلم'))} مزرعة العائلة`, 'season');
   if (S.gen.ch) { const c = CHALLENGES.find(x => x.id === S.gen.ch); log(L`🏆 تحدي هذا الجيل: ${c.e} ${c.n} — ${goalText(c)}`, 'season'); }
@@ -2770,6 +2816,7 @@ function viewLegacy() {
     <button class="btn gold" data-a="retire" id="lg_btn">🌅 التقاعد وتسليم المزرعة</button><small class="hint" id="lg_why"></small></div></div>
   ${ch ? L`<div class="chbox"><b>${icon(ch)} تحدي هذا الجيل: ${ch.n}</b> — ${ch.rule}<div class="kv"><span>🎯 ${goalText(ch)}</span><span id="lg_chp"></span></div><div class="bar gp"><i id="lg_chb"></i></div></div>` : ''}
   </div>`;
+  h += genTasksHtml();
   h += roadHtml();
   h += indLegacyCard();
   h += L`<div class="panel"><div class="ph"><h2>${icon("legacy-tree",32)} شجرة الإرث</h2><span class="stat starchip">${icon("legacy-crown",24)} ${fmt(LG.stars)}</span></div><p class="hint">ابدأ من أول مهارة في كل فرع: كل 3 مستويات تفتح لك فرع جديد، ولما تصرف ${KS_NEED} مستويات في فرع تنفتح مهارته الخاصة ⭐. المهارات المعلّمة بـ 🌱 تطبق من بداية الجيل القادم، إلا لو اشتريتها في أول يومين من الجيل فتطبق عليك فوراً. الباقي يشتغل فوراً دائماً.</p>
@@ -2813,6 +2860,8 @@ function updLegacy() {
   $('lg_e').textContent = `${fmt(g.earned)} / ${fmt(gg)}`; $('lg_eb').style.width = Math.min(100, g.earned / gg * 100) + '%';
   $('lg_d').textContent = `${S.dun.max} / ${dg}`; $('lg_db').style.width = Math.min(100, S.dun.max / dg * 100) + '%';
   $('lg_g').textContent = fmt(starsGain());
+  (S.gen.gq || []).forEach((q, i) => { const v = $('gq_v' + i); if (!v) return; const t = q.d ? L('تمت') : fmt(Math.floor(genTaskVal(q))) + ' / ' + fmt(q.n); if (v.textContent !== t) v.textContent = t; $('gq_b' + i).style.width = Math.min(100, genTaskVal(q) / q.n * 100) + '%'; });
+  if ($('gq_r')) $('gq_r').textContent = fmt(genTaskStars());
   const capT = L`⭐ الحد لهذا الجيل: ${starCap()} نجمة (المنجم لين ${MINE_STAR_CAP})` + (P('t_stars') ? L` • 🌳 حكمة الأجيال +${10 * P('t_stars')}% على ${starCapBase()}` : '') + (H('amulet') ? L` • 📿 قلادة الحظ +${5 * H('amulet')}%` : '');
   if ($('lg_cap').textContent !== capT) $('lg_cap').textContent = capT;
   const can = canRetire(); $('lg_btn').disabled = !can; $('lg_why').textContent = can ? '' : L('ما حققت شرط التقاعد بعد');

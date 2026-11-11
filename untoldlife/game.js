@@ -479,6 +479,8 @@ ach('marry', '💍', L('فرحة الوادي'), L('تزوّج من أحد أه�
     ['indn0', '🔁', L('بداية جديدة'), L('جدّد المصنع أول مرة'), () => has() && (I().ren || 0) >= 1, 'medal-indn', 'bronze'],
     ['indn1', '🔁', L('مخترع عريق'), L('جدّد المصنع 5 مرات'), () => has() && (I().ren || 0) >= 5, 'medal-indn', 'gold'],
     ['indu', '🔌', L('مدينة مضيئة'), L('وصّل الكهرباء والمياه والضرايب كلها لمستوى 10'), () => has() && IND_UTIL.every(x => indUl(x.id) >= 10), 'medal-indu', 'gold'],
+    ['indv0', '⚓', L('أول إبحار'), L('رجّع أول سفينة من رحلتها'), () => has() && ((I().hb || {}).n || 0) >= 1, 'medal-indb', 'bronze'],
+    ['indv1', '🚢', L('سيد البحار'), L('خلّص 100 رحلة بحرية'), () => has() && ((I().hb || {}).n || 0) >= 100, 'medal-indb', 'gold'],
     ['indt', '🚂', L('القطار الأول'), L('ابنِ القطار الأول واختم اللعبة'), () => has() && indTrainDone(), 'medal-indr', 'gold'],
     ['indp', '🗾', L('خريطة كاملة'), L('اخترع كل شي في خريطة الاختراعات'), () => has() && IND_PT.every(x => indPt(x.id) >= x.max), 'medal-indp', 'gold'],
   ];
@@ -632,7 +634,7 @@ function achMult() { return 1 + 0.01 * Object.keys(S.leg.ach).length; }
 function heirToolGold() { return ['sword', 'armor', 'hoe', 'can', 'pick', 'rod'].reduce((a, k) => a + H(k), 0) * 0.01; }
 // Weekly rewards (weekly.js): each lasts 7 days from the moment it's earned. buf = weekly challenge, vb = village goal.
 function wkOn(k) { return !!(S.wk && S.wk[k] > Date.now()); }
-function goldMult() { return (wkOn('buf') ? 1.1 : 1) * (1 + 0.1 * P('t_price')) * (1 + 0.05 * H('coin') + heirToolGold()) * (1 + 0.1 * CC('noworkers')) * achMult() * bless() * (inCh('poverty') ? 0.5 : 1) * (indTrainDone() ? 1.1 : 1); }
+function goldMult() { return (wkOn('buf') ? 1.1 : 1) * (1 + 0.1 * P('t_price')) * (1 + 0.05 * H('coin') + heirToolGold()) * (1 + 0.1 * CC('noworkers')) * achMult() * bless() * (inCh('poverty') ? 0.5 : 1) * (indTrainDone() ? 1.1 : 1) * (1 + 0.02 * indHbUp('spice')); }
 /* Production speeds use two buckets. Inside a bucket the bonuses add up; the two buckets multiply.
    - this generation: tools, skill levels, villagers (starts over every generation)
    - the family: legacy perks, challenge rewards, the valley's blessing, marriage
@@ -1531,6 +1533,7 @@ const A = {
   tab: v => {
     if (!tabOpen(v)) return toast(L`🔒 «${tabName(v)}» يفتح لما: ${TAB_UNLOCK[v].why}`);
     if (v === 'util' && !indPt('util')) return toast(L('🔒 «الخدمات» تنفتح باختراع «الخدمات العامة» من تبويب الاختراعات'));
+    if (v === 'port' && !indTrainDone()) return toast(L('🔒 «الميناء» ينفتح بعد ما يطلع القطار الأول من المحطة'));
     if ((S.unl || {})[v] === 2) S.unl[v] = 1;
     tab = v; lastSig = ''; if (v === 'guild') S.leg.eggNew = 0; const y = $('wrap').getBoundingClientRect().top + scrollY - $('tabs').offsetHeight - 16; if (scrollY > y) scrollTo(0, Math.max(0, y)); },
   seed: v => { S.farm.seed = v; },

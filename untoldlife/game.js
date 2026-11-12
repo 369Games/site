@@ -199,7 +199,7 @@ const TOOLS = [
 ];
 /* Legendary forge: an adamantite tool can be forged into its legendary form for 500 mithril + 1000 adamantite.
    Each forge rolls a bonus from 5% to 100% on the tool's own effect; forging again rolls a new one (it replaces the old).
-   Low rolls are common: white 5–29%, blue 30–59%, purple 60–99%, gold = 100% (0.5%). Starts over every generation. */
+   Low rolls are common: white 5–29%, blue 30–59%, purple 60–99%, gold = 100% (0.5%, and sure on try 300: lgDo). Starts over every generation. */
 const LEG_TOOLS = { hoe: L('معزقة الخصوبة'), can: L('مرشة الحياة'), pick: L('فأس الدمار'), sword: L('سيف العاصفة'), armor: L('درع الحارس الخالد'), rod: L('سنارة الأعماق'), glove: L('قفازات العمالقة'), crook: L('عصا القطيع'),
   helmet: L('خوذة الملوك'), shield: L('ترس الجبل'), amulet: L('قلادة الأجداد'), boots: L('حذاء الريح') };
 const LEG_COST = [['mithril', 500], ['adamant', 1000]];
@@ -214,7 +214,15 @@ function lgRoll() { return Math.random() < 0.005 ? 100 : Math.round(5 + 94 * Mat
 function lgCost(t) { const k = Math.max(0.1, (1 - spv('smith', 'forge')) * (1 - 0.03 * hearts('smith'))); return LEG_COST.map(([id, q]) => [id, Math.ceil((lgv(t) ? q / 10 : q) * k)]); }
 function lgCanPay(t) { return lgCost(t).every(([id, q]) => have(id) >= q); }
 // One forge roll: pay, roll, store. Returns the new roll.
-function lgDo(v) { lgCost(v).forEach(([id, q]) => take(id, q)); const r = lgRoll(); (S.tlg || (S.tlg = {}))[v] = r; return r; }
+// The golden roll is guaranteed (1.21.2): each tool counts its tries since its last 100%, and try number LG_PITY is a sure one.
+// The count belongs to the family (S.leg.lgN), so a new generation doesn't lose it.
+const LG_PITY = 300;
+function lgTries(id) { return (S.leg.lgN || {})[id] || 0; }
+function lgDo(v) {
+  lgCost(v).forEach(([id, q]) => take(id, q));
+  const n = S.leg.lgN || (S.leg.lgN = {}), k = (n[v] || 0) + 1, r = k >= LG_PITY ? 100 : lgRoll();
+  n[v] = r >= 100 ? 0 : k; (S.tlg || (S.tlg = {}))[v] = r; return r;
+}
 /* Auto-forge (1.7.16): a one-time 1B gold upgrade at Qasim's (kept for the family). Pick a tool and a target %,
    and it reforges by itself (5 tries a second) until the roll reaches the target or the ores run out. */
 const AF_COST = 1e9, AF_RATE = 5;
@@ -2559,6 +2567,7 @@ function toolCard(t) {
         <small class="lgodds"><span class="lgv w">⚪ 5–29% (58%)</span> <span class="lgv b">🔵 30–59% (22%)</span> <span class="lgv p">🟣 60–99% (19.5%)</span> <span class="lgv g">🟡 100% (0.5%)</span></small>
         ${reqList(lgCost(t.id))}
         <div class="row"><button class="btn gold" data-a="forge" data-v="${t.id}" ${lgCanPay(t.id) ? '' : 'disabled'}>${lv ? L('⚒️ أعد الصياغة') : L('⚒️ صياغة أسطورية')}</button></div></div>`;
+      h += `<small class="hint lgpity">${L`🎯 ضمان الذهبية: المحاولة رقم ${LG_PITY} تعطيك 100% أكيد. محاولاتك: ${lgTries(t.id)} / ${LG_PITY}`}</small>`;
     }
     h += '</div>';
   }
@@ -2911,7 +2920,7 @@ const VIEWS = {
     const D = S.dun, g = S.guild;
     return [D.active, D.resting, D.auto, D.autoEat, D.floor, D.max, rankIdx(), questSlots(), g.sk, mskPts(), S.tools, S.tlg, S.hero.lvl, floorCap(), eatCd(), g.active.map(q => q.id), g.board.map(q => q.id + (q.type === 'deliver' ? (haveAny(q.item) >= q.qty) : Math.round(chanceOf(q) * 100))), S.leg.saddle && [S.leg.saddle.on, saddleLv(S.leg.saddle.on), Math.floor(((S.leg.pets[S.leg.saddle.on] || {}).sx || 0) / Math.max(1, hxpNeed(saddleLv(S.leg.saddle.on) + 1)) * 20)], S.gold >= SADDLE_COST, S.leg.titles && [S.leg.titles.cur, titleActive().join(), S.leg.titles.show, Object.keys(S.leg.titles.have || {}).length, Math.floor((S.leg.titles.xp || 0) / 1000)]];
   }],
-  smith: [viewSmith, updReqs, () => [S.leg.afOwn, S.af && [S.af.t, S.af.n], S.gold >= AF_COST, S.tools, S.tlg, TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
+  smith: [viewSmith, updReqs, () => [S.leg.afOwn, S.af && [S.af.t, S.af.n], S.gold >= AF_COST, S.tools, S.tlg, S.leg.lgN && Object.values(S.leg.lgN).join(), TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
   village: [viewVillage, () => { if (typeof wkUpd === 'function') wkUpd(); }, () => [typeof wkSig === 'function' ? wkSig() : 0, dayAbs(), S.bld, S.npc, S.off, S.spouse, S.friend, S.twins, P('q_twin'), S.gender, S.leg.gen, donLv(), donorOn(), S.leg.donorAuto, Math.floor(Math.log2(Math.max(1, S.gold / DON_BASE))), NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, Math.min(S.skills.fish.l, 30), S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],

@@ -2925,7 +2925,7 @@ const VIEWS = {
   village: [viewVillage, () => { if (typeof wkUpd === 'function') wkUpd(); }, () => [typeof wkSig === 'function' ? wkSig() : 0, dayAbs(), S.bld, S.npc, S.off, S.spouse, S.friend, S.twins, P('q_twin'), S.gender, S.leg.gen, donLv(), donorOn(), S.leg.donorAuto, Math.floor(Math.log2(Math.max(1, S.gold / DON_BASE))), NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, Math.min(S.skills.fish.l, 30), S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],
   legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length, dunGoal()]; }],
-  settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0]],
+  settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0, supOn()]],
 };
 
 Object.assign(VIEWS, IND_VIEWS); Object.assign(A, IND_ACTIONS); // Industrial Age (industry.js, loaded before this file)
@@ -2959,7 +2959,7 @@ function render(force) {
 let lastBadge = -1;
 function renderHeader() {
   $('hGold').textContent = fmt(S.gold);
-  $('hName').textContent = S.name || '...';
+  $('hName').textContent = S.name || '...'; $('hName').classList.toggle('sup', supOn());
   visualText($('hDate'), L`${seasonMarkup(S.season)} ${SEASONS[S.season].n} • اليوم ${S.day}`);
   visualText($('hWeather'), `${WEATHER[S.weather].e} ${WEATHER[S.weather].n}`);
   visualText($('hClock'), '🕒 ' + clockStr());
@@ -3019,6 +3019,23 @@ function applyTheme() {
 }
 // Website links (site-config.js). Empty when the game runs from a local file.
 function siteConfig() { return window.SITE_CONFIG || {}; }
+/* Supporter thank-you (1.22.1): a code from tools/supporter_codes.py turns on a title and a gold name. No power at all.
+   site-config.js carries the codes' hashes («supporters»); the save keeps the hash that was used (S.leg.sup). */
+function supCodes() { const c = siteConfig().supporters; return Array.isArray(c) ? c : []; }
+function supOn() { return !!(S && S.leg && S.leg.sup && supCodes().includes(S.leg.sup.h)); }
+A.supCode = () => {
+  const el = $('supIn'), code = el ? el.value.toUpperCase().replace(/[^A-Z0-9-]/g, '') : ''; if (!code) return;
+  const h = sHash('ULSUP:' + code);
+  if (!supCodes().includes(h)) return toast(L('❌ الكود مو صحيح. تأكد منه وجرب مرة ثانية.'));
+  S.leg.sup = { h, t: Date.now() }; save(); lastSig = '';
+  log(L('💛 شكراً لدعمك! صرت «داعم الوادي»: اسمك ذهبي ومعه قلب، هنا وفي المتصدرين.'), 'golden'); toast(L('💛 شكراً لدعمك!'));
+};
+function supPanel() {
+  if (!supCodes().length) return '';
+  if (supOn()) return `<p class="good">${L('💛 أنت «داعم الوادي». شكراً من القلب!')}</p>`;
+  return `<p class="hint">${L('دعمتنا؟ اكتب كود الداعم اللي وصلك وخذ لقب «داعم الوادي» واسم ذهبي. بدون أي قوة في اللعبة، بس شكر منا.')}</p>`
+    + `<div class="row"><input id="supIn" class="sup-in" maxlength="20" dir="ltr" placeholder="UL-XXXXX-XXXXX" autocomplete="off"><button class="btn gold" data-a="supCode">${L('💛 فعّل الكود')}</button></div>`;
+}
 function sitePanel() {
   const C = siteConfig();
   const fb = `<button class="btn gold" data-a="feedback">${L('✍️ أرسل ملاحظاتك')}</button>`; // in-game form, feedback.js
@@ -3027,7 +3044,7 @@ function sitePanel() {
   // Support links from tools/site/config.json: "kofi" (Ko-fi page name) and "creators" (creators.sa page).
   const kofi = supportLinks().map(([u, t]) => `<a class="btn kofi" href="${u}" target="_blank" rel="noopener">${t}</a>`).join('');
   const legal = C.home ? `<p class="hint"><a href="${C.home}privacy.html"${ext}>${L('سياسة الخصوصية')}</a> · <a href="${C.home}about.html"${ext}>${L('عن الاستديو')}</a> · <a href="${C.home}contact.html"${ext}>${L('تواصل معنا')}</a></p>` : '';
-  return `<h3>${L('💬 ملاحظاتك')}</h3><p class="hint">${L('هذي نسخة تجريبية. أي شيء عجبك أو ضايقك أو خرب، قل لنا.')}</p><div class="row">${fb}${kofi}${home}</div>${legal}`;
+  return `<h3>${L('💬 ملاحظاتك')}</h3><p class="hint">${L('هذي نسخة تجريبية. أي شيء عجبك أو ضايقك أو خرب، قل لنا.')}</p><div class="row">${fb}${kofi}${home}</div>${supPanel()}${legal}`;
 }
 function initSiteLinks() {
   const fb = $('fbBtn');

@@ -165,7 +165,7 @@ const IND_TRAIN = [
 function indTrain() { return indOpen() ? ind().tr || 0 : 0; }
 function indTrainDone() { return indTrain() >= IND_TRAIN.length; }
 function indTrainB() { return indTrainDone() ? 1.2 : 1; }
-// The last three stages ask for a share of the invention map (1.21.2): 60%, 80%, then all of it, counted in patents spent on the map.
+// The last three stages ask for a share of the invention map (1.22): 60%, 80%, then all of it, counted in patents spent on the map.
 function indMapTotal() { return IND_PT.reduce((t, x) => t + x.c.reduce((u, v) => u + v, 0), 0); }
 function indMapSpent() { return IND_PT.reduce((t, x) => t + x.c.slice(0, indPt(x.id)).reduce((u, v) => u + v, 0), 0); }
 function indMapNeed(x) { return x.map ? Math.ceil(indMapTotal() * x.map) : 0; }
@@ -251,7 +251,7 @@ function ind() {
     for (let k = (I.hired || 0); k < n && fs.length; k++) fs.sort((a, b) => a.w - b.w)[0].w++;
     I.hired = n;
   }
-  if (I && I.patT === undefined) I.patT = (I.pat || 0) + indPatSpent(I); // patents ever earned (1.21.2): older saves start from what they hold and have spent
+  if (I && I.patT === undefined) I.patT = (I.pat || 0) + indPatSpent(I); // patents ever earned (1.22): older saves start from what they hold and have spent
   return I;
 }
 // Patents spent so far: the invention map and the train stages.
@@ -273,7 +273,7 @@ function indOddity(st) {
 function indOpen() { return !!S.leg.ind; }
 function inInd() { return indOpen() && S.world === 'ind'; }
 // --- unlock ---
-// The legacy tree gate: 80% of all its levels (1.21.2; it was the whole tree, which held players back two more generations).
+// The legacy tree gate: 80% of all its levels (1.22; it was the whole tree, which held players back two more generations).
 const IND_TREE = 0.8;
 function indPerksLv() { const fin = PERKS.filter(p => p.max !== Infinity); return [fin.reduce((n, p) => n + Math.min(P(p.id), p.max), 0), Math.ceil(fin.reduce((n, p) => n + p.max, 0) * IND_TREE)]; } // [levels bought, levels needed]
 function indPerksDone() { const [got, need] = indPerksLv(); return got >= need; }
@@ -289,14 +289,14 @@ function indUsed() { const f = ind().f; return IND_FIELDS.reduce((a, x) => a + f
 function indCap() { return 1000 * Math.pow(2, ind().b.store || 0); }
 function indRate(id) { const x = ind().f[id]; return x.w * 0.5 * (1 + 0.5 * x.l) * (1 + 0.15 * indEng('field')) * indTrainB() * indHbB(); }
 function indEng(id) { const e = ind().e; return e ? e[id] || 0 : 0; }
-function indWMax() { return IND_WMAX + 15 * indEng('crew'); } // 50 to 200 (1.21.2; it was 150, before the sand quarry added a fourth field)
+function indWMax() { return IND_WMAX + 15 * indEng('crew'); } // 50 to 200 (1.22; it was 150, before the sand quarry added a fourth field)
 // Furnaces and benches speed up with their engineer upgrade.
 function indSpeed(r) { return (1 + 0.15 * indEng(IND_PROD.includes(r) ? 'bench' : 'furn')) * (1 + 0.1 * indPt('fast')) * indTrainB() * indHbB(); }
 function indEngCost(l) {
   const mats = l < 3 ? [['plank', 50 * (l + 1)], ['nails', 20 * (l + 1)]] : l < 6 ? [['gear', 10 * (l - 2)], ['pipe', 10 * (l - 2)]] : [['machine', 2 * (l - 5)]];
   return { gold: 0, mats: [['bp', IND_ENG_BP[l]], ...mats] };
 }
-/* +5.02% per worker (1.21.2): all 200 workers cost what all 150 did at +7% (≈ 17T; worker 200 ≈ 0.8T).
+/* +5.02% per worker (1.22): all 200 workers cost what all 150 did at +7% (≈ 17T; worker 200 ≈ 0.8T).
    Saves from before are converted once (ind): the gold already paid buys as many workers at the new price, so 150 become 200. */
 const IND_WG = 1.0502;
 function indHireCost() { return Math.round(5e7 * Math.pow(IND_WG, ind().hired)); }

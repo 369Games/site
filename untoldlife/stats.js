@@ -12,11 +12,11 @@
    1.21.3, to see where players stop:
      state-DATE  once per day; value = where the player was when last seen, e.g. «g13|ind:port|h10t2p1r1»
                  (generation | world:tab they left on | factory: town hall, train stage, harbour level, renewals)
-     perks-all   the legacy tree gate is met (80% of its levels from 1.21.2; the last gate before the factory)
+     perks-all   the legacy tree gate is met (80% of its levels from 1.22; the last gate before the factory)
      tasks1, tasks3  finished one / all three generation tasks in a generation
      ind-open, ind-hall1/4/10, ind-k1/k10, ind-util, ind-renew, ind-train1..5, ind-quarry, ind-drill, ind-port,
      ind-voyage  the factory funnel, in the order players meet it; value = active minutes so far
-   1.21.2, to compare the places the game is announced:
+   1.22, to compare the places the game is announced:
      src-NAME    where a new player came from: the link's ?ref=NAME (reddit, twitter...) or the portal this copy runs on (itch) */
 const STATS_KEY = 'untoldlife_stats';
 const ST = (() => { try { return JSON.parse(localStorage.getItem(STATS_KEY)) || {}; } catch (e) { return {}; } })();

@@ -214,7 +214,7 @@ function lgRoll() { return Math.random() < 0.005 ? 100 : Math.round(5 + 94 * Mat
 function lgCost(t) { const k = Math.max(0.1, (1 - spv('smith', 'forge')) * (1 - 0.03 * hearts('smith'))); return LEG_COST.map(([id, q]) => [id, Math.ceil((lgv(t) ? q / 10 : q) * k)]); }
 function lgCanPay(t) { return lgCost(t).every(([id, q]) => have(id) >= q); }
 // One forge roll: pay, roll, store. Returns the new roll.
-// The golden roll is guaranteed (1.21.2): each tool counts its tries since its last 100%, and try number LG_PITY is a sure one.
+// The golden roll is guaranteed (1.22): each tool counts its tries since its last 100%, and try number LG_PITY is a sure one.
 // The count belongs to the family (S.leg.lgN), so a new generation doesn't lose it.
 const LG_PITY = 300;
 function lgTries(id) { return (S.leg.lgN || {})[id] || 0; }

@@ -71,7 +71,7 @@ const IND_ENG = [
   { id: 'furn', e: '🎛️', a: 'ind-tab-furn', n: L('مراجل أسرع'), d: L('+15% سرعة لكل مستوى لكل المراجل') },
   { id: 'field', e: '⛏️', a: 'ind-tab-fields', n: L('حقول أغزر'), d: L('+15% إنتاج لكل مستوى لكل الحقول') },
   { id: 'bench', e: '🔧', a: 'ind-tab-ws', n: L('ورشة أسرع'), d: L('+15% سرعة لكل مستوى لكل طاولات الورشة') },
-  { id: 'crew', e: '🏠', a: 'ind-housing', n: L('سكن العمال'), d: L('+10 لحد عمال حقول المصنع لكل مستوى (من 50 لين 150)') },
+  { id: 'crew', e: '🏠', a: 'ind-housing', n: L('سكن العمال'), d: L('+15 لحد عمال حقول المصنع لكل مستوى (من 50 لين 200)') },
   { id: 'deal', e: '🤝', a: 'ind-trader', n: L('تاجر العقود'), d: L('+10% ذهب من العقود و−30 ثانية من انتظار العقود والتبديل لكل مستوى (من 10 دقايق لين 5)') },
 ];
 const IND_ENG_BP = [1, 2, 3, 4, 6, 8, 10, 13, 16, 20];
@@ -245,6 +245,12 @@ function newInd() {
 function ind() {
   const I = S.leg.ind;
   if (I && !I.f.sand) I.f.sand = { w: 0, l: 0 }; // older saves get the sand pit
+  if (I && !I.w2) { // the crew grew from 150 to 200 at the same total price: older saves get the workers their gold now buys
+    I.w2 = 1; const n = Math.min(indCrewConv(I.hired || 0), Math.max(I.hired || 0, IND_WMAX + 15 * ((I.e || {}).crew || 0) - 1));
+    const fs = IND_FIELDS.filter(f => !f.q || (I.tr || 0) >= 2).map(f => I.f[f.id]).filter(Boolean);
+    for (let k = (I.hired || 0); k < n && fs.length; k++) fs.sort((a, b) => a.w - b.w)[0].w++;
+    I.hired = n;
+  }
   if (I && I.patT === undefined) I.patT = (I.pat || 0) + indPatSpent(I); // patents ever earned (1.21.2): older saves start from what they hold and have spent
   return I;
 }
@@ -283,15 +289,18 @@ function indUsed() { const f = ind().f; return IND_FIELDS.reduce((a, x) => a + f
 function indCap() { return 1000 * Math.pow(2, ind().b.store || 0); }
 function indRate(id) { const x = ind().f[id]; return x.w * 0.5 * (1 + 0.5 * x.l) * (1 + 0.15 * indEng('field')) * indTrainB() * indHbB(); }
 function indEng(id) { const e = ind().e; return e ? e[id] || 0 : 0; }
-function indWMax() { return IND_WMAX + 10 * indEng('crew'); }
+function indWMax() { return IND_WMAX + 15 * indEng('crew'); } // 50 to 200 (1.21.2; it was 150, before the sand quarry added a fourth field)
 // Furnaces and benches speed up with their engineer upgrade.
 function indSpeed(r) { return (1 + 0.15 * indEng(IND_PROD.includes(r) ? 'bench' : 'furn')) * (1 + 0.1 * indPt('fast')) * indTrainB() * indHbB(); }
 function indEngCost(l) {
   const mats = l < 3 ? [['plank', 50 * (l + 1)], ['nails', 20 * (l + 1)]] : l < 6 ? [['gear', 10 * (l - 2)], ['pipe', 10 * (l - 2)]] : [['machine', 2 * (l - 5)]];
   return { gold: 0, mats: [['bp', IND_ENG_BP[l]], ...mats] };
 }
-// +7% per worker, so every level of workers' housing is worth buying (worker 150 ≈ 1.2T, all 150 ≈ 18T).
-function indHireCost() { return Math.round(5e7 * Math.pow(1.07, ind().hired)); }
+/* +5.02% per worker (1.21.2): all 200 workers cost what all 150 did at +7% (≈ 17T; worker 200 ≈ 0.8T).
+   Saves from before are converted once (ind): the gold already paid buys as many workers at the new price, so 150 become 200. */
+const IND_WG = 1.0502;
+function indHireCost() { return Math.round(5e7 * Math.pow(IND_WG, ind().hired)); }
+function indCrewConv(h) { const paid = (Math.pow(1.07, h) - 1) / 0.07; return Math.max(h, Math.floor(Math.log(1 + paid * (IND_WG - 1)) / Math.log(IND_WG) + 1e-6)); }
 function indFieldCost(l) { return { gold: Math.round(2e8 * Math.pow(2.5, l)), qty: Math.round(200 * Math.pow(2, l)) }; }
 // ×1.3 per furnace (was ×1.6), so the 33 the town hall allows are within reach: the 33rd coal furnace ≈ 221B.
 function indFurnCost(r) { return Math.round(r.c * Math.pow(1.3, indFu(r.id).n)); }

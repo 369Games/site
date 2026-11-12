@@ -433,6 +433,7 @@ body.lite #log li.golden,body.lite #log li.egg{box-shadow:none}
 
 /* Industry status line: always takes its row, so cards don't jump when it appears. */
 .ind-st{min-height:1.5em;margin:4px 0}
+.ind-q.short{color:var(--red);font-weight:700;background:#c8463a33;box-shadow:0 0 0 2px #c8463a33,0 0 0 3px #c8463a99;border-radius:5px}
 .ind-q{white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
 .ind-recipe>span:last-child{text-align:start}
 /* Industry stock: a fixed grid, so changing numbers (+1.05 → ±0) never re-wrap the chips and shake the page. */

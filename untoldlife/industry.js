@@ -401,7 +401,16 @@ function indFieldSt(id) { return ind().f[id].w && indFull(id) ? { c: 'bad', t: L
 function indMakerSt(r) {
   const u = indFu(r.id);
   return !u.n ? { c: '', t: '' } : !indActive(r) ? { c: 'hint', t: L('⏸️ موقف') } : indFull(r.id) ? { c: 'bad', t: L('📦 المخزن مليان') }
-    : (u.sz || 0) >= 2 ? { c: 'bad', t: L('⚠️ واقف: المواد ما تكفي') } : { c: 'good', t: L('⚒️ شغّال') };
+    : (u.sz || 0) >= 2 ? { c: 'bad', t: indShortTxt(r) } : { c: 'good', t: L('⚒️ شغّال') };
+}
+// Which inputs a stalled furnace or bench is out of (not enough for even one unit), so the player doesn't have to guess.
+function indShort(r) {
+  const u = indFu(r.id), cr = u.c || {}, hf = indInMult();
+  return (u.sz || 0) >= 2 && indActive(r) && !indFull(r.id) ? Object.entries(r.in).filter(([id, q]) => indHave(id) + (cr[id] || 0) < q * hf).map(([id]) => id) : [];
+}
+function indShortTxt(r) {
+  const m = indShort(r); const sep = LANG === 'ar' ? String.fromCharCode(0x60c) + ' ' : ', ';
+  return m.length ? L`⚠️ واقف: ينقصك ${m.map(indName).join(sep)}` : L('⚠️ واقف: المواد ما تكفي');
 }
 function indStLine(key, st) { return `<p class="ind-st ${st.c}" data-ist="${key}">${st.t}</p>`; }
 
@@ -660,7 +669,7 @@ function viewFurn() {
 // One furnace or workbench card: recipe, output per second, stock, state, and buy/pause.
 function indMakerCard(r, bench) {
   const u = indFu(r.id), c = indFurnCost(r);
-  const ins = Object.entries(r.in).map(([id, q]) => `<span class="ind-q" title="${indName(id)}">${indNum(q * indInMult())} ${indIc(id, 22)}</span>`).join(' + ');
+  const ins = Object.entries(r.in).map(([id, q]) => `<span class="ind-q" data-iq="${r.id}:${id}" title="${indName(id)}">${indNum(q * indInMult())} ${indIc(id, 22)}</span>`).join(' + ');
   const st = u.n ? indStLine('m:' + r.id, indMakerSt(r)) : '';
   if (r.q && !indQOpen()) return `<div class="card ind-card pt-lock"><div class="top"><span class="big">${indIc(r.id, 48)}</span><div class="meta"><b>${indName(r.id)}</b><small>${bench ? L`${u.n} طاولة` : L`${u.n} فرن`}</small></div></div>
     <div class="kv ind-recipe"><span>${L('يحتاج')}</span><span>${ins}</span></div>
@@ -881,6 +890,13 @@ function updInd() {
     const [k, id] = el.dataset.ist.split(':'), st = k === 'f' ? indFieldSt(id) : indMakerSt(IND_MAKERS.find(r => r.id === id));
     if (el.textContent !== st.t) { el.textContent = st.t; el.className = 'ind-st ' + st.c; }
   });
+  { // the inputs a stalled card is out of are marked in its recipe row
+    const sh = {};
+    document.querySelectorAll('[data-iq]').forEach(el => {
+      const [rid, id] = el.dataset.iq.split(':'), m = sh[rid] || (sh[rid] = indShort(IND_MAKERS.find(r => r.id === rid)));
+      el.classList.toggle('short', m.includes(id));
+    });
+  }
   document.querySelectorAll('[data-hbt]').forEach(el => { const t = ftime(Math.max(0, +el.dataset.hbt - Date.now()) / 1000); if (el.textContent !== t) el.textContent = t; });
   document.querySelectorAll('[data-kw]').forEach(el => { el.textContent = indClock(+el.dataset.kw - Date.now()); });
   document.querySelectorAll('[data-eg]').forEach(el => { el.textContent = fmt(indGot(el.dataset.eg)); });

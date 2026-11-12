@@ -263,7 +263,11 @@ function indOddity(st) {
 function indOpen() { return !!S.leg.ind; }
 function inInd() { return indOpen() && S.world === 'ind'; }
 // --- unlock ---
-function indPerksDone() { return PERKS.every(p => p.max === Infinity || P(p.id) >= p.max); }
+// The legacy tree gate: 80% of all its levels (1.21.2; it was the whole tree, which held players back two more generations).
+const IND_TREE = 0.8;
+function indPerksLv() { const fin = PERKS.filter(p => p.max !== Infinity); return [fin.reduce((n, p) => n + Math.min(P(p.id), p.max), 0), Math.ceil(fin.reduce((n, p) => n + p.max, 0) * IND_TREE)]; } // [levels bought, levels needed]
+function indPerksDone() { const [got, need] = indPerksLv(); return got >= need; }
+function indPerksTxt() { return L`${Math.round(IND_TREE * 100)}% من مستويات شجرة الإرث (ما عدا بركة الوادي)`; }
 function indReady() { return S.leg.gen >= IND_GEN && indPerksDone() && S.leg.stars >= IND_COST; }
 // --- village effects: the discount only comes from here ---
 function indLv(b) { return indOpen() ? ind().b[b] || 0 : 0; }
@@ -990,6 +994,6 @@ function indLegacyCard() {
   const row = (k, t) => `<li class="${ok[k] ? 'ok' : 'no'}">${ok[k] ? '✅' : '⬜'} ${t}</li>`;
   return L`<div class="panel ind-tease"><div class="ph"><h2>⚙️ عصر الصناعة</h2><span class="stat">🔒</span></div>
     <p class="hint">بعيد عن الوادي فيه أرض فاضية تنتظر عائلة تبني فيها أول مصنع. عالم جديد تبنيه من الصفر، والقرية تكمل شغلها وأنت هناك، والمصنع يرخّص عمال المنجم والصيادين لين توصل 200 عامل.</p>
-    <ul class="ind-conds">${row(0, L`الجيل ${IND_GEN} أو أكثر`)}${row(1, L('كل شجرة الإرث على الحد الأقصى (ما عدا بركة الوادي)'))}${row(2, L`${fmt(IND_COST)} نجمة إرث`)}</ul>
+    <ul class="ind-conds">${row(0, L`الجيل ${IND_GEN} أو أكثر`)}${row(1, indPerksTxt() + ' <bdi>(' + indPerksLv().map(n => fmt(n)).join(' / ') + ')</bdi>')}${row(2, L`${fmt(IND_COST)} نجمة إرث`)}</ul>
     <div class="row"><button class="btn gold" data-a="indUnlock" ${indReady() ? '' : 'disabled'}>${L`⚙️ افتح عصر الصناعة (${fmt(IND_COST)} نجمة)`}</button></div></div>`;
 }

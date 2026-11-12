@@ -450,9 +450,9 @@ const ROADMAP = [
   { g: 5, t: L('💍 الزواج و🤝 صداقة العمر مع أهل القرية + 🏆 تحديات الأجيال اللانهائية') },
   { lab: L('رتبة S في النقابة'), t: L('🎖️ ألقاب النقابة: 10 ألقاب، وكل لقب له بونص دائم يبقى للعائلة'), ok: () => titleOpen() || Object.keys((S.leg.titles || {}).have || {}).length > 0 },
   { g: IND_GEN, t: L('⚙️ عصر الصناعة: عالم ثاني تبني فيه حقول وأفران ومصانع، وتدخله من زر «المصنع» في آخر التبويبات'), ok: () => indOpen(),
-    conds: () => { const fin = PERKS.filter(p => p.max !== Infinity), got = fin.filter(p => P(p.id) >= p.max).length; return [
+    conds: () => { const [got, need] = indPerksLv(); return [
       [S.leg.gen >= IND_GEN, L`الجيل ${IND_GEN} أو أكثر`, Math.min(S.leg.gen, IND_GEN) + ' / ' + IND_GEN],
-      [indPerksDone(), L('كل شجرة الإرث على الحد الأقصى (ما عدا بركة الوادي)'), got + ' / ' + fin.length],
+      [indPerksDone(), indPerksTxt(), Math.min(got, need) + ' / ' + need],
       [S.leg.stars >= IND_COST, L`${fmt(IND_COST)} نجمة إرث`, fmt(Math.min(S.leg.stars, IND_COST)) + ' / ' + fmt(IND_COST)]]; } },
   { lab: L('مبنى البلدة مستوى 10'), t: L('🔬 تجديد المصنع: براءات اختراع، وخدمات الكهرباء والمياه والضرايب اللي تجيب ذهب لحالها'), ok: () => indOpen() && ((ind().ren || 0) > 0 || indPt('util') > 0) },
   { lab: L('المحطة الكبرى'), t: L('⚓ الميناء: سفن ترسلها رحلات وترجع بذهب وبضاعة أجنبية'), ok: () => indHbOpen() },

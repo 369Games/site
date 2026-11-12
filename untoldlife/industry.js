@@ -356,6 +356,7 @@ function tickInd(dt) {
     if (k <= 0) { u.stall = 'in'; u.p = Math.min(u.p, 1); u.sz = (u.sz || 0) + dt; continue; }
     for (const [id, q] of Object.entries(r.in)) { const need = q * k * hf - (cr[id] || 0), t = Math.max(0, Math.ceil(need - 1e-9)); indTake(id, t); cr[id] = t - need; }
     I.r[r.id] = (I.r[r.id] || 0) + k * out; u.p -= k; u.sz = 0;
+    if (u.p > 1) u.p = 1; // work held back by a nearly full warehouse or short inputs isn't banked: it used to pile up and later burn the inputs in one go
   }
   for (const m of I.dm || []) {
     if (m.o === 'coal' && (I.r.coal || 0) >= cap) { m.p = 0; continue; }

@@ -15,12 +15,22 @@
      perks-all   the whole legacy tree is at max (the last gate before the factory)
      tasks1, tasks3  finished one / all three generation tasks in a generation
      ind-open, ind-hall1/4/10, ind-k1/k10, ind-util, ind-renew, ind-train1..5, ind-quarry, ind-drill, ind-port,
-     ind-voyage  the factory funnel, in the order players meet it; value = active minutes so far */
+     ind-voyage  the factory funnel, in the order players meet it; value = active minutes so far
+   1.21.2, to compare the places the game is announced:
+     src-NAME    where a new player came from: the link's ?ref=NAME (reddit, twitter...) or the portal this copy runs on (itch) */
 const STATS_KEY = 'untoldlife_stats';
 const ST = (() => { try { return JSON.parse(localStorage.getItem(STATS_KEY)) || {}; } catch (e) { return {}; } })();
 if (!ST.id) ST.id = Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 if (!ST.first) ST.first = Date.now();
+const ST_NEW = !ST.sent || !Object.keys(ST.sent).length; // nothing sent yet: a first visit
 ST.sent = ST.sent || {}; ST.active = ST.active || 0;
+// A link with ?ref=reddit tags a new player with where they came from (first touch only), then the address is tidied.
+(() => { try {
+  const q = new URLSearchParams(location.search); if (!q.has('ref')) return;
+  const r = (q.get('ref') || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20);
+  if (r && ST_NEW && !ST.src) ST.src = r;
+  q.delete('ref'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash);
+} catch (e) { /* an odd address: no tag */ } })();
 function stSave() { try { localStorage.setItem(STATS_KEY, JSON.stringify(ST)); } catch (e) { /* storage off */ } }
 stSave();
 
@@ -54,6 +64,8 @@ function statsCheck() {
   if (typeof S === 'undefined' || !S) return;
   const today = new Date().toISOString().slice(0, 10);
   track('visit-' + today, Math.floor((Date.now() - ST.first) / 864e5));
+  if (!ST.src && ST_NEW && siteConfig().portal) { ST.src = String(siteConfig().portal); stSave(); } // a portal copy: the portal is the source
+  if (ST.src) track('src-' + ST.src);
   if (!S.started) return;
   // The day's first check sends what was saved at the end of the last session; after that the note follows the player.
   track('state-' + today, ST.last || statsState());

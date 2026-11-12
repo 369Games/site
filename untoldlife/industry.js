@@ -158,14 +158,18 @@ function indInMult() { return indPt('thrift') ? 0.5 : 1; }
 const IND_TRAIN = [
   { e: '🚂', a: 'ind-rails-2', n: L('الخط الرئيسي'), d: L('سكة تربط الوادي بالمدن البعيدة'), g: 5e12, mats: [['block', 200000], ['fe', 150000], ['plank', 100000]], need: () => indLv('rails') >= 10, why: L('سكة الحديد مستوى 10') },
   { e: '🚂', a: 'ind-hall-3', n: L('المحطة الكبرى'), d: L('محطة من طوب وحديد وزجاج في قلب المدينة'), g: 1e13, mats: [['brick', 300000], ['block', 300000], ['pipe', 20000], ['gear', 20000]], need: () => indHall() >= 10, why: L('مبنى البلدة قصر (مستوى 10)') },
-  { e: '🚂', a: 'ind-rails-4', n: L('القاطرة'), d: L('قلب القطار: مرجل بخار وعجلات من حديد'), g: 4e13, mats: [['steel', 300000], ['cu', 300000], ['gear', 50000], ['engine', 500]] },
-  { e: '🚂', a: 'ind-rails-3', n: L('العربات'), d: L('عربات للركاب والبضايع'), g: 6e13, mats: [['plank', 400000], ['beam', 100000], ['window', 100000], ['ag', 300000]] },
-  { e: '🎉', a: 'icon-celebrate', n: L('الرحلة الأولى'), d: L('فحم للطريق، وآخر التجهيزات، وبراءات تشغيل القطار'), g: 1e14, mats: [['coal', 500000], ['glass', 300000], ['engine', 2000]], pat: 50 },
+  { e: '🚂', a: 'ind-rails-4', n: L('القاطرة'), d: L('قلب القطار: مرجل بخار وعجلات من حديد'), g: 4e13, mats: [['steel', 300000], ['cu', 300000], ['gear', 50000], ['engine', 500]], map: 0.6 },
+  { e: '🚂', a: 'ind-rails-3', n: L('العربات'), d: L('عربات للركاب والبضايع'), g: 6e13, mats: [['plank', 400000], ['beam', 100000], ['window', 100000], ['ag', 300000]], map: 0.8 },
+  { e: '🎉', a: 'icon-celebrate', n: L('الرحلة الأولى'), d: L('فحم للطريق، وآخر التجهيزات، وبراءات تشغيل القطار'), g: 1e14, mats: [['coal', 500000], ['glass', 300000], ['engine', 2000]], pat: 50, map: 1 },
 ];
 function indTrain() { return indOpen() ? ind().tr || 0 : 0; }
 function indTrainDone() { return indTrain() >= IND_TRAIN.length; }
 function indTrainB() { return indTrainDone() ? 1.2 : 1; }
-function indTrainCan(i) { const x = IND_TRAIN[i]; return !!x && (!x.need || x.need()) && (!x.pat || indPats() >= x.pat) && indCanPay(x.g, x.mats); }
+// The last three stages ask for a share of the invention map (1.21.2): 60%, 80%, then all of it, counted in patents spent on the map.
+function indMapTotal() { return IND_PT.reduce((t, x) => t + x.c.reduce((u, v) => u + v, 0), 0); }
+function indMapSpent() { return IND_PT.reduce((t, x) => t + x.c.slice(0, indPt(x.id)).reduce((u, v) => u + v, 0), 0); }
+function indMapNeed(x) { return x.map ? Math.ceil(indMapTotal() * x.map) : 0; }
+function indTrainCan(i) { const x = IND_TRAIN[i]; return !!x && (!x.need || x.need()) && (!x.pat || indPats() >= x.pat) && indMapSpent() >= indMapNeed(x) && indCanPay(x.g, x.mats); }
 /* The harbour (1.17): what comes after the First Train. Ships carry factory goods on voyages that take real hours
    (1, 4 or 8) and come back with gold and foreign goods, a currency that buys permanent upgrades here. The harbour, its
    ships and its upgrades are kept through factory renewals (S.leg.ind.hb). A voyage's reward is fixed when it leaves. */
@@ -482,6 +486,13 @@ const IND_ACTIONS = {
     logDirty = true; logDrawT = 0; lastBuffs = ''; renderSide(); // the side panel follows the world
   },
   // A new worker goes straight to the field with the fewest workers; move them any time.
+  // «to the max»: as many workers (or furnaces of one kind) as the gold and the limit allow, in one press.
+  indHireMax: () => { let n = 0, g = 0; for (;;) { const c = indHireCost(); if (ind().hired + 1 >= indWMax() || S.gold < c) break; IND_ACTIONS.indHire(); n++; g += c; } if (n) toast(L`✅ اشتريت ${n} بـ ${fmt(g)}💰`); },
+  indFurnAll: v => {
+    const r = IND_MAKERS.find(x => x.id === v); if (!r) return; let n = 0, g = 0;
+    for (;;) { const u = indFu(v), c = indFurnCost(r), n0 = u.n; if (u.n >= indFurnMax() || S.gold < c) break; IND_ACTIONS.indFurn(v); if (u.n === n0) break; n++; g += c; }
+    if (n) toast(L`✅ اشتريت ${n} بـ ${fmt(g)}💰`);
+  },
   indHire: () => { const c = indHireCost(); if (ind().hired + 1 >= indWMax() || S.gold < c) return; S.gold -= c; ind().hired++; const f = ind().f; indFields().map(x => f[x.id]).sort((a, b) => a.w - b.w)[0].w++; },
   indW: v => {
     const [id, d] = v.split(':'), f = ind().f[id]; if (!f || !indFields().some(x => x.id === id)) return;
@@ -670,7 +681,7 @@ function viewFields() {
   const I = ind(), n = indWorkers(), used = indUsed();
   let h = L`<div class="panel"><div class="ph"><h2>🗻 الحقول</h2><span class="stat">👷 ${used} / ${n} عامل</span></div>
     <p class="hint">العمال يجمعون الخام لحالهم. وزّعهم على الحقول حسب اللي تحتاجه، وغيّر التوزيع متى ما تبي ببلاش.</p>
-    <div class="row">${costBtn('indHire', '', indHireCost(), L`👷 وظّف عامل (${fmt(indHireCost())}💰)`, 'gold', I.hired + 1 >= indWMax())}<button class="btn ghost" data-a="indEven">⚖️ وزّع بالتساوي</button><button class="btn ghost" data-a="indSmart">👷 وزّع ذكي</button><button class="tog ${I.autoW ? 'on' : ''}" data-a="indAutoW">🤖 ${I.autoW ? L('تلقائي: شغّال') : L('تلقائي: موقف')}</button></div>
+    <div class="row">${costBtn('indHire', '', indHireCost(), L`👷 وظّف عامل (${fmt(indHireCost())}💰)`, 'gold', I.hired + 1 >= indWMax()) + costBtn('indHireMax', '', indHireCost(), L('⏫ وظّف للأقصى'), 'gold', I.hired + 1 >= indWMax())}<button class="btn ghost" data-a="indEven">⚖️ وزّع بالتساوي</button><button class="btn ghost" data-a="indSmart">👷 وزّع ذكي</button><button class="tog ${I.autoW ? 'on' : ''}" data-a="indAutoW">🤖 ${I.autoW ? L('تلقائي: شغّال') : L('تلقائي: موقف')}</button></div>
     <p class="hint">${L('«وزّع ذكي» يحط على كل حقل عمال قد اللي تاكله الأفران والطاولات الشغّالة منه، والباقي على الحقول اللي ما امتلت. و«تلقائي» يعيد التوزيع كل 30 ثانية.')}</p>`;
   h += indStock() + '<div class="grid ind-grid">';
   for (const f of IND_FIELDS) {
@@ -707,7 +718,7 @@ function indMakerCard(r, bench) {
     <div class="kv"><span>${L('الإنتاج')}</span><span>${L`${indNum(indActive(r) * indSpeed(r) * indOut(r) / r.t)} بالثانية`}</span></div>
     <div class="kv"><span>${L('عندك')}</span><span><b data-ir="${r.id}">${fmt(Math.floor(ind().r[r.id] || 0))}</b></span></div>${u.n ? `<small class="ind-fill">⏳ ${(x => `<span class="${x.c}" data-fill="${r.id}">${x.t}</span>`)(indFillSt(r.id))}</small>` : ''}${st}
     ${u.n >= indFurnMax() && u.n < IND_FMAX ? `<p class="hint">${L`🏤 الحد ${indFurnMax()}: طوّر مبنى البلدة عشان تزيد`}</p>` : ''}
-    <div class="row">${costBtn('indFurn', r.id, c, bench ? L`➕ طاولة (${fmt(c)}💰)` : L`➕ فرن (${fmt(c)}💰)`, 'gold', u.n >= indFurnMax())}${u.n ? `<button class="btn ghost sm" data-a="indFurnOn" data-v="${r.id}">${u.on ? L('⏸️ وقّف') : L('▶️ شغّل')}</button>` : ''}</div>${u.n ? `<div class="row ind-w"><button class="btn ghost sm" data-a="indAct" data-v="${r.id}:-1" ${indChosen(u) ? '' : 'disabled'}>−</button><b>${u.on ? L`⚒️ ${indChosen(u)} من ${u.n} شغّال` : L`⏸️ ${indChosen(u)} من ${u.n} (موقف)`}</b><button class="btn ghost sm" data-a="indAct" data-v="${r.id}:1" ${indChosen(u) < u.n ? '' : 'disabled'}>+</button></div>` : ''}</div>`;
+    <div class="row">${costBtn('indFurn', r.id, c, bench ? L`➕ طاولة (${fmt(c)}💰)` : L`➕ فرن (${fmt(c)}💰)`, 'gold', u.n >= indFurnMax())}${costBtn('indFurnAll', r.id, c, L('⏫ للأقصى'), 'gold sm', u.n >= indFurnMax())}${u.n ? `<button class="btn ghost sm" data-a="indFurnOn" data-v="${r.id}">${u.on ? L('⏸️ وقّف') : L('▶️ شغّل')}</button>` : ''}</div>${u.n ? `<div class="row ind-w"><button class="btn ghost sm" data-a="indAct" data-v="${r.id}:-1" ${indChosen(u) ? '' : 'disabled'}>−</button><b>${u.on ? L`⚒️ ${indChosen(u)} من ${u.n} شغّال` : L`⏸️ ${indChosen(u)} من ${u.n} (موقف)`}</b><button class="btn ghost sm" data-a="indAct" data-v="${r.id}:1" ${indChosen(u) < u.n ? '' : 'disabled'}>+</button></div>` : ''}</div>`;
 }
 // The workshop: products on benches and the engineer.
 function viewWs() {
@@ -835,7 +846,7 @@ function viewTrain() {
     else if (st === 'lock') h += `<p class="hint">${L('🔒 تنفتح بعد المرحلة اللي قبلها')}</p>${indReqs(x.g, x.mats)}`;
     else {
       const needOk = !x.need || x.need();
-      h += `${x.need ? `<p class="${needOk ? 'good' : 'bad'}">${needOk ? '✅' : '🔒'} ${L`يحتاج: ${x.why}`}</p>` : ''}${indReqs(x.g, x.mats)}${x.pat ? `<p class="${indPats() >= x.pat ? 'good' : 'bad'}">🎫 ${L`براءات اختراع: ${indPats()} / ${x.pat}`}</p>` : ''}${indTooBig(x.mats)}
+      h += `${x.need ? `<p class="${needOk ? 'good' : 'bad'}">${needOk ? '✅' : '🔒'} ${L`يحتاج: ${x.why}`}</p>` : ''}${x.map ? `<p class="${indMapSpent() >= indMapNeed(x) ? 'good' : 'bad'}">${indMapSpent() >= indMapNeed(x) ? '✅' : '🔒'} ${L`يحتاج ${Math.round(x.map * 100)}% من خريطة الاختراعات: ${Math.min(indMapSpent(), indMapNeed(x))} / ${indMapNeed(x)} براءة مصروفة`}</p>` : ''}${indReqs(x.g, x.mats)}${x.pat ? `<p class="${indPats() >= x.pat ? 'good' : 'bad'}">🎫 ${L`براءات اختراع: ${indPats()} / ${x.pat}`}</p>` : ''}${indTooBig(x.mats)}
         <div class="row"><button class="btn gold" data-a="indTrainGo" ${indTrainCan(i) ? '' : 'disabled'}>${L('🏗️ ابنِ المرحلة')}</button></div>`;
     }
     h += '</div>';

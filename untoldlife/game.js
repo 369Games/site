@@ -1393,7 +1393,7 @@ function checkAch() {
   genTaskCheck();
   for (const a of ACH) {
     if (!S.leg.ach[a.id] && a.fn()) {
-      S.leg.ach[a.id] = 1;
+      S.leg.ach[a.id] = 1; if (typeof platformAch === 'function') platformAch(a.id); // the desktop build passes it to Steam (platform.js)
       log(L`🏅 إنجاز جديد: ${a.e} ${a.n} (+1% ذهب وخبرة)`, 'good');
       toast(L`🏅 إنجاز: ${a.n}`);
     }
@@ -2925,7 +2925,7 @@ const VIEWS = {
   village: [viewVillage, () => { if (typeof wkUpd === 'function') wkUpd(); }, () => [typeof wkSig === 'function' ? wkSig() : 0, dayAbs(), S.bld, S.npc, S.off, S.spouse, S.friend, S.twins, P('q_twin'), S.gender, S.leg.gen, donLv(), donorOn(), S.leg.donorAuto, Math.floor(Math.log2(Math.max(1, S.gold / DON_BASE))), NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, Math.min(S.skills.fish.l, 30), S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],
   legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length, dunGoal()]; }],
-  settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0]],
+  settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0, typeof platformSig === 'function' ? platformSig().join() : 0]],
 };
 
 Object.assign(VIEWS, IND_VIEWS); Object.assign(A, IND_ACTIONS); // Industrial Age (industry.js, loaded before this file)
@@ -3027,7 +3027,7 @@ function sitePanel() {
   // Support links from tools/site/config.json: "kofi" (Ko-fi page name) and "creators" (creators.sa page).
   const kofi = supportLinks().map(([u, t]) => `<a class="btn kofi" href="${u}" target="_blank" rel="noopener">${t}</a>`).join('');
   const legal = C.home ? `<p class="hint"><a href="${C.home}privacy.html"${ext}>${L('سياسة الخصوصية')}</a> · <a href="${C.home}about.html"${ext}>${L('عن الاستديو')}</a> · <a href="${C.home}contact.html"${ext}>${L('تواصل معنا')}</a></p>` : '';
-  return `<h3>${L('💬 ملاحظاتك')}</h3><p class="hint">${L('هذي نسخة تجريبية. أي شيء عجبك أو ضايقك أو خرب، قل لنا.')}</p><div class="row">${fb}${kofi}${home}</div>${legal}`;
+  return `${typeof platformPanel === 'function' ? platformPanel() : ''}<h3>${L('💬 ملاحظاتك')}</h3><p class="hint">${L('هذي نسخة تجريبية. أي شيء عجبك أو ضايقك أو خرب، قل لنا.')}</p><div class="row">${fb}${kofi}${home}</div>${legal}`;
 }
 function initSiteLinks() {
   const fb = $('fbBtn');

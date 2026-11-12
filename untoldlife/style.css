@@ -90,8 +90,6 @@ h1,h2,h3{margin:0}
 button.chip{cursor:pointer;color:#fff;font-family:inherit;text-shadow:inherit}
 .brand h1{font-size:30px;font-weight:800;letter-spacing:1px;direction:ltr;text-align:right}
 .brand .sub{font-size:13px;opacity:.95}
-#hName.sup{color:#ffd76a;font-weight:700;text-shadow:0 0 8px #ffc83d99}#hName.sup::after{content:' 💛'}
-.sup-in{flex:1;min-width:150px;max-width:240px;font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#0003;color:inherit;text-transform:uppercase;letter-spacing:1px}
 .hud{display:flex;flex-wrap:wrap;gap:8px}
 .chip{background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.4);padding:4px 12px;border-radius:20px;font-weight:600;backdrop-filter:blur(2px)}
 .chip.gold{background:#ffd76a;color:#5a3a00;text-shadow:none;border-color:#e6b23a;font-size:17px}

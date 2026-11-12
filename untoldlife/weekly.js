@@ -154,8 +154,7 @@ async function wkPush() {
     // outgrew: contracts pay trillions at once, so a big player's whole send was refused and their row froze).
     // If the rules refuse a send, the next one goes at the old 1B/s straight away (rules not published yet).
     const up2 = (k, rate) => Math.min(Math.max(cur[k], was(k)), was(k) + Math.floor(rate * Math.max(0, since - 5)));
-    const sup = typeof supOn === 'function' && supOn(); // a supporter's name carries a heart; nobody else's can
-    const row = { name: ((!badName(S.name) && String(S.name || '').replace(/[<>&"'`💛]/gu, '').trim().slice(0, sup ? 21 : 24)) || '…') + (sup ? ' 💛' : ''), gen: S.leg.gen,
+    const row = { name: (!badName(S.name) && String(S.name || '').replace(/[<>&"'`]/g, '').slice(0, 24)) || '…', gen: S.leg.gen,
       gold: up2('gold', WK.lowCap ? 0.95e9 : 0.95e12), fish: up2('fish', 950), floor: up2('floor', 19) };
     const add = {}, round = {};
     for (const g of VG) { const k = 'g' + g.k; row[k] = Math.min(Math.max(cur[k], was(k)), was(k) + lim); add[g.k] = row[k] - was(k); round[g.k] = vgRound(g); }

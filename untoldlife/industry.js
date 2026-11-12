@@ -238,7 +238,28 @@ function indUtilTotal() { return indOpen() && indPt('util') ? IND_UTIL.reduce((a
 function newInd() {
   return { hired: 0, f: { clay: { w: 0, l: 0 }, stone: { w: 0, l: 0 }, wood: { w: 1, l: 0 }, sand: { w: 0, l: 0 } }, r: {}, fu: {}, b: { rails: 0, boat: 0, store: 0 } };
 }
-function ind() { const I = S.leg.ind; if (I && !I.f.sand) I.f.sand = { w: 0, l: 0 }; return I; } // older saves get the sand pit
+function ind() {
+  const I = S.leg.ind;
+  if (I && !I.f.sand) I.f.sand = { w: 0, l: 0 }; // older saves get the sand pit
+  if (I && I.patT === undefined) I.patT = (I.pat || 0) + indPatSpent(I); // patents ever earned (1.21.2): older saves start from what they hold and have spent
+  return I;
+}
+// Patents spent so far: the invention map and the train stages.
+function indPatSpent(I) {
+  let n = 0;
+  for (const x of IND_PT) { const l = (I.pt || {})[x.id] || 0; for (let i = 0; i < l && i < x.c.length; i++) n += x.c[i]; }
+  for (let i = 0; i < (I.tr || 0) && i < IND_TRAIN.length; i++) n += IND_TRAIN[i].pat || 0;
+  return n;
+}
+/* The factory's part of the edited-save check (game.js: saveOddity). Like the gold and stars checks it catches the plain
+   edits: more patents than the renewals ever paid, or a material far above what the warehouse can hold. */
+function indOddity(st) {
+  const I = st && st.leg && st.leg.ind; if (!I) return '';
+  if (I.patT !== undefined && (I.pat || 0) + indPatSpent(I) > I.patT + 0.5) return 'pat';
+  const cap = 1000 * Math.pow(2, (I.b && I.b.store) || 0) * 1.05 + 10;
+  for (const id in I.r || {}) if (id !== 'bp' && IND_RES[id] && I.r[id] > cap) return 'mats';
+  return '';
+}
 function indOpen() { return !!S.leg.ind; }
 function inInd() { return indOpen() && S.world === 'ind'; }
 // --- unlock ---
@@ -532,7 +553,7 @@ const IND_ACTIONS = {
     if (!indRenewArm || Date.now() > indRenewArm) { indRenewArm = Date.now() + 5000; lastSig = ''; return; }
     indRenewArm = 0;
     const I = ind(), gain = indRenewGain();
-    I.pat = (I.pat || 0) + gain; I.ren = (I.ren || 0) + 1;
+    I.pat = (I.pat || 0) + gain; I.patT = (I.patT || 0) + gain; I.ren = (I.ren || 0) + 1;
     const keep = { rails: I.b.rails || 0, boat: I.b.boat || 0 }, fresh = newInd();
     const oldFu = I.fu || {}, nf = 3 * indPt('furn');
     Object.assign(I, { hired: 10 * indPt('crew'), f: fresh.f, r: {}, fu: {}, k: [], kd: 0, sw: [], dm: indPt('dmkeep') ? I.dm || [] : [] });

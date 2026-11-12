@@ -3155,7 +3155,7 @@ function saveOddity(st) {
   if ((st.gold || 0) > (g.earned || 0) * 1.01 + 600000) return 'gold';
   if ((lg.stars || 0) > (lg.totalStars || 0) + 1) return 'stars';
   if ((g.earned || 0) > earned + 1) return 'earned';
-  return '';
+  return typeof indOddity === 'function' ? indOddity(st) : '';
 }
 function markMod(reason) {
   if (!reason || !S || !S.leg || S.leg.mod) return;

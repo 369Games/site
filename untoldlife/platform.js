@@ -35,6 +35,47 @@ if (DESK) {
   setTimeout(() => { if (typeof S !== 'undefined' && S && S.leg) Object.keys(S.leg.ach || {}).forEach(platformAch); }, 8000);
 }
 
+// The desktop build's menus (1.23.1): a main menu at start, and Esc opens a pause menu in the middle of a game.
+// The picture behind is the village, or the ending picture once the First Train is finished. The game keeps running underneath.
+let DM = null; // null, 'main' or 'pause'
+function deskHasSave() { try { return !!(S && S.started) || !!localStorage.getItem(SAVE_KEY); } catch (e) { return !!(S && S.started); } }
+function deskMenuDraw() {
+  let el = document.getElementById('deskMenu');
+  document.documentElement.style.overflow = DM ? 'hidden' : ''; // no page scrollbar behind the menu
+  if (!DM) { if (el) el.remove(); return; }
+  if (!el) { el = document.createElement('div'); el.id = 'deskMenu'; document.body.appendChild(el); }
+  const ended = typeof indTrainDone === 'function' && S && S.leg && indTrainDone();
+  el.className = DM; el.style.backgroundImage = `url(assets/art/${ended ? 'ending-train' : 'menu-village'}.webp)`;
+  const btn = (a, t, cls = 'ghost') => `<button class="btn ${cls}" data-dm="${a}">${t}</button>`;
+  const list = DM === 'main'
+    ? [deskHasSave() ? btn('go', L('▶️ كمّل اللعب'), 'gold') : btn('go', L('🌱 لعبة جديدة'), 'gold'), btn('load', L('📂 حمّل حفظ من ملف')), btn('set', L('⚙️ الإعدادات')), btn('quit', L('🚪 خروج'))]
+    : [btn('go', L('▶️ كمّل اللعب'), 'gold'), btn('save', L('💾 احفظ الحين')), btn('set', L('⚙️ الإعدادات')), btn('main', L('🏠 القائمة الرئيسية')), btn('quit', L('🚪 احفظ واخرج'))];
+  el.innerHTML = `<div class="dm-box"><img class="dm-logo" src="assets/art/brand/untoldlife-wordmark.webp" alt="UntoldLife">${DM === 'pause' ? `<p class="dm-title">${L('اللعبة شغّالة في الخلفية')}</p>` : ''}<div class="dm-list">${list.join('')}</div><p class="dm-msg" id="dmMsg"></p></div>`;
+}
+function deskMenu(m) { DM = m || null; deskMenuDraw(); }
+function deskSaveNow() { save(); deskMirror(); }
+const DM_DO = {
+  go: () => deskMenu(null),
+  save: () => { deskSaveNow(); const m = document.getElementById('dmMsg'); if (m) m.textContent = L('تم الحفظ'); },
+  set: () => { deskMenu(null); closeModal(); if (S && S.started) { tab = 'settings'; lastSig = ''; renderTabs(); render(true); scrollTo(0, 0); } },
+  load: () => { deskMenu(null); if (A.saveUpload) A.saveUpload(); },
+  main: () => deskMenu('main'),
+  quit: () => { deskSaveNow(); DESK.quit(); },
+};
+if (DESK) {
+  const st = document.createElement('style');
+  st.textContent = '#deskMenu{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:#14100c center/cover no-repeat}'
+    + '#deskMenu.pause::before{content:"";position:absolute;inset:0;background:#0b0805b8;backdrop-filter:blur(3px)}'
+    + '.dm-box{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;width:min(430px,88vw);padding:26px 28px 22px;border-radius:18px;background:#1b140ee0;border:1px solid #e0b45366;box-shadow:0 18px 60px #000a}'
+    + '.dm-logo{width:100%;height:auto;margin:-6px 0 2px}.dm-title{margin:0;color:#e9dcb8;font-size:14px}.dm-list{display:flex;flex-direction:column;gap:10px;width:100%}'
+    + '.dm-list .btn{width:100%;justify-content:center;font-size:17px;padding:13px 16px}.dm-msg{min-height:1.4em;margin:0;color:#b9e08c;font-size:14px}';
+  document.head.appendChild(st);
+  addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-dm]'); if (b && DM_DO[b.dataset.dm]) { e.preventDefault(); e.stopPropagation(); DM_DO[b.dataset.dm](); } }, true);
+  // Esc: close the menu if one is open, otherwise open the pause menu (the main menu when no game has started).
+  addEventListener('keydown', e => { if (e.key !== 'Escape') return; e.preventDefault(); e.stopPropagation(); deskMenu(DM === 'pause' ? null : DM === 'main' ? (S && S.started ? null : 'main') : (S && S.started ? 'pause' : 'main')); }, true);
+  deskMenu('main');
+}
+
 // ---------- 3. the rewarded ad ----------
 const RW = { show: null, asked: false, hours: 2, cool: 4 * 3600e3 };
 function rwOn() { const a = siteConfig().adsense; return !!(a && a.rewarded && !DESK && !siteConfig().portal); }
@@ -70,7 +111,7 @@ function platformPanel() {
   let h = '';
   if (deskOn()) {
     h += `<h3>${L('🖥️ نسخة الكمبيوتر')}</h3><div class="row"><button class="btn ghost" data-a="deskFull">${L('⛶ ملء الشاشة (F11)')}</button><button class="btn ghost" data-a="deskQuit">${L('🚪 خروج من اللعبة')}</button></div>`
-      + `<p class="hint">${L('حفظك ينكتب في ملف على جهازك، وستيم يرفعه لحسابك لحاله.')}</p>`;
+      + `<p class="hint">${L('حفظك ينكتب في ملف على جهازك، وستيم يرفعه لحسابك لحاله.')} ${L('زر Esc يفتح القائمة.')}</p>`;
     return h;
   }
   if (rwOn()) {

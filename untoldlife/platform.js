@@ -87,11 +87,11 @@ if (DESK) {
 
 // ---------- 3. the rewarded ad ----------
 const RW = { show: null, asked: false, hours: 2, cool: 4 * 3600e3 };
-function rwOn() { const a = siteConfig().adsense; return !!(a && a.rewarded && !DESK && !siteConfig().portal); }
+function rwOn() { if (typeof CG !== 'undefined' && CG.ok) return true; const a = siteConfig().adsense; return !!(a && a.rewarded && !DESK && !siteConfig().portal); }
 function rwLeft() { return Math.max(0, ((S.leg.rwAt || 0) + RW.cool) - Date.now()); }
 // Ask AdSense for a rewarded ad. It calls beforeReward only when it has one to show; the button appears then.
 function rwAsk() {
-  if (!rwOn() || RW.asked || RW.show || rwLeft() > 0) return;
+  if (!rwOn() || CG.ok || RW.asked || RW.show || rwLeft() > 0) return; // CrazyGames ads are asked for on the click, not ahead
   RW.asked = true;
   if (!document.querySelector('script[src*="adsbygoogle.js"]')) { const s = document.createElement('script'); s.async = true; s.crossOrigin = 'anonymous'; s.dataset.adFrequencyHint = '30s'; s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + siteConfig().adsense.client; document.head.appendChild(s); }
   try {
@@ -111,7 +111,11 @@ function rwGive() {
   log(L`📺 شكراً على المشاهدة! أخذت إنتاج ${RW.hours} ساعات: 💰 ${fmt(Math.max(0, S.gold - g0))}`, 'golden');
   toast(L('📺 وصلك إنتاج ساعتين!')); save(); lastSig = '';
 }
-A.rwWatch = () => { const f = RW.show; if (f && rwLeft() <= 0) { RW.show = null; f(); } };
+A.rwWatch = () => {
+  if (rwLeft() > 0) return;
+  if (CG.ok) { cgAd('rewarded', ok => { if (ok) rwGive(); else toast(L('ما فيه إعلان الحين')); lastSig = ''; }); return; }
+  const f = RW.show; if (f) { RW.show = null; f(); }
+};
 if (typeof setInterval === 'function') setInterval(() => { if (typeof S !== 'undefined' && S && S.started) rwAsk(); }, 30000);
 
 // ---------- 4. notifications ----------
@@ -197,8 +201,62 @@ if (inFrame()) {
   addEventListener('touchend', () => { tY = null; }, { passive: true });
 }
 
+// ---------- 6. CrazyGames ----------
+/* The CrazyGames copy (tools/build_portal.py crazygames) loads their SDK in <head> and sets site-config «cg».
+   What they ask for, and where it is done:
+   - init, then «loading stop» and one «gameplay start» when the player is really playing (their size check ends there);
+   - their mute setting wins over ours (AU.hold);
+   - ads only through the SDK: the rewarded ad is the same «two hours of production» as section 3, and a midgame ad
+     may play at a natural break (a retirement, at most one every 10 minutes). Sound is held while an ad plays;
+   - «happytime» on the two big moments, a retirement and the ending;
+   - a short frame (their smallest is 821×462): the tall picture header is folded away so the game has the room.
+   On Basic Launch ads are off: requestAd answers adError and the player just gets a short message. */
+const CG = { sdk: null, ok: false, played: false, lastAd: 0, busy: false };
+function cgAudio() {
+  AU.hold = CG.busy || !!(CG.ok && CG.sdk.game.settings && CG.sdk.game.settings.muteAudio);
+  if (typeof auApplyVolumes === 'function') auApplyVolumes();
+}
+function cgAd(type, done) {
+  if (!CG.ok || CG.busy) { if (done) done(false); return; }
+  CG.busy = true;
+  const end = ok => { if (!CG.busy) return; CG.busy = false; CG.lastAd = Date.now(); cgAudio(); if (done) done(ok); };
+  try { CG.sdk.ad.requestAd(type, { adStarted: () => cgAudio(), adFinished: () => end(true), adError: () => end(false) }); }
+  catch (e) { end(false); }
+}
+// A natural break in play (game.js and industry.js call this).
+function platformBreak(what) {
+  if (!CG.ok) return;
+  try { CG.sdk.game.happytime(); } catch (e) { /* not ready */ }
+  if (what === 'retire' && Date.now() - CG.lastAd > 10 * 60e3) cgAd('midgame');
+}
+if (siteConfig().cg && window.CrazyGames && window.CrazyGames.SDK) (async () => {
+  try {
+    const sdk = window.CrazyGames.SDK;
+    await sdk.init();
+    if (sdk.environment === 'disabled') return; // not on their site: behave like any other copy
+    CG.sdk = sdk; CG.ok = true;
+    try { sdk.game.loadingStop(); } catch (e) { /* optional call */ }
+    try { sdk.game.addSettingsChangeListener(cgAudio); } catch (e) { /* older SDK */ }
+    cgAudio();
+    // «gameplay start» once, when a game is really running.
+    const t = setInterval(() => {
+      if (CG.played || typeof S === 'undefined' || !S || !S.started) return;
+      CG.played = true; clearInterval(t);
+      try { sdk.game.gameplayStart(); } catch (e) { /* not ready */ }
+    }, 1000);
+    lastSig = '';
+  } catch (e) { /* their SDK didn't load: the game runs without it */ }
+})();
+// A short frame: fold the picture header down to the status bar.
+if (inFrame()) {
+  const st = document.createElement('style');
+  st.textContent = '@media (max-height:720px){#top{min-height:0!important;margin-top:8px!important;margin-bottom:8px!important;padding:8px 14px!important}#top .brand,#top .world-scene,#top .sky,#top #weatherCanvas{display:none!important}#top .hud{position:static!important;margin:0!important}#tabs{margin-top:0!important}.page-scene{display:none!important}}'
+    + (siteConfig().cg ? 'body{-webkit-user-select:none;user-select:none}input,textarea{-webkit-user-select:text;user-select:text}' : '');
+  document.head.appendChild(st);
+}
+
 // ---------- the block in «More» ----------
-function platformSig() { return [!!PWA_EVT, pwaInstalled(), deskOn(), rwOn() && !!RW.show, rwOn() && rwLeft() > 0, ntOn(), ntCan() && Notification.permission]; }
+function platformSig() { return [CG.ok, !!PWA_EVT, pwaInstalled(), deskOn(), rwOn() && !!RW.show, rwOn() && rwLeft() > 0, ntOn(), ntCan() && Notification.permission]; }
 function platformPanel() {
   let h = '';
   if (deskOn()) {
@@ -209,8 +267,8 @@ function platformPanel() {
   if (rwOn()) {
     const left = rwLeft();
     h += `<h3>${L('📺 إنتاج ببلاش')}</h3><p class="hint">${L('شوف إعلان قصير وخذ إنتاج ساعتين كاملة من القرية والمصنع. اختياري تماماً، ومرة كل 4 ساعات.')}</p>`
-      + `<div class="row"><button class="btn gold" data-a="rwWatch" ${RW.show && left <= 0 ? '' : 'disabled'}>${L('📺 شوف إعلان وخذ ساعتين')}</button>`
-      + `<span class="stat">${left > 0 ? L`يرجع بعد ${ftime(left / 1000)}` : RW.show ? L('جاهز ✔') : L('ما فيه إعلان الحين')}</span></div>`;
+      + `<div class="row"><button class="btn gold" data-a="rwWatch" ${(RW.show || CG.ok) && left <= 0 ? '' : 'disabled'}>${L('📺 شوف إعلان وخذ ساعتين')}</button>`
+      + `<span class="stat">${left > 0 ? L`يرجع بعد ${ftime(left / 1000)}` : RW.show || CG.ok ? L('جاهز ✔') : L('ما فيه إعلان الحين')}</span></div>`;
   }
   if (!siteConfig().portal && !pwaInstalled()) {
     if (PWA_EVT) h += `<h3>${L('📲 ثبّت اللعبة')}</h3><p class="hint">${L('حط اللعبة على شاشتك الرئيسية أو سطح المكتب وتفتح مثل أي تطبيق، بنافذة لحالها وبدون شريط المتصفح.')}</p><div class="row"><button class="btn gold" data-a="pwaInstall">${L('📲 ثبّت كتطبيق')}</button></div>`;

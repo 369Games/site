@@ -36,7 +36,7 @@ function auInit() {
 }
 function auApplyVolumes() {
   if (!AU.ctx) return;
-  const t = AU.ctx.currentTime, m = AU.set.muted ? 0 : 1;
+  const t = AU.ctx.currentTime, m = AU.set.muted || AU.hold ? 0 : 1; // AU.hold: the platform mutes us (an ad is playing, or the portal's own mute; platform.js)
   AU.master.gain.setTargetAtTime(m, t, 0.05);
   AU.music.gain.setTargetAtTime(AU.set.music * 0.5, t, 0.1);
   AU.sfx.gain.setTargetAtTime(AU.set.sfx * 0.6, t, 0.05);

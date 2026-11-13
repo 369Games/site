@@ -827,6 +827,7 @@ function viewUtil() {
 function indEnding() {
   const I = ind(), st = S.stats;
   if (typeof auEnding === 'function') auEnding(); // the ending's own music (audio.js)
+  if (typeof platformBreak === 'function') platformBreak('ending');
   openModal('<img class="ending-pic" src="assets/art/ending-train.webp" alt="" width="1280" height="720">' + L`<h2>🚂 القطار الأول طلع من المحطة!</h2>
     <div class="letter"><p>من مزرعة صغيرة متعبة تركها لك جدك، إلى قطار يربط وادي الصدى بالعالم.</p>
     <p>عائلتك كتبت قصتها، جيل بعد جيل. <b>ختمت UntoldLife.</b></p></div>

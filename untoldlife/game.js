@@ -1591,6 +1591,7 @@ function doRetire() {
   applyGenStart(oldTools); fillBoard(); genTasks(); // the new generation's three tasks
   S.last = Date.now(); logs = []; logDirty = true; zoneMode = false; lastSig = ''; tab = 'farm';
   log(L`🌱 بدأ الجيل ${LG.gen}: ${S.name} ${gv(L('يستلم'), L('تستلم'))} مزرعة العائلة`, 'season');
+  if (typeof platformBreak === 'function') platformBreak('retire'); // a natural break: the portal may show an ad here (platform.js)
   if (S.gen.ch) { const c = CHALLENGES.find(x => x.id === S.gen.ch); log(L`🏆 تحدي هذا الجيل: ${c.e} ${c.n} — ${goalText(c)}`, 'season'); }
   save(); RS = null;
   if (!(typeof CLOUD !== 'undefined' && CLOUD.user)) log(L('💾 جيل جديد! وقت مناسب تنزّل نسخة من حفظك من «المزيد»'), 'new');
@@ -3026,7 +3027,7 @@ function sitePanel() {
   const home = C.home ? `<a class="btn ghost" href="${C.home}"${ext}>${L('🏠 كل ألعابنا')}</a>` : '';
   // Support links from tools/site/config.json: "kofi" (Ko-fi page name) and "creators" (creators.sa page).
   const kofi = supportLinks().map(([u, t]) => `<a class="btn kofi" href="${u}" target="_blank" rel="noopener">${t}</a>`).join('');
-  const legal = C.home ? `<p class="hint"><a href="${C.home}privacy.html"${ext}>${L('سياسة الخصوصية')}</a> · <a href="${C.home}about.html"${ext}>${L('عن الاستديو')}</a> · <a href="${C.home}contact.html"${ext}>${L('تواصل معنا')}</a></p>` : '';
+  const legal = !C.home && C.privacy ? `<p class="hint"><a href="${C.privacy}" target="_blank" rel="noopener">${L('سياسة الخصوصية')}</a></p>` : C.home ? `<p class="hint"><a href="${C.home}privacy.html"${ext}>${L('سياسة الخصوصية')}</a> · <a href="${C.home}about.html"${ext}>${L('عن الاستديو')}</a> · <a href="${C.home}contact.html"${ext}>${L('تواصل معنا')}</a></p>` : '';
   return `${typeof platformPanel === 'function' ? platformPanel() : ''}<h3>${L('💬 ملاحظاتك')}</h3><p class="hint">${L('هذي نسخة تجريبية. أي شيء عجبك أو ضايقك أو خرب، قل لنا.')}</p><div class="row">${fb}${kofi}${home}</div>${legal}`;
 }
 function initSiteLinks() {

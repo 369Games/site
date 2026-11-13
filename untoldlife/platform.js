@@ -210,6 +210,7 @@ if (inFrame()) {
      may play at a natural break (a retirement, at most one every 10 minutes). Sound is held while an ad plays;
    - «happytime» on the two big moments, a retirement and the ending;
    - a short frame (their smallest is 821×462): the tall picture header is folded away so the game has the room.
+   - progress save: their Data module holds a copy of the save (cgRestore, cgMirror below);
    On Basic Launch ads are off: requestAd answers adError and the player just gets a short message. */
 const CG = { sdk: null, ok: false, played: false, lastAd: 0, busy: false };
 function cgAudio() {
@@ -223,6 +224,27 @@ function cgAd(type, done) {
   try { CG.sdk.ad.requestAd(type, { adStarted: () => cgAudio(), adFinished: () => end(true), adError: () => end(false) }); }
   catch (e) { end(false); }
 }
+/* Progress save through their Data module (same calls as localStorage; it follows the player's CrazyGames account).
+   The game keeps saving to localStorage as always. At start, if their copy is newer than ours (another device, or a
+   cleared browser), it is put in place and the page reloads once. After that our newest save is copied to them. */
+let CG_LAST = '';
+function cgSaveTime(text) { try { const r = readSave(text); return r && r.st ? r.st.last || 0 : 0; } catch (e) { return 0; } }
+function cgRestore() {
+  try {
+    const theirs = CG.sdk.data.getItem(SAVE_KEY); if (!theirs) return false;
+    const ours = localStorage.getItem(SAVE_KEY);
+    if (ours === theirs) { CG_LAST = theirs; return false; }
+    if (ours && cgSaveTime(ours) >= cgSaveTime(theirs)) return false;
+    if (!cgSaveTime(theirs) || sessionStorage.getItem('ul_cg_restored')) return false; // unreadable, or already tried this visit
+    sessionStorage.setItem('ul_cg_restored', '1');
+    saveBlocked = true; localStorage.setItem(SAVE_KEY, theirs); localStorage.setItem(SAVE_MARK, '1');
+    location.reload(); return true;
+  } catch (e) { return false; }
+}
+function cgMirror() {
+  if (!CG.ok || saveBlocked) return;
+  try { const t = localStorage.getItem(SAVE_KEY); if (t && t !== CG_LAST) { CG.sdk.data.setItem(SAVE_KEY, t); CG_LAST = t; } } catch (e) { /* over their limit, or offline: try again next round */ }
+}
 // A natural break in play (game.js and industry.js call this).
 function platformBreak(what) {
   if (!CG.ok) return;
@@ -235,6 +257,8 @@ if (siteConfig().cg && window.CrazyGames && window.CrazyGames.SDK) (async () => 
     await sdk.init();
     if (sdk.environment === 'disabled') return; // not on their site: behave like any other copy
     CG.sdk = sdk; CG.ok = true;
+    if (cgRestore()) return; // a newer save came from their side: the page is reloading with it
+    setInterval(cgMirror, 15000); addEventListener('beforeunload', cgMirror); addEventListener('visibilitychange', () => { if (document.hidden) cgMirror(); });
     try { sdk.game.loadingStop(); } catch (e) { /* optional call */ }
     try { sdk.game.addSettingsChangeListener(cgAudio); } catch (e) { /* older SDK */ }
     cgAudio();

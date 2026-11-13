@@ -157,6 +157,46 @@ function ntPanel() {
     + (blocked ? `<p class="hint">${L('المتصفح مانع التنبيهات لهذا الموقع. اسمح لها من إعدادات الموقع في المتصفح.')}</p>` : '');
 }
 
+// ---------- 5. scrolling inside a portal's frame ----------
+/* itch.io and other portals embed the game in an <iframe scrolling="no">, where the wheel and touch dragging do
+   nothing, so the player can't reach the lower half of any page. Programmatic scrolling still works, so when the game
+   runs inside a frame we do the scrolling ourselves. At the very top or bottom we let the event through, so the page
+   around the game can still be scrolled. */
+function inFrame() { try { return window.top !== window.self; } catch (e) { return true; } }
+// The frame blocks inner boxes too (a long modal, the event log), so find the one under the pointer and move it ourselves.
+function scrollInner(el, dy) {
+  for (; el && el.nodeType === 1 && el !== document.body && el !== document.documentElement; el = el.parentElement) {
+    const o = getComputedStyle(el).overflowY;
+    if ((o === 'auto' || o === 'scroll') && el.scrollHeight - el.clientHeight > 2
+      && (dy > 0 ? el.scrollTop < el.scrollHeight - el.clientHeight - 1 : el.scrollTop > 0)) return el;
+  }
+  return null;
+}
+function frameScroll(el, dy, e) {
+  if (!dy) return;
+  const box = scrollInner(el, dy);
+  if (box) { e.preventDefault(); box.scrollTop += dy; return; }
+  const max = document.documentElement.scrollHeight - innerHeight;
+  if (dy > 0 ? scrollY >= max - 1 : scrollY <= 0) return; // the edge: the page around us takes it
+  e.preventDefault();
+  scrollBy(0, dy);
+}
+if (inFrame()) {
+  addEventListener('wheel', e => {
+    if (e.ctrlKey || e.defaultPrevented) return; // ctrl+wheel is zoom
+    frameScroll(e.target, e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1), e);
+  }, { passive: false });
+  let tY = null, tEl = null;
+  addEventListener('touchstart', e => { tY = e.touches.length === 1 ? e.touches[0].clientY : null; tEl = e.target; }, { passive: true });
+  addEventListener('touchmove', e => {
+    if (tY === null || e.touches.length !== 1 || e.defaultPrevented) return;
+    const y = e.touches[0].clientY, dy = tY - y;
+    tY = y;
+    if (Math.abs(dy) >= 1) frameScroll(tEl, dy, e);
+  }, { passive: false });
+  addEventListener('touchend', () => { tY = null; }, { passive: true });
+}
+
 // ---------- the block in «More» ----------
 function platformSig() { return [!!PWA_EVT, pwaInstalled(), deskOn(), rwOn() && !!RW.show, rwOn() && rwLeft() > 0, ntOn(), ntCan() && Notification.permission]; }
 function platformPanel() {

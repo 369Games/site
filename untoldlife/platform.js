@@ -47,17 +47,26 @@ function deskMenuDraw() {
   const ended = typeof indTrainDone === 'function' && S && S.leg && indTrainDone();
   el.className = DM; el.style.backgroundImage = `url(assets/art/${ended ? 'ending-train' : 'menu-village'}.webp)`;
   const btn = (a, t, cls = 'ghost') => `<button class="btn ${cls}" data-dm="${a}">${t}</button>`;
-  const list = DM === 'main'
+  const list = DM === 'set' // settings stay inside the menu: leaving it for the «More» tab would step past the new-game screen
+    ? [...LANGS.map(([id, name]) => btn('lang:' + id, name, LANG === id ? 'gold' : 'ghost')), btn('mute', typeof AU !== 'undefined' && AU.set && AU.set.muted ? L('🔊 شغّل الصوت') : L('🔇 كتم الصوت')), btn('full', L('⛶ ملء الشاشة (F11)')),
+      ...(S && S.started ? [btn('more', L('⚙️ كل الإعدادات'))] : []), btn('back', L('↩️ رجوع'))]
+    : DM === 'main'
     ? [deskHasSave() ? btn('go', L('▶️ كمّل اللعب'), 'gold') : btn('go', L('🌱 لعبة جديدة'), 'gold'), btn('load', L('📂 حمّل حفظ من ملف')), btn('set', L('⚙️ الإعدادات')), btn('quit', L('🚪 خروج'))]
     : [btn('go', L('▶️ كمّل اللعب'), 'gold'), btn('save', L('💾 احفظ الحين')), btn('set', L('⚙️ الإعدادات')), btn('main', L('🏠 القائمة الرئيسية')), btn('quit', L('🚪 احفظ واخرج'))];
-  el.innerHTML = `<div class="dm-box"><img class="dm-logo" src="assets/art/brand/untoldlife-wordmark.webp" alt="UntoldLife">${DM === 'pause' ? `<p class="dm-title">${L('اللعبة شغّالة في الخلفية')}</p>` : ''}<div class="dm-list">${list.join('')}</div><p class="dm-msg" id="dmMsg"></p></div>`;
+  el.innerHTML = `<div class="dm-box"><img class="dm-logo" src="assets/art/brand/untoldlife-wordmark.webp" alt="UntoldLife">${DM === 'set' ? `<p class="dm-title">${L('⚙️ الإعدادات')}</p>` : ''}${DM === 'pause' ? `<p class="dm-title">${L('اللعبة شغّالة في الخلفية')}</p>` : ''}<div class="dm-list">${list.join('')}</div><p class="dm-msg" id="dmMsg"></p></div>`;
 }
+let DM_BACK = 'main';
 function deskMenu(m) { DM = m || null; deskMenuDraw(); }
 function deskSaveNow() { save(); deskMirror(); }
 const DM_DO = {
   go: () => deskMenu(null),
   save: () => { deskSaveNow(); const m = document.getElementById('dmMsg'); if (m) m.textContent = L('تم الحفظ'); },
-  set: () => { deskMenu(null); closeModal(); if (S && S.started) { tab = 'settings'; lastSig = ''; renderTabs(); render(true); scrollTo(0, 0); } },
+  set: () => { DM_BACK = DM === 'pause' ? 'pause' : 'main'; deskMenu('set'); },
+  back: () => deskMenu(DM_BACK),
+  mute: () => { if (A.muteToggle) A.muteToggle(); deskMenuDraw(); },
+  full: () => DESK.fullscreen(),
+  lang: id => { if (id !== LANG) setLang(id); },
+  more: () => { if (!(S && S.started)) return; deskMenu(null); closeModal(); tab = 'settings'; lastSig = ''; renderTabs(); render(true); scrollTo(0, 0); }, // only inside a game
   load: () => { deskMenu(null); if (A.saveUpload) A.saveUpload(); },
   main: () => deskMenu('main'),
   quit: () => { deskSaveNow(); DESK.quit(); },
@@ -65,14 +74,14 @@ const DM_DO = {
 if (DESK) {
   const st = document.createElement('style');
   st.textContent = '#deskMenu{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:#14100c center/cover no-repeat}'
-    + '#deskMenu.pause::before{content:"";position:absolute;inset:0;background:#0b0805b8;backdrop-filter:blur(3px)}'
+    + '#deskMenu.pause::before,#deskMenu.set::before{content:"";position:absolute;inset:0;background:#0b0805b8;backdrop-filter:blur(3px)}'
     + '.dm-box{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;width:min(430px,88vw);padding:26px 28px 22px;border-radius:18px;background:#1b140ee0;border:1px solid #e0b45366;box-shadow:0 18px 60px #000a}'
     + '.dm-logo{width:100%;height:auto;margin:-6px 0 2px}.dm-title{margin:0;color:#e9dcb8;font-size:14px}.dm-list{display:flex;flex-direction:column;gap:10px;width:100%}'
     + '.dm-list .btn{width:100%;justify-content:center;font-size:17px;padding:13px 16px}.dm-msg{min-height:1.4em;margin:0;color:#b9e08c;font-size:14px}';
   document.head.appendChild(st);
-  addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-dm]'); if (b && DM_DO[b.dataset.dm]) { e.preventDefault(); e.stopPropagation(); DM_DO[b.dataset.dm](); } }, true);
+  addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-dm]'); if (!b) return; const [k, v] = b.dataset.dm.split(':'); if (DM_DO[k]) { e.preventDefault(); e.stopPropagation(); DM_DO[k](v); } }, true);
   // Esc: close the menu if one is open, otherwise open the pause menu (the main menu when no game has started).
-  addEventListener('keydown', e => { if (e.key !== 'Escape') return; e.preventDefault(); e.stopPropagation(); deskMenu(DM === 'pause' ? null : DM === 'main' ? (S && S.started ? null : 'main') : (S && S.started ? 'pause' : 'main')); }, true);
+  addEventListener('keydown', e => { if (e.key !== 'Escape') return; e.preventDefault(); e.stopPropagation(); deskMenu(DM === 'set' ? DM_BACK : DM === 'pause' ? null : DM === 'main' ? (S && S.started ? null : 'main') : (S && S.started ? 'pause' : 'main')); }, true);
   deskMenu('main');
 }
 

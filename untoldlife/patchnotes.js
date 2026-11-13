@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.22.2', date: '2026-11-13', big: false, title: L('تنبيهات لما تكون بعيد'), items: [
+    L('🔔 تنبيهات اختيارية من «المزيد»: يوصلك تنبيه لما ترجع سفينة، يجهز عقد، يوقف المصنع، أو تقدر تتقاعد، وأنت في نافذة ثانية. تشتغل ما دامت اللعبة مفتوحة في الخلفية.'),
+  ] },
   { v: '1.22.1', date: '2026-11-12', big: false, title: L('ثبّت اللعبة كتطبيق'), items: [
     L('📲 زر «ثبّت كتطبيق» في «المزيد»: اللعبة تنحط على شاشتك الرئيسية أو سطح المكتب وتفتح بنافذة لحالها. على الآيفون تنكتب لك الطريقة من زر المشاركة.'),
   ] },

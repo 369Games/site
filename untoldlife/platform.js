@@ -114,14 +114,57 @@ function rwGive() {
 A.rwWatch = () => { const f = RW.show; if (f && rwLeft() <= 0) { RW.show = null; f(); } };
 if (typeof setInterval === 'function') setInterval(() => { if (typeof S !== 'undefined' && S && S.started) rwAsk(); }, 30000);
 
+// ---------- 4. notifications ----------
+/* Optional (1.22.2): a system notification when something is waiting and the player is looking elsewhere (the tab is
+   hidden or the window isn't in front). No server: it only works while the game is open somewhere, in a background tab,
+   an installed app or the desktop build. Each kind fires when it becomes true, and at most once every 30 minutes. */
+const NT_KEY = 'untoldlife_notif';
+const NT = { on: false, was: null, at: {} };
+try { NT.on = localStorage.getItem(NT_KEY) === '1'; } catch (e) { /* storage off */ }
+function ntCan() { return typeof Notification !== 'undefined' && (DESK || !siteConfig().portal); } // a portal copy runs in a frame, where notifications are blocked
+function ntOn() { return NT.on && ntCan() && Notification.permission === 'granted'; }
+A.ntToggle = () => {
+  if (!ntCan()) return;
+  NT.on = !ntOn();
+  if (NT.on && Notification.permission !== 'granted') { try { const p = Notification.requestPermission(() => { lastSig = ''; }); if (p && p.then) p.then(() => { lastSig = ''; }); } catch (e) { /* old browser */ } }
+  try { localStorage.setItem(NT_KEY, NT.on ? '1' : '0'); } catch (e) { /* storage off */ }
+  lastSig = '';
+};
+const NT_LIST = [
+  ['ship', () => indOpen() && indHbBack(), () => L('⚓ سفينتك رجعت من الرحلة')],
+  ['deal', () => indOpen() && indKReady(), () => L('📜 عندك عقد جاهز للتسليم')],
+  ['full', () => indOpen() && (IND_FIELDS.some(f => indFieldSt(f.id).c) || IND_MAKERS.some(r => indMakerSt(r).c === 'bad')), () => L('📦 المصنع يحتاجك: مخزن مليان أو فرن واقف')],
+  ['retire', () => canRetire(), () => L('🌅 تقدر تتقاعد وتسلّم المزرعة لولدك')],
+];
+function ntCheck() {
+  if (typeof S === 'undefined' || !S || !S.started) return;
+  const first = !NT.was, was = NT.was || (NT.was = {}), away = document.hidden || !document.hasFocus(), now = Date.now();
+  for (const [k, fn, txt] of NT_LIST) {
+    let v = false; try { v = !!fn(); } catch (e) { /* that part of the game isn't open yet */ }
+    if (v && !was[k] && !first && away && ntOn() && now - (NT.at[k] || 0) > 30 * 60e3) {
+      NT.at[k] = now;
+      try { const n = new Notification('UntoldLife', { body: txt(), icon: 'assets/icons/icon-192.png', tag: 'ul-' + k }); n.onclick = () => { try { window.focus(); } catch (e) { /* not allowed */ } n.close(); }; } catch (e) { /* the system refused */ }
+    }
+    was[k] = v;
+  }
+}
+setInterval(ntCheck, 15000);
+function ntPanel() {
+  if (!ntCan()) return '';
+  const blocked = Notification.permission === 'denied';
+  return `<h3>${L('🔔 التنبيهات')}</h3><p class="hint">${L('تنبيه لما ترجع سفينة، يجهز عقد، يوقف المصنع، أو تقدر تتقاعد، وأنت في نافذة ثانية. يشتغل ما دامت اللعبة مفتوحة في الخلفية.')}</p>`
+    + `<div class="row"><button class="tog ${ntOn() ? 'on' : ''}" data-a="ntToggle" ${blocked ? 'disabled' : ''}>🔔 ${ntOn() ? L('التنبيهات: شغّالة') : L('التنبيهات: موقفة')}</button></div>`
+    + (blocked ? `<p class="hint">${L('المتصفح مانع التنبيهات لهذا الموقع. اسمح لها من إعدادات الموقع في المتصفح.')}</p>` : '');
+}
+
 // ---------- the block in «More» ----------
-function platformSig() { return [!!PWA_EVT, pwaInstalled(), deskOn(), rwOn() && !!RW.show, rwOn() && rwLeft() > 0]; }
+function platformSig() { return [!!PWA_EVT, pwaInstalled(), deskOn(), rwOn() && !!RW.show, rwOn() && rwLeft() > 0, ntOn(), ntCan() && Notification.permission]; }
 function platformPanel() {
   let h = '';
   if (deskOn()) {
     h += `<h3>${L('🖥️ نسخة الكمبيوتر')}</h3><div class="row"><button class="btn ghost" data-a="deskFull">${L('⛶ ملء الشاشة (F11)')}</button><button class="btn ghost" data-a="deskQuit">${L('🚪 خروج من اللعبة')}</button></div>`
       + `<p class="hint">${L('حفظك ينكتب في ملف على جهازك، وستيم يرفعه لحسابك لحاله.')} ${L('زر Esc يفتح القائمة.')}</p>`;
-    return h;
+    return h + ntPanel();
   }
   if (rwOn()) {
     const left = rwLeft();
@@ -133,5 +176,5 @@ function platformPanel() {
     if (PWA_EVT) h += `<h3>${L('📲 ثبّت اللعبة')}</h3><p class="hint">${L('حط اللعبة على شاشتك الرئيسية أو سطح المكتب وتفتح مثل أي تطبيق، بنافذة لحالها وبدون شريط المتصفح.')}</p><div class="row"><button class="btn gold" data-a="pwaInstall">${L('📲 ثبّت كتطبيق')}</button></div>`;
     else if (pwaIos()) h += `<h3>${L('📲 ثبّت اللعبة')}</h3><p class="hint">${L('على الآيفون: اضغط زر المشاركة في سفاري، ثم «إضافة إلى الشاشة الرئيسية». اللعبة تفتح بعدها مثل أي تطبيق.')}</p>`;
   }
-  return h;
+  return h + ntPanel();
 }

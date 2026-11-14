@@ -494,3 +494,11 @@ html #tabs .world-btn{border-inline-start:1px solid #c9a35a44;margin-inline-star
 .intro-opt h3{font-size:15px;margin:14px 0 8px}.intro-opt label{display:block;margin:14px 0 6px}
 .letter:after{left:auto;inset-inline-start:24px}
 @media (max-width:600px),(max-height:760px){.letter .letter-more{display:none}.letter{margin-bottom:26px}}
+
+/* Market cards and villager hearts in a narrow column (1.22.4): at about 1280 px wide, as in the itch.io frame, three cards a row
+   left each card 285 px, too little for the lock, picture, name, quantity and two buttons, and ten hearts ran out of their card. */
+#view .inv{grid-template-columns:repeat(auto-fill,minmax(min(100%,400px),1fr))}
+#view .it{flex-wrap:wrap;gap:8px}#view .it .nm{flex:1 1 90px}#view .it .nm small{display:block;white-space:nowrap}
+#view .it .mk-q{margin-inline-start:auto}
+#view .hearts{flex-wrap:wrap;row-gap:2px;max-width:100%}
+@media (max-width:600px){#view .it .nm{flex-basis:calc(100% - 120px)}}

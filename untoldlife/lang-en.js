@@ -1650,6 +1650,8 @@
 "📋 الجولة الماضية: ما ساهمت": "📋 Last round: you didn't take part",
 "📋 الجولة الماضية: مركزك {0} من {1}، والهدف ما اكتمل": "📋 Last round: you placed {0} of {1}, but the goal wasn't reached",
 "📋 الجولة الماضية: مركزك {0} من {1} ← جائزة +{2}%": "📋 Last round: you placed {0} of {1} → prize +{2}%",
+"ترتيب السوق والقرية": "A tidier market and village",
+"🛒 بطاقات السوق صارت أعرض ومرتبة: الاسم والسعر والكمية وأزرار البيع في سطر واحد بدل ما تتراكم فوق بعض. وقلوب أهل القرية ما عادت تطلع برا البطاقة.": "🛒 Market cards are wider and tidy: the name, price, quantity and sell buttons sit on one line instead of piling on top of each other. And the villagers' hearts no longer run outside their card.",
 "دخول أسرع للعبة": "A quicker way in",
 "🚪 أول شاشة أخف: زر «ادخل القرية» صار بعد الرسالة مباشرة، والاسم والشخصية واللغة تحته واختيارية. ومعها شاشة تحميل فيها الشعار بدل الصفحة الفاضية على الاتصال البطيء.": "🚪 A lighter first screen: the “Enter the village” button now comes right after the letter, and your name, character and language sit below it as options. Plus a loading screen with the logo instead of an empty page on a slow connection.",
 "تنبيهات لما تكون بعيد": "Notifications while you're away",

@@ -58,14 +58,7 @@ section{padding:72px 0;scroll-margin-top:70px}
 .more a:hover{border-color:var(--gold)}
 .shots{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:34px}
 .shots img{width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line)}
-/* the neon city picture is drawn, until the game has art of its own */
-.neon{background:linear-gradient(180deg,#0a0420 0%,#25093f 46%,#3d0f4d 62%,#08283a 100%)}
-.neon:before{content:'';position:absolute;inset:auto 0 38% 0;height:34%;background:
-  linear-gradient(#0a0518,#0a0518) 4% 100%/7% 62% no-repeat,linear-gradient(#0d0720,#0d0720) 13% 100%/6% 88% no-repeat,linear-gradient(#0a0518,#0a0518) 22% 100%/9% 54% no-repeat,
-  linear-gradient(#0d0720,#0d0720) 34% 100%/5% 100% no-repeat,linear-gradient(#0a0518,#0a0518) 43% 100%/8% 70% no-repeat,linear-gradient(#0d0720,#0d0720) 55% 100%/7% 92% no-repeat,
-  linear-gradient(#0a0518,#0a0518) 66% 100%/9% 58% no-repeat,linear-gradient(#0d0720,#0d0720) 78% 100%/6% 82% no-repeat,linear-gradient(#0a0518,#0a0518) 88% 100%/8% 66% no-repeat,linear-gradient(#0d0720,#0d0720) 98% 100%/6% 76% no-repeat}
-.neon:after{content:'';position:absolute;inset:auto -20% 0 -20%;height:38%;background:repeating-linear-gradient(90deg,#00e5ff33 0 1px,transparent 1px 34px),repeating-linear-gradient(0deg,#ff2bd633 0 1px,transparent 1px 20px),linear-gradient(180deg,#ff2bd626,#06121c);transform:perspective(260px) rotateX(58deg);transform-origin:bottom}
-.neon .sign{position:relative;z-index:2;font-size:clamp(26px,4.4vw,48px);font-weight:800;letter-spacing:4px;color:#fff;text-shadow:0 0 8px #ff2bd6,0 0 22px #ff2bd6,0 0 46px #00e5ff;margin-bottom:22%;direction:ltr}
+.media.runner{place-items:center end;direction:ltr}.media.runner img.logo{width:64%;height:auto;max-width:none;margin-right:4%;filter:drop-shadow(0 0 18px #ff2bd688)}
 /* latest updates */
 .news{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
 .news article{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px}
@@ -160,10 +153,10 @@ section{padding:72px 0;scroll-margin-top:70px}
     </div>
 
     <article class="game flip">
-      <div class="media neon" aria-hidden="true"><span class="sign">NEON CITY</span></div>
+      <div class="media runner" style="background-image:url('img/runnerlife-cover.jpg')"><img class="logo" src="img/runnerlife-logo.png" alt="RunnerLife" width="1100" height="185" loading="lazy"></div>
       <div>
         <span class="tag soon" data-t="neonTag">قيد التطوير</span>
-        <h3 data-t="neonTitle">مدينة النيون</h3>
+        <h3>RunnerLife</h3>
         <p data-t="neon1">مدينة نيون ما تنام. تبدأ من الشارع بلا شيء، وتشق طريقك للقمة حي بعد حي.</p>
         <p data-t="neon2">اللعبة لسا في بداية تطويرها. بنشارك شكلها وتفاصيلها هنا أول ما يصير عندنا شيء يستاهل تشوفه.</p>
         <div class="actions"><span class="btn off" data-t="soon">قريباً</span></div>
@@ -227,7 +220,7 @@ const T = {
     ul2: 'مزارعك يكبر في العمر، ولما يجي وقته يتقاعد ويسلّم المزرعة لولده. كل جيل يبدأ أقوى من اللي قبله، وبعد عشرة أجيال ينفتح العصر الصناعي: مصنع، خدمات للقرية، والقطار الأول.',
     c1: '24 محصول على 4 مواسم', c2: 'أجيال وإرث', c3: 'منجم وزنزانة', c4: 'مصنع وقطار', c5: 'تكمل وأنت غايب',
     play: '▶ العب الآن', guideBtn: 'دليل اللعبة', gStart: 'البداية', gCrops: 'المحاصيل والمواسم', gLegacy: 'الأجيال والإرث', gFactory: 'المصنع', gFaq: 'أسئلة شائعة', gUpdates: 'سجل التحديثات',
-    neonTag: 'قيد التطوير', neonTitle: 'مدينة النيون', neon1: 'مدينة نيون ما تنام. تبدأ من الشارع بلا شيء، وتشق طريقك للقمة حي بعد حي.', neon2: 'اللعبة لسا في بداية تطويرها. بنشارك شكلها وتفاصيلها هنا أول ما يصير عندنا شيء يستاهل تشوفه.', soon: 'قريباً',
+    neonTag: 'قيد التطوير', neon1: 'مدينة نيون ما تنام. تبدأ من الشارع بلا شيء، وتشق طريقك للقمة حي بعد حي.', neon2: 'اللعبة لسا في بداية تطويرها. بنشارك شكلها وتفاصيلها هنا أول ما يصير عندنا شيء يستاهل تشوفه.', soon: 'قريباً',
     newsEyebrow: 'آخر الأخبار', newsTitle: 'وش الجديد في UntoldLife', newsLead: 'نحدّث اللعبة باستمرار، وأغلب التغييرات تبدأ برسالة من لاعب.', newsAll: 'سجل التحديثات كامل ←',
     stEyebrow: 'من نحن', stTitle: 'استوديو صغير يسوي اللي يحبه', st1: '369Games استوديو مستقل صغير. ما عندنا ناشر ولا مستثمرين، عندنا ألعاب نحب نصنعها ولاعبين نسمع لهم.', st2: 'نصمم ونبرمج ونختبر بأنفسنا. بدأنا بلعبة مزرعة لأننا نحب هالنوع، وبنجرب أنواع ثانية مع كل لعبة جديدة. هدفنا بسيط: ألعاب نكون فخورين فيها، وتحترم وقت اللي يلعبها.', stMore: 'اقرأ أكثر عنا',
     v1t: 'نلعب اللي نصنعه', v1: 'كل ميزة نجربها بأنفسنا قبل ما توصلك، وإذا ما كانت ممتعة ما تنزل.', v2t: 'اللاعب شريك', v2: 'نقرأ كل رسالة، وكثير من اللي في ألعابنا اليوم كان اقتراح من لاعب.', v3t: 'واضحين معك', v3: 'نكتب كل تغيير في سجل التحديثات، ونقول بصراحة كيف نصنع ألعابنا وأي أدوات نستخدم.',
@@ -242,7 +235,7 @@ const T = {
     ul2: 'Your farmer grows old, and when the time comes hands the farm to their child. Each generation starts stronger than the last, and after ten generations the Industrial Age opens: a factory, services for the village, and the First Train.',
     c1: '24 crops, 4 seasons', c2: 'Generations and legacy', c3: 'A mine and a dungeon', c4: 'A factory and a train', c5: 'Keeps going while you are away',
     play: '▶ Play now', guideBtn: 'Game guide', gStart: 'Getting started', gCrops: 'Crops and seasons', gLegacy: 'Generations and legacy', gFactory: 'The factory', gFaq: 'FAQ', gUpdates: 'Update log',
-    neonTag: 'In development', neonTitle: 'Neon City', neon1: 'A neon city that never sleeps. You start on the street with nothing and work your way to the top, one district at a time.', neon2: 'The game is at the very start of its development. We will share how it looks and plays here as soon as there is something worth showing.', soon: 'Coming soon',
+    neonTag: 'In development', neon1: 'A neon city that never sleeps. You start on the street with nothing and work your way to the top, one district at a time.', neon2: 'The game is at the very start of its development. We will share how it looks and plays here as soon as there is something worth showing.', soon: 'Coming soon',
     newsEyebrow: 'Latest', newsTitle: 'What is new in UntoldLife', newsLead: 'We update the game constantly, and most changes begin as a message from a player.', newsAll: 'The full update log →',
     stEyebrow: 'About us', stTitle: 'A small studio doing what it loves', st1: '369Games is a small independent studio. We have no publisher and no investors; we have games we love making and players we listen to.', st2: 'We design, code and test our games ourselves. We began with a farming game because we love the genre, and we will try other kinds with each new game. The goal is simple: games we are proud of, that respect the time of the people who play them.', stMore: 'More about us',
     v1t: 'We play what we make', v1: 'Every feature is tried by us before it reaches you, and if it is not fun it does not ship.', v2t: 'Players are partners', v2: 'We read every message, and much of what is in our games today began as a player\'s suggestion.', v3t: 'Straight with you', v3: 'Every change is written in the update log, and we say openly how we make our games and which tools we use.',
@@ -257,7 +250,7 @@ const T = {
     ul2: 'Ваш фермер стареет и, когда приходит время, передаёт ферму ребёнку. Каждое поколение начинает сильнее предыдущего, а через десять поколений открывается индустриальная эпоха: фабрика, службы для деревни и Первый поезд.',
     c1: '24 культуры, 4 сезона', c2: 'Поколения и наследие', c3: 'Шахта и подземелье', c4: 'Фабрика и поезд', c5: 'Идёт, пока вас нет',
     play: '▶ Играть', guideBtn: 'Руководство', gStart: 'Первые шаги', gCrops: 'Культуры и сезоны', gLegacy: 'Поколения и наследие', gFactory: 'Фабрика', gFaq: 'Вопросы и ответы', gUpdates: 'Журнал обновлений',
-    neonTag: 'В разработке', neonTitle: 'Неоновый город', neon1: 'Неоновый город, который никогда не спит. Вы начинаете на улице без гроша и пробиваетесь на вершину, район за районом.', neon2: 'Игра в самом начале разработки. Мы покажем её здесь, как только будет что показать.', soon: 'Скоро',
+    neonTag: 'В разработке', neon1: 'Неоновый город, который никогда не спит. Вы начинаете на улице без гроша и пробиваетесь на вершину, район за районом.', neon2: 'Игра в самом начале разработки. Мы покажем её здесь, как только будет что показать.', soon: 'Скоро',
     newsEyebrow: 'Новости', newsTitle: 'Что нового в UntoldLife', newsLead: 'Мы постоянно обновляем игру, и большинство изменений начинается с сообщения игрока.', newsAll: 'Весь журнал обновлений →',
     stEyebrow: 'О нас', stTitle: 'Маленькая студия, которая делает то, что любит', st1: '369Games — маленькая независимая студия. У нас нет издателя и инвесторов; есть игры, которые мы любим делать, и игроки, которых мы слушаем.', st2: 'Мы сами придумываем, программируем и тестируем свои игры. Мы начали с фермы, потому что любим этот жанр, и с каждой новой игрой будем пробовать другие. Цель простая: игры, которыми мы гордимся и которые уважают время игроков.', stMore: 'Подробнее о нас',
     v1t: 'Играем в то, что делаем', v1: 'Каждую функцию мы пробуем сами, прежде чем она дойдёт до вас. Если не весело — не выпускаем.', v2t: 'Игроки — партнёры', v2: 'Мы читаем каждое сообщение, и многое в наших играх началось с предложения игрока.', v3t: 'Честно с вами', v3: 'Каждое изменение записано в журнале обновлений, и мы открыто говорим, как делаем игры и какими инструментами пользуемся.',
@@ -272,7 +265,7 @@ const T = {
     ul2: '你的农夫会变老，时候到了就把农场交给孩子。每一代都比上一代起点更高，十代之后工业时代开启：工厂、村庄的公共服务，以及第一列火车。',
     c1: '24 种作物，4 个季节', c2: '世代与传承', c3: '矿井与地牢', c4: '工厂与火车', c5: '离开时也在运转',
     play: '▶ 立即开玩', guideBtn: '游戏指南', gStart: '新手入门', gCrops: '作物与季节', gLegacy: '世代与传承', gFactory: '工厂', gFaq: '常见问题', gUpdates: '更新日志',
-    neonTag: '开发中', neonTitle: '霓虹之城', neon1: '一座永不入眠的霓虹之城。你从街头一无所有开始，一个街区接一个街区地打拼到顶端。', neon2: '这款游戏刚刚开始开发。等有值得展示的内容时，我们会第一时间在这里分享。', soon: '即将推出',
+    neonTag: '开发中', neon1: '一座永不入眠的霓虹之城。你从街头一无所有开始，一个街区接一个街区地打拼到顶端。', neon2: '这款游戏刚刚开始开发。等有值得展示的内容时，我们会第一时间在这里分享。', soon: '即将推出',
     newsEyebrow: '最新动态', newsTitle: 'UntoldLife 有什么新内容', newsLead: '我们持续更新游戏，大多数改动都始于玩家的一条留言。', newsAll: '完整更新日志 →',
     stEyebrow: '关于我们', stTitle: '一个做自己热爱之事的小工作室', st1: '369Games 是一个小型独立工作室。我们没有发行商，也没有投资人；我们有自己热爱制作的游戏，和愿意倾听的玩家。', st2: '我们自己设计、编程和测试游戏。我们从农场游戏起步，因为喜欢这个类型；以后每款新游戏都会尝试不同的类型。目标很简单：做出让我们自豪、也尊重玩家时间的游戏。', stMore: '了解更多',
     v1t: '我们玩自己做的游戏', v1: '每个功能都先由我们自己试玩，不好玩就不上线。', v2t: '玩家是伙伴', v2: '我们阅读每一条留言，游戏里的许多内容都来自玩家的建议。', v3t: '对你坦诚', v3: '每一处改动都写在更新日志里，我们也会公开说明游戏是怎么做的、用了哪些工具。',

@@ -1,9 +1,10 @@
 'use strict';
-// Text pages: Arabic for Arabic players, English for everyone else. The language choice is shared with the games.
+// Text pages: Arabic for Arabic players, English for everyone else (by the browser's language until the player chooses). The language choice is shared with the games.
 (function () {
   const KEY = 'untoldlife_lang';
   const WORDS = { ar: { other: 'English', privacy: 'سياسة الخصوصية', about: 'من نحن', contact: 'تواصل معنا', guide: 'دليل اللعبة', games: 'ألعابنا' }, en: { other: 'العربية', privacy: 'Privacy policy', about: 'About', contact: 'Contact', guide: 'Game guide', games: 'Games' } };
-  let lang = 'ar';
+  // The player's own choice if there is one, else the browser's language: Arabic if it is anywhere in its list, English otherwise.
+  let lang = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || '']).some(l => /^ar/i.test(l)) ? 'ar' : 'en';
   try { const v = localStorage.getItem(KEY); if (v) lang = v === 'ar' ? 'ar' : 'en'; } catch (e) { /* storage off */ }
   function apply() {
     document.documentElement.lang = lang;

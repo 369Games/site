@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -43,7 +43,6 @@ section{padding:72px 0;scroll-margin-top:70px}
 /* a game: picture on one side, words on the other */
 .game{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:44px;align-items:center}
 .game + .game,.shots + .game{margin-top:72px;padding-top:72px;border-top:1px solid #57442f88}
-.game.flip .media{order:2}
 .media{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line);aspect-ratio:16/10;background:#0d0a07 center/cover no-repeat;display:grid;place-items:center;box-shadow:0 24px 60px #0009}
 .media img.logo{width:74%;max-width:420px;filter:drop-shadow(0 8px 16px #000b)}
 .tag{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;padding:4px 12px;border-radius:99px;border:1px solid #a6bd7066;color:#c5dc8e;background:#a6bd7014;margin-bottom:14px}
@@ -75,7 +74,7 @@ section{padding:72px 0;scroll-margin-top:70px}
 .values span{color:var(--muted);font-size:15px;line-height:1.75;display:block}
 .talk{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px;background:linear-gradient(120deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:20px;padding:28px 30px}
 .talk h2{font-size:24px;margin:0 0 4px}.talk p{margin:0;color:var(--muted)}
-@media (max-width:860px){section{padding:52px 0}.game,.studio{grid-template-columns:1fr;gap:24px}.game.flip .media{order:0}.game + .game,.shots + .game{margin-top:44px;padding-top:44px}.news{grid-template-columns:1fr}.facts{grid-template-columns:repeat(2,1fr)}.shots{grid-template-columns:1fr 1fr}.shots img:last-child{display:none}}
+@media (max-width:860px){section{padding:52px 0}.game,.studio{grid-template-columns:1fr;gap:24px}.game + .game,.shots + .game{margin-top:44px;padding-top:44px}.news{grid-template-columns:1fr}.facts{grid-template-columns:repeat(2,1fr)}.shots{grid-template-columns:1fr 1fr}.shots img:last-child{display:none}}
 @media (prefers-reduced-motion:reduce){.btn{transition:none}}
 </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8456136782716547" crossorigin="anonymous"></script>
@@ -86,11 +85,11 @@ section{padding:72px 0;scroll-margin-top:70px}
 <header class="top"><div class="wrap">
   <a class="brand" href="./"><img class="brand-logo" src="img/logo-mark.png" alt="" width="40" height="40">369Games</a>
   <nav class="nav" aria-label="Site">
-    <a href="#games" data-t="navGames">ألعابنا</a>
-    <a data-g="index" data-t="navGuide" href="guide/ar/index.html">دليل اللعبة</a>
-    <a href="#news" data-t="navNews">التحديثات</a>
-    <a href="about.html" data-t="navAbout">من نحن</a>
-    <a href="contact.html" data-t="navContact">تواصل معنا</a>
+    <a href="#games" data-t="navGames">Games</a>
+    <a data-g="index" data-t="navGuide" href="guide/index.html">Game guide</a>
+    <a href="#news" data-t="navNews">Updates</a>
+    <a href="about.html" data-t="navAbout">About</a>
+    <a href="contact.html" data-t="navContact">Contact</a>
   </nav>
   <select class="lang" id="lang" aria-label="Language">
     <option value="ar">العربية</option><option value="en">English</option>
@@ -99,28 +98,28 @@ section{padding:72px 0;scroll-margin-top:70px}
 </div></header>
 
 <div class="hero"><div class="wrap">
-  <span class="eyebrow" data-t="heroEyebrow">استوديو ألعاب مستقل</span>
-  <h1 data-t="heroTitle">نصنع الألعاب اللي <span>نحب نلعبها</span></h1>
-  <p data-t="heroText">369Games استوديو صغير مستقل. نطوّر ألعابنا بأنفسنا، ننشرها لك مجاناً في المتصفح، ونكمل نبني عليها مع اللاعبين تحديث بعد تحديث.</p>
+  <span class="eyebrow" data-t="heroEyebrow">Independent game studio</span>
+  <h1 data-t="heroTitle">We make the games <span>we love to play</span></h1>
+  <p data-t="heroText">369Games is a small independent studio. We build our games ourselves, publish them free in your browser, and keep building on them with our players, update after update.</p>
   <div class="actions">
-    <a class="btn primary" href="untoldlife/" data-t="heroPlay">▶ العب UntoldLife</a>
-    <a class="btn ghost" href="about.html" data-t="heroAbout">تعرّف علينا</a>
+    <a class="btn primary" href="untoldlife/" data-t="heroPlay">▶ Play UntoldLife</a>
+    <a class="btn ghost" href="about.html" data-t="heroAbout">Meet the studio</a>
   </div>
 </div></div>
 
 <main>
   <div class="wrap"><div class="facts">
-    <div><b data-t="f1n">100+</b><span data-t="f1t">تحديث من أول نسخة</span></div>
-    <div><b data-t="f2n">4</b><span data-t="f2t">لغات</span></div>
-    <div><b data-t="f3n">54</b><span data-t="f3t">إنجاز في UntoldLife</span></div>
-    <div><b data-t="f4n">مجانية</b><span data-t="f4t">بدون تحميل ولا تسجيل</span></div>
+    <div><b data-t="f1n">100+</b><span data-t="f1t">updates since the first beta</span></div>
+    <div><b data-t="f2n">4</b><span data-t="f2t">languages</span></div>
+    <div><b data-t="f3n">54</b><span data-t="f3t">achievements in UntoldLife</span></div>
+    <div><b data-t="f4n">Free</b><span data-t="f4t">no download, no sign-up</span></div>
   </div></div>
 
   <section id="games"><div class="wrap">
     <div class="sec-head">
-      <span class="eyebrow" data-t="gamesEyebrow">ألعابنا</span>
-      <h2 data-t="gamesTitle">لعبة منشورة، ولعبة في الطريق</h2>
-      <p class="lead" data-t="gamesLead">نشتغل على لعبة وحدة لين تستاهل وقتك، وبعدها نبدأ اللي بعدها.</p>
+      <span class="eyebrow" data-t="gamesEyebrow">Our games</span>
+      <h2 data-t="gamesTitle">One game out, one on the way</h2>
+      <p class="lead" data-t="gamesLead">We work on one game until it deserves your time, and then we start the next.</p>
     </div>
 
     <article class="game">
@@ -128,21 +127,21 @@ section{padding:72px 0;scroll-margin-top:70px}
         <img class="logo" src="img/untoldlife-logo.png" alt="UntoldLife">
       </a>
       <div>
-        <span class="tag" data-t="ulTag">متوفرة الآن · مجانية</span>
+        <span class="tag" data-t="ulTag">Available now · Free</span>
         <h3>UntoldLife</h3>
-        <p data-t="ul1">ورثت مزرعة جدك في وادي الصدى. تبدأ بحقل صغير وكيس بذور لفت، وتبني منه وادي كامل: حظيرة، منجم، بحيرة، نقابة مغامرين، حداد، وقرية أهلها يعرفون عائلتك.</p>
-        <p data-t="ul2">مزارعك يكبر في العمر، ولما يجي وقته يتقاعد ويسلّم المزرعة لولده. كل جيل يبدأ أقوى من اللي قبله، وبعد عشرة أجيال ينفتح العصر الصناعي: مصنع، خدمات للقرية، والقطار الأول.</p>
-        <ul class="chips"><li data-t="c1">24 محصول على 4 مواسم</li><li data-t="c2">أجيال وإرث</li><li data-t="c3">منجم وزنزانة</li><li data-t="c4">مصنع وقطار</li><li data-t="c5">تكمل وأنت غايب</li></ul>
+        <p data-t="ul1">You inherit your grandfather's farm in Echo Valley. You start with a small field and a bag of turnip seeds, and build a whole valley from it: a barn, a mine, a lake, an adventurers' guild, a smith and a village of people who know your family.</p>
+        <p data-t="ul2">Your farmer grows old, and when the time comes hands the farm to their child. Each generation starts stronger than the last, and after ten generations the Industrial Age opens: a factory, services for the village, and the First Train.</p>
+        <ul class="chips"><li data-t="c1">24 crops, 4 seasons</li><li data-t="c2">Generations and legacy</li><li data-t="c3">A mine and a dungeon</li><li data-t="c4">A factory and a train</li><li data-t="c5">Keeps going while you are away</li></ul>
         <div class="actions">
-          <a class="btn primary" href="untoldlife/" data-t="play">▶ العب الآن</a>
-          <a class="btn ghost" data-g="index" data-t="guideBtn" href="guide/ar/index.html">دليل اللعبة</a>
+          <a class="btn primary" href="untoldlife/" data-t="play">▶ Play now</a>
+          <a class="btn ghost" data-g="index" data-t="guideBtn" href="guide/index.html">Game guide</a>
         </div>
         <div class="more">
-          <a data-g="getting-started" data-t="gStart" href="guide/ar/getting-started.html">البداية</a>
-          <a data-g="crops" data-t="gCrops" href="guide/ar/crops.html">المحاصيل والمواسم</a>
-          <a data-g="legacy" data-t="gLegacy" href="guide/ar/legacy.html">الأجيال والإرث</a>
-          <a data-g="factory" data-t="gFactory" href="guide/ar/factory.html">المصنع</a>
-          <a data-g="faq" data-t="gFaq" href="guide/ar/faq.html">أسئلة شائعة</a>
+          <a data-g="getting-started" data-t="gStart" href="guide/getting-started.html">Getting started</a>
+          <a data-g="crops" data-t="gCrops" href="guide/crops.html">Crops and seasons</a>
+          <a data-g="legacy" data-t="gLegacy" href="guide/legacy.html">Generations and legacy</a>
+          <a data-g="factory" data-t="gFactory" href="guide/factory.html">The factory</a>
+          <a data-g="faq" data-t="gFaq" href="guide/faq.html">FAQ</a>
         </div>
       </div>
     </article>
@@ -152,57 +151,57 @@ section{padding:72px 0;scroll-margin-top:70px}
       <img src="img/shot-factory.jpg" width="960" height="600" loading="lazy" alt="UntoldLife: the factory">
     </div>
 
-    <article class="game flip">
+    <article class="game">
       <div class="media runner" style="background-image:url('img/runnerlife-cover.jpg')"><img class="logo" src="img/runnerlife-logo.png" alt="RunnerLife" width="1100" height="185" loading="lazy"></div>
       <div>
-        <span class="tag soon" data-t="neonTag">قيد التطوير</span>
+        <span class="tag soon" data-t="neonTag">In development</span>
         <h3>RunnerLife</h3>
-        <p data-t="neon1">مدينة نيون ما تنام. تبدأ من الشارع بلا شيء، وتشق طريقك للقمة حي بعد حي.</p>
-        <p data-t="neon2">اللعبة لسا في بداية تطويرها. بنشارك شكلها وتفاصيلها هنا أول ما يصير عندنا شيء يستاهل تشوفه.</p>
-        <div class="actions"><span class="btn off" data-t="soon">قريباً</span></div>
+        <p data-t="neon1">A neon city that never sleeps. You start on the street with nothing and work your way to the top, one district at a time.</p>
+        <p data-t="neon2">The game is at the very start of its development. We will share how it looks and plays here as soon as there is something worth showing.</p>
+        <div class="actions"><span class="btn off" data-t="soon">Coming soon</span></div>
       </div>
     </article>
   </div></section>
 
   <section id="news" class="band"><div class="wrap">
     <div class="sec-head">
-      <span class="eyebrow" data-t="newsEyebrow">آخر الأخبار</span>
-      <h2 data-t="newsTitle">وش الجديد في UntoldLife</h2>
-      <p class="lead" data-t="newsLead">نحدّث اللعبة باستمرار، وأغلب التغييرات تبدأ برسالة من لاعب.</p>
+      <span class="eyebrow" data-t="newsEyebrow">Latest</span>
+      <h2 data-t="newsTitle">What is new in UntoldLife</h2>
+      <p class="lead" data-t="newsLead">We update the game constantly, and most changes begin as a message from a player.</p>
     </div>
-    <div class="news" id="newsList"><article><small>1.22.2 · 2026-11-13</small><h3>تنبيهات لما تكون بعيد</h3><p>🔔 تنبيهات اختيارية من «المزيد»: يوصلك تنبيه لما ترجع سفينة، يجهز عقد، يوقف المصنع، أو تقدر تتقاعد، وأنت في نافذة ثانية. تشتغل ما دامت اللعبة مفتوحة في الخلفية.</p></article><article><small>1.22.1 · 2026-11-12</small><h3>ثبّت اللعبة كتطبيق</h3><p>📲 زر «ثبّت كتطبيق» في «المزيد»: اللعبة تنحط على شاشتك الرئيسية أو سطح المكتب وتفتح بنافذة لحالها. على الآيفون تنكتب لك الطريقة من زر المشاركة.</p></article><article><small>1.22 · 2026-11-12</small><h3>مصنع أريح وقطار له شروط</h3><p>👷 عمال حقول المصنع صاروا 200 بدل 150 (عشان محجر الرمل)، وبنفس المجموع: الـ200 يكلفون اللي كانت تكلفه الـ150. واللي عنده عمال من قبل يتحولون لحالهم بنفس الذهب اللي دفعه، فالـ150 تصير 200. سكن العمال صار +15 لكل مستوى. ⏫ زر «للأقصى» في المصنع: توظّف كل العمال اللي يكفيهم ذهبك بضغطة وحدة، ونفس الشيء لكل نوع من الأفران والطاولات. ما عاد تحتاج 150 ضغطة بعد كل تجديد. 🚂 آخر ثلاث مراحل في القطار صارت تطلب خريطة الاختراعات: ا</p></article></div>
-    <div class="more"><a data-g="updates" data-t="newsAll" href="guide/ar/updates.html">سجل التحديثات كامل ←</a></div>
+    <div class="news" id="newsList"><article><small>1.22.2 · 2026-11-13</small><h3>Notifications while you're away</h3><p>🔔 Optional notifications under “More”: you get one when a ship is back, a contract is ready, the factory stops, or you can retire, while you're in another window. They work as long as the game is open in the background.</p></article><article><small>1.22.1 · 2026-11-12</small><h3>Install the game as an app</h3><p>📲 An “Install as an app” button under “More”: the game sits on your home screen or desktop and opens in its own window. On iPhone it tells you how, from the Share button.</p></article><article><small>1.22 · 2026-11-12</small><h3>An easier factory, and a train with conditions</h3><p>👷 The factory’s field crew is now 200 instead of 150 (for the sand quarry), at the same total price: all 200 cost what the 150 did. Workers you already had are converted by the gold you paid, so 150 become 200. Workers’ housing now gives +15 per level. ⏫ A “To the max” button in the factory: hire every worker your gold covers in one press, and the same for each kind of furnace and bench. No more 150 presses after eve</p></article></div>
+    <div class="more"><a data-g="updates" data-t="newsAll" href="guide/updates.html">The full update log →</a></div>
   </div></section>
 
   <section id="studio"><div class="wrap studio">
     <div>
-      <span class="eyebrow" data-t="stEyebrow">من نحن</span>
-      <h2 data-t="stTitle">استوديو صغير يسوي اللي يحبه</h2>
-      <p data-t="st1">369Games استوديو مستقل صغير. ما عندنا ناشر ولا مستثمرين، عندنا ألعاب نحب نصنعها ولاعبين نسمع لهم.</p>
-      <p data-t="st2">نصمم ونبرمج ونختبر بأنفسنا. بدأنا بلعبة مزرعة لأننا نحب هالنوع، وبنجرب أنواع ثانية مع كل لعبة جديدة. هدفنا بسيط: ألعاب نكون فخورين فيها، وتحترم وقت اللي يلعبها.</p>
-      <div class="actions"><a class="btn ghost" href="about.html" data-t="stMore">اقرأ أكثر عنا</a></div>
+      <span class="eyebrow" data-t="stEyebrow">About us</span>
+      <h2 data-t="stTitle">A small studio doing what it loves</h2>
+      <p data-t="st1">369Games is a small independent studio. We have no publisher and no investors; we have games we love making and players we listen to.</p>
+      <p data-t="st2">We design, code and test our games ourselves. We began with a farming game because we love the genre, and we will try other kinds with each new game. The goal is simple: games we are proud of, that respect the time of the people who play them.</p>
+      <div class="actions"><a class="btn ghost" href="about.html" data-t="stMore">More about us</a></div>
     </div>
     <div class="values">
-      <div><b data-t="v1t">نلعب اللي نصنعه</b><span data-t="v1">كل ميزة نجربها بأنفسنا قبل ما توصلك، وإذا ما كانت ممتعة ما تنزل.</span></div>
-      <div><b data-t="v2t">اللاعب شريك</b><span data-t="v2">نقرأ كل رسالة، وكثير من اللي في ألعابنا اليوم كان اقتراح من لاعب.</span></div>
-      <div><b data-t="v3t">واضحين معك</b><span data-t="v3">نكتب كل تغيير في سجل التحديثات، ونقول بصراحة كيف نصنع ألعابنا وأي أدوات نستخدم.</span></div>
+      <div><b data-t="v1t">We play what we make</b><span data-t="v1">Every feature is tried by us before it reaches you, and if it is not fun it does not ship.</span></div>
+      <div><b data-t="v2t">Players are partners</b><span data-t="v2">We read every message, and much of what is in our games today began as a player's suggestion.</span></div>
+      <div><b data-t="v3t">Straight with you</b><span data-t="v3">Every change is written in the update log, and we say openly how we make our games and which tools we use.</span></div>
     </div>
   </div></section>
 
   <section style="padding-top:0"><div class="wrap">
     <div class="talk">
-      <div><h2 data-t="talkTitle">عندك ملاحظة أو فكرة؟</h2><p data-t="talkText">يسعدنا نسمعها. نرد على الإيميل خلال أيام قليلة.</p></div>
-      <a class="btn primary" href="contact.html" data-t="talkBtn">تواصل معنا</a>
+      <div><h2 data-t="talkTitle">Have feedback or an idea?</h2><p data-t="talkText">We would love to hear it. We answer email within a few days.</p></div>
+      <a class="btn primary" href="contact.html" data-t="talkBtn">Contact us</a>
     </div>
   </div></section>
 </main>
 
 <footer class="foot"><div class="wrap">
   <div class="fcols">
-    <div><a class="brand" href="./"><img class="brand-logo" src="img/logo-mark.png" alt="" width="40" height="40">369Games</a><p data-t="footText">استوديو ألعاب مستقل. نصنع الألعاب اللي نحب نلعبها.</p></div>
-    <div><b data-t="footGames">الألعاب</b><a href="untoldlife/">UntoldLife</a><a data-g="index" data-t="navGuide" href="guide/ar/index.html">دليل اللعبة</a><a data-g="updates" data-t="gUpdates" href="guide/ar/updates.html">سجل التحديثات</a><a data-g="faq" data-t="gFaq" href="guide/ar/faq.html">أسئلة شائعة</a></div>
-    <div><b data-t="footStudio">الاستديو</b><a href="about.html" data-t="navAbout">من نحن</a><a href="contact.html" data-t="navContact">تواصل معنا</a><a href="privacy.html" data-t="privacy">سياسة الخصوصية</a></div>
-    <div><b data-t="footSupport">ادعمنا</b><a href="https://ko-fi.com/369games" target="_blank" rel="noopener">Ko-fi</a><a href="https://creators.sa/369games" target="_blank" rel="noopener">Creators</a></div>
+    <div><a class="brand" href="./"><img class="brand-logo" src="img/logo-mark.png" alt="" width="40" height="40">369Games</a><p data-t="footText">An independent game studio. We make the games we love to play.</p></div>
+    <div><b data-t="footGames">Games</b><a href="untoldlife/">UntoldLife</a><a data-g="index" data-t="navGuide" href="guide/index.html">Game guide</a><a data-g="updates" data-t="gUpdates" href="guide/updates.html">Update log</a><a data-g="faq" data-t="gFaq" href="guide/faq.html">FAQ</a></div>
+    <div><b data-t="footStudio">Studio</b><a href="about.html" data-t="navAbout">About</a><a href="contact.html" data-t="navContact">Contact</a><a href="privacy.html" data-t="privacy">Privacy policy</a></div>
+    <div><b data-t="footSupport">Support us</b><a href="https://ko-fi.com/369games" target="_blank" rel="noopener">Ko-fi</a><a href="https://creators.sa/369games" target="_blank" rel="noopener">Creators</a></div>
   </div>
   <p class="copy">© <span id="year">2026</span> 369Games</p>
 </div></footer>
@@ -275,7 +274,12 @@ const T = {
 const KEY = 'untoldlife_lang'; // shared with the games, so the choice carries over
 function getLang() {
   try { let v = localStorage.getItem(KEY); if (v === 'es' || v === 'pt') v = 'en'; if (v && T[v] && document.querySelector('#lang option[value="' + v + '"]')) return v; } catch (e) {}
-  return 'ar'; // same default as the games
+  // First visit: the browser's language, the same way the games choose. Arabic if it is anywhere in the list, else the first of
+  // English, Russian or Chinese, else English.
+  const list = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ''];
+  for (const l of list) if (/^ar/i.test(l)) return 'ar';
+  for (const l of list) { const m = /^(en|ru|zh)/i.exec(l); if (m) return m[1].toLowerCase(); }
+  return 'en';
 }
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 function apply(lang) {

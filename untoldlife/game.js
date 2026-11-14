@@ -1697,6 +1697,9 @@ const A = {
   bait: v => { if (makeBait(v)) log(L`🪱 جهّزت طُعم من ${ITEMS[v].e} ${ITEMS[v].n}: +${BAIT_USES} صيدة`); },
   autoBait: () => { S.lake.autoBait = !S.lake.autoBait; },
   hireFisher: () => { if (inCh('noworkers')) return toast(L('🚫 ممنوع في تحدي بدون عمال')); const c = fisherCost(); if (S.gold < c || S.lake.fishers >= VILLAGE_WMAX) return; S.gold -= c; S.lake.fishers++; log(L`🎣 وظّفت صياداً (${S.lake.fishers})`); },
+  // Hire to the max (1.22.6): as many miners or fishers as the gold pays for in one press, like the factory's button.
+  hireMinerMax: () => { if (inCh('noworkers')) return toast(L('🚫 ممنوع في تحدي بدون عمال')); let n = 0, g = 0; for (;;) { const c = minerCost(); if (S.gold < c || S.mine.miners >= VILLAGE_WMAX) break; S.gold -= c; S.mine.miners++; n++; g += c; } if (n) { log(L`👷 وظّفت عامل منجم (${S.mine.miners})`); toast(L`✅ اشتريت ${n} بـ ${fmt(g)}💰`); } },
+  hireFisherMax: () => { if (inCh('noworkers')) return toast(L('🚫 ممنوع في تحدي بدون عمال')); let n = 0, g = 0; for (;;) { const c = fisherCost(); if (S.gold < c || S.lake.fishers >= VILLAGE_WMAX) break; S.gold -= c; S.lake.fishers++; n++; g += c; } if (n) { log(L`🎣 وظّفت صياداً (${S.lake.fishers})`); toast(L`✅ اشتريت ${n} بـ ${fmt(g)}💰`); } },
   hireMiner: () => { if (inCh('noworkers')) return toast(L('🚫 ممنوع في تحدي بدون عمال')); const c = minerCost(); if (S.gold < c || S.mine.miners >= VILLAGE_WMAX) return; S.gold -= c; S.mine.miners++; log(L`👷 وظّفت عامل منجم (${S.mine.miners})`); },
   mineUp: () => { if (S.mine.depth > 1) { S.mine.depth--; S.mine.prog = 0; } },
   mineDown: () => { if (S.mine.depth < S.mine.max) { S.mine.depth++; S.mine.prog = 0; } },
@@ -2296,7 +2299,7 @@ function viewMine() {
     <div class="kv"><span>التقدم نحو الطابق التالي</span><span id="m_blocks"></span></div>
     <div class="kv"><span>قوة الضربة</span><span id="m_click"></span></div>
     <div class="kv"><span>${icon('worker-miner',24)} العمال: ${S.mine.miners}</span><span id="m_rate"></span></div>
-    <div class="row">${S.mine.miners >= VILLAGE_WMAX ? L`<button class="btn" disabled>✅ وصلت الحد (${VILLAGE_WMAX})</button>` : costBtn('hireMiner', undefined, minerCost(), L`${icon('worker-miner',24)} وظّف عامل (${fmt(minerCost())}💰)`)}${owned('miners') ? togBtn('miners') : ''}</div>${indLv('rails') ? `<p class="hint">${L`🛤️ سكة الحديد (مستوى ${indLv('rails')}): العمال أرخص ${Math.round(indDisc('rails') * 100)}%`}</p>` : ''}
+    <div class="row">${S.mine.miners >= VILLAGE_WMAX ? L`<button class="btn" disabled>✅ وصلت الحد (${VILLAGE_WMAX})</button>` : costBtn('hireMiner', undefined, minerCost(), L`${icon('worker-miner',24)} وظّف عامل (${fmt(minerCost())}💰)`) + costBtn('hireMinerMax', undefined, minerCost(), L('⏫ وظّف للأقصى'))}${owned('miners') ? togBtn('miners') : ''}</div>${indLv('rails') ? `<p class="hint">${L`🛤️ سكة الحديد (مستوى ${indLv('rails')}): العمال أرخص ${Math.round(indDisc('rails') * 100)}%`}</p>` : ''}
     <div class="row"><button class="btn ghost sm" data-a="mineUp" id="m_up">⬆️ اصعد</button><button class="btn ghost sm" data-a="mineDown" id="m_down">⬇️ انزل</button></div>
     <div class="mine-jump"><small class="hint">🧭 انتقل لطابق:</small><div class="row">
       <button class="btn ghost sm" data-a="mineTo" data-v="1">⏫ الأعلى</button>
@@ -2799,7 +2802,7 @@ function viewLake() {
     <div class="kv"><span>آخر صيدة</span><span id="lk_last"></span></div>
     <div class="kv"><span>قوة الرمية</span><span id="lk_pow"></span></div>
     <div class="kv"><span>${icon('worker-fisher',24)} الصيادون: ${S.lake.fishers}</span><span id="lk_rate"></span></div>
-    <div class="row">${S.lake.fishers >= VILLAGE_WMAX ? L`<button class="btn" disabled>✅ وصلت الحد (${VILLAGE_WMAX})</button>` : costBtn('hireFisher', undefined, fisherCost(), L`${icon('worker-fisher',24)} وظّف صياد (${fmt(fisherCost())}💰)`)}${owned('fishers') ? togBtn('fishers') : ''}</div>${indLv('boat') ? `<p class="hint">${L`⛵ القارب (مستوى ${indLv('boat')}): الصيادين أرخص ${Math.round(indDisc('boat') * 100)}%`}</p>` : ''}
+    <div class="row">${S.lake.fishers >= VILLAGE_WMAX ? L`<button class="btn" disabled>✅ وصلت الحد (${VILLAGE_WMAX})</button>` : costBtn('hireFisher', undefined, fisherCost(), L`${icon('worker-fisher',24)} وظّف صياد (${fmt(fisherCost())}💰)`) + costBtn('hireFisherMax', undefined, fisherCost(), L('⏫ وظّف للأقصى'))}${owned('fishers') ? togBtn('fishers') : ''}</div>${indLv('boat') ? `<p class="hint">${L`⛵ القارب (مستوى ${indLv('boat')}): الصيادين أرخص ${Math.round(indDisc('boat') * 100)}%`}</p>` : ''}
     <div class="kv"><span>فرصة النادرة / الأسطورية</span><span id="lk_ch"></span></div>
   </div></div>
   <div class="baitbox"><div class="kv"><span>🪱 الطُّعم: <b id="lk_bait"></b> صيدة</span><span class="hint">يضاعف فرصة النادرة والأسطورية</span></div>

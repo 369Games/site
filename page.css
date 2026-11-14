@@ -41,3 +41,20 @@ footer a{color:#b59d74}
 .cta{margin:28px 0 8px!important;text-align:center}
 .playbtn{display:inline-block;padding:12px 26px;border-radius:12px;background:linear-gradient(180deg,var(--gold),var(--gold2));color:#2a1d0e;font-weight:800;text-decoration:none}
 .ver{border-top:1px solid var(--line);padding-top:18px}.ver small{color:var(--muted);font-weight:400;font-size:14px;margin-inline-start:8px}.vt{font-weight:600;color:var(--ink)!important}
+/* The top bar and the footer, shared by every page */
+html{scroll-behavior:smooth}
+.top{position:sticky;top:0;z-index:50;background:#14100cd9;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid #57442f88}
+.top .wrap{display:flex;align-items:center;justify-content:flex-start;gap:18px;height:64px;max-width:1180px;padding-top:0;padding-bottom:0}
+.nav{display:flex;align-items:center;gap:2px;margin-inline-start:auto}
+.nav a{padding:8px 14px;border-radius:9px;color:var(--ink);text-decoration:none;font-weight:600;font-size:15px;white-space:nowrap;transition:background .15s,color .15s}
+.nav a:hover,.nav a[aria-current=page]{background:#ffffff12;color:var(--gold)}
+.nav a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.lang{appearance:none;-webkit-appearance:none;background:#ffffff10;border:1px solid #ffffff2a;border-radius:9px;padding:7px 14px;color:var(--ink);font:inherit;font-size:14px;cursor:pointer;text-decoration:none}
+.lang option{background:var(--panel);color:var(--ink)}
+.foot{text-align:start;padding:52px 0 28px;font-size:15px;border-top:1px solid var(--line);background:#100c09}
+.fcols{display:grid;grid-template-columns:1.7fr 1fr 1fr 1fr;gap:32px}
+.fcols b{display:block;color:var(--ink);margin-bottom:10px;font-size:15px}
+.fcols a{display:block;color:var(--muted);text-decoration:none;margin-bottom:8px}.fcols a:hover{color:var(--gold)}
+.fcols a.brand{display:flex;color:var(--ink);margin-bottom:10px}.fcols p{color:var(--muted);max-width:300px;margin:0;line-height:1.8}
+.copy{border-top:1px solid #57442f88;margin:30px 0 0;padding-top:18px;color:#8f7b5c;font-size:13px}
+@media (max-width:820px){.top .wrap{flex-wrap:wrap;height:auto;gap:6px 12px;padding-top:10px;padding-bottom:8px}.top .lang{margin-inline-start:auto}.nav{order:3;width:100%;margin:0;overflow-x:auto;scrollbar-width:none}.nav a{padding:6px 11px;font-size:14px}.fcols{grid-template-columns:1fr 1fr}}

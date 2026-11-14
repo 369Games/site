@@ -2,7 +2,7 @@
 // Text pages: Arabic for Arabic players, English for everyone else. The language choice is shared with the games.
 (function () {
   const KEY = 'untoldlife_lang';
-  const WORDS = { ar: { other: 'English', privacy: 'سياسة الخصوصية', about: 'عن الاستديو', contact: 'تواصل معنا', guide: 'دليل اللعبة' }, en: { other: 'العربية', privacy: 'Privacy policy', about: 'About us', contact: 'Contact us', guide: 'Game guide' } };
+  const WORDS = { ar: { other: 'English', privacy: 'سياسة الخصوصية', about: 'من نحن', contact: 'تواصل معنا', guide: 'دليل اللعبة', games: 'ألعابنا' }, en: { other: 'العربية', privacy: 'Privacy policy', about: 'About', contact: 'Contact', guide: 'Game guide', games: 'Games' } };
   let lang = 'ar';
   try { const v = localStorage.getItem(KEY); if (v) lang = v === 'ar' ? 'ar' : 'en'; } catch (e) { /* storage off */ }
   function apply() {

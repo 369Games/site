@@ -410,7 +410,7 @@ const PERKS = [
   { id: 'w_xp', req: ['w_power', 3], b: 'war', n: L('تدريب الأب'), e: '🥋', max: 5, cost: 2, mult: 1.7, eff: l => L`+${30 * l}% خبرة القتال` },
   { id: 't_price', b: 'trade', n: L('مساومة'), e: '🤝', max: 10, cost: 2, mult: 1.6, eff: l => L`+${10 * l}% ذهب من كل المصادر` },
   { id: 't_gold', req: ['t_price', 3], b: 'trade', n: L('رأس مال'), e: '💰', max: 5, cost: 2, mult: 1.9, start: 1, eff: l => L`تبدأ بـ ${fmt(startGold(l))} ذهب` },
-  { id: 't_offline', req: ['t_price', 3], b: 'trade', n: L('نوم هانئ'), e: '😴', max: 4, cost: 3, mult: 1.8, eff: l => L`التقدم أثناء الغياب حتى ${12 + 6 * l} ساعة` },
+  { id: 't_offline', req: ['t_price', 3], b: 'trade', n: L('نوم هانئ'), e: '😴', max: 4, cost: 3, mult: 1.8, eff: l => L`التقدم أثناء الغياب حتى ${offlineBase() + 6 * l} ساعة` },
   { id: 't_stars', req: ['t_offline', 2], b: 'trade', n: L('حكمة الأجيال'), e: '🌟', max: 10, cost: 4, mult: 1.7, eff: l => L`+${10 * l}% نجوم الإرث وحد النجوم لكل جيل` },
   { id: 'q_workers', req: ['q_hearts', 3], b: 'family', n: L('العمال يتذكرونك'), e: '🧑‍🌾', max: 3, cost: 3, mult: 2.5, start: 1,
     eff: l => ['—', L('تبدأ مع عامل الحصاد وعامل الزراعة (50% من الحقل)'), L('الحصاد والزراعة + صندوق الشحن والرشاشات (50%)'), L('كل ما سبق + الراعي وتخصيص الحقول')][l] },
@@ -695,7 +695,9 @@ function speedMult(kind) { const s = speedSrc(kind); return bucket(s.gen) * buck
 function xpMult() { return (wkOn('buf') ? 1.1 : 1) * (1 + 0.1 * H('diary')) * achMult() * bless(); }
 function warMult() { return (1 + 0.15 * P('w_power')) * (1 + 0.1 * CC('warrior')) * bless(); }
 function starMult() { return (1 + 0.1 * P('t_stars')) * (1 + 0.05 * H('amulet')) * (1 + 0.1 * CC('poverty')) * bless(); }
-function offlineCap() { return (12 + 6 * P('t_offline')) * 3600; }
+// Hours of progress while away: 12, plus what the place the game runs in adds (the Steam build: platform.js).
+function offlineBase() { return 12 + (typeof platformOffline === 'function' ? platformOffline() : 0); }
+function offlineCap() { return (offlineBase() + 6 * P('t_offline')) * 3600; }
 function startGold(l) { return l ? 2000 * Math.pow(4, l - 1) : 0; }
 function noFarm() { return inCh('warrior') || inCh('underground'); }
 function bestDun() { return Math.max(S.leg.best.dun, S.dun.max); }
@@ -2691,7 +2693,7 @@ function viewSettings() {
     <li>⚔️ في <b>النقابة</b> قاتل في الزنزانة طابقاً بعد طابق، وخذ مهمات لترفع رتبتك من F إلى S.</li>
     <li>🎁 أهدِ أهل القرية ما يحبون لتحصل على مكافآت دائمة.</li>
     <li>🌳 لما تكبر، <b>تقاعد</b> من صفحة الإرث: ولدك يبدأ من جديد لكن أقوى بنجوم الإرث وقطع الإرث، وكل جيل يفتح محتوى جديد.</li>
-    <li>💤 اللعبة تكمل حتى لو أغلقت الصفحة (حتى ${12 + 6 * P('t_offline')} ساعة) وتحفظ تلقائياً كل 10 ثوانٍ.</li>
+    <li>💤 اللعبة تكمل حتى لو أغلقت الصفحة (حتى ${offlineBase() + 6 * P('t_offline')} ساعة) وتحفظ تلقائياً كل 10 ثوانٍ.</li>
   </ul></div>
   <div class="panel"><h2>📊 الإحصائيات</h2><div id="statsBox"></div>
     <h3>💾 الحفظ</h3><div id="saveBox"></div>
@@ -2770,7 +2772,7 @@ function buffsHtml() {
   h += g(L('✨ الخبرة'), [[L('📜 مذكرات الجد'), 1 + 0.1 * H('diary')], [L`🏅 الإنجازات`, achMult()], [L('🌈 بركة الوادي'), bless()]],
     [[L('🌾 إضافي للزراعة'), '+' + 30 * P('f_xp') + '%'], [L('⚔️ إضافي للقتال'), '+' + 30 * P('w_xp') + '%']]);
   h += g(L('⭐ نجوم الإرث'), [[L('🌳 حكمة الأجيال'), 1 + 0.1 * P('t_stars')], [L('📿 قلادة الحظ'), 1 + 0.05 * H('amulet')], [L('💸 مكافأة تحدي القحط'), 1 + 0.1 * CC('poverty')], [L('🌈 بركة الوادي'), bless()]]);
-  h += g(L('🏘️ أخرى'), [], [[L('🔨 خصم الحداد'), 3 * hearts('smith') + '%'], [L('😴 أقصى تقدم أثناء الغياب'), (12 + 6 * P('t_offline')) + L(' ساعة')], [L('🐄 سعة الحظيرة'), barnCap() + L(' لكل نوع')]]);
+  h += g(L('🏘️ أخرى'), [], [[L('🔨 خصم الحداد'), 3 * hearts('smith') + '%'], [L('😴 أقصى تقدم أثناء الغياب'), (offlineBase() + 6 * P('t_offline')) + L(' ساعة')], [L('🐄 سعة الحظيرة'), barnCap() + L(' لكل نوع')]]);
   return h;
 }
 function renderSide() {

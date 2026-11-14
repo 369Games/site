@@ -35,6 +35,17 @@ if (DESK) {
   setTimeout(() => { if (typeof S !== 'undefined' && S && S.leg) Object.keys(S.leg.ach || {}).forEach(platformAch); }, 8000);
 }
 
+// What the paid build gives in place of ads: twice the time away (24 hours before the legacy perk), and the two-hour
+// production boost for free every 4 hours (the website gives it for watching an ad). The boost is a button in the status bar.
+function platformOffline() { return DESK ? 12 : 0; }
+function deskBoostDraw() {
+  const b = document.getElementById('deskBoostBtn'); if (!b) return;
+  const on = typeof S !== 'undefined' && S && S.started, left = on ? rwLeft() : 1;
+  b.classList.toggle('hidden', !on); b.classList.toggle('ready', left <= 0); b.disabled = left > 0;
+  if (on) b.textContent = left > 0 ? L('⚡ إنتاج ساعتين بعد') + ' ' + ftime(left / 1000) : L('⚡ خذ إنتاج ساعتين');
+}
+A.deskBoost = () => { if (DESK && S && S.started && rwLeft() <= 0) { rwGive(); deskBoostDraw(); } };
+
 // The desktop build's menus (1.23.1): a main menu at start, and Esc opens a pause menu in the middle of a game.
 // The picture behind is the village, or the ending picture once the First Train is finished. The game keeps running underneath.
 let DM = null; // null, 'main' or 'pause'
@@ -42,18 +53,21 @@ function deskHasSave() { try { return !!(S && S.started) || !!localStorage.getIt
 function deskMenuDraw() {
   let el = document.getElementById('deskMenu');
   document.documentElement.style.overflow = DM ? 'hidden' : ''; // no page scrollbar behind the menu
+  const mb = document.getElementById('deskMenuBtn'); if (mb) mb.textContent = L('القائمة') + ' (Esc)';
   if (!DM) { if (el) el.remove(); return; }
   if (!el) { el = document.createElement('div'); el.id = 'deskMenu'; document.body.appendChild(el); }
   const ended = typeof indTrainDone === 'function' && S && S.leg && indTrainDone();
   el.className = DM; el.style.backgroundImage = `url(assets/art/${ended ? 'ending-train' : 'menu-village'}.webp)`;
   const btn = (a, t, cls = 'ghost') => `<button class="btn ${cls}" data-dm="${a}">${t}</button>`;
-  const list = DM === 'set' // settings stay inside the menu: leaving it for the «More» tab would step past the new-game screen
-    ? [...LANGS.map(([id, name]) => btn('lang:' + id, name, LANG === id ? 'gold' : 'ghost')), btn('mute', typeof AU !== 'undefined' && AU.set && AU.set.muted ? L('🔊 شغّل الصوت') : L('🔇 كتم الصوت')), btn('full', L('⛶ ملء الشاشة (F11)')),
-      ...(S && S.started ? [btn('more', L('⚙️ كل الإعدادات'))] : []), btn('back', L('↩️ رجوع'))]
+  // Settings live here in the desktop build: the header has no language, theme, sound or feedback buttons and no «More» tab.
+  const list = DM === 'set'
+    ? [`<div class="dm-row">${LANGS.map(([id, name]) => btn('lang:' + id, name, LANG === id ? 'gold' : 'ghost')).join('')}</div>`,
+      btn('theme', theme === 'dark' ? L('واجهة فاتحة') : L('واجهة داكنة')), btn('mute', typeof AU !== 'undefined' && AU.set && AU.set.muted ? L('شغّل الصوت') : L('كتم الصوت')), btn('full', L('ملء الشاشة (F11)')),
+      ...(S && S.started ? [btn('more', L('كل الإعدادات'))] : []), btn('back', L('رجوع'))] // «All settings» would step past the new-game screen, so only inside a game
     : DM === 'main'
-    ? [deskHasSave() ? btn('go', L('▶️ كمّل اللعب'), 'gold') : btn('go', L('🌱 لعبة جديدة'), 'gold'), btn('load', L('📂 حمّل حفظ من ملف')), btn('set', L('⚙️ الإعدادات')), btn('quit', L('🚪 خروج'))]
-    : [btn('go', L('▶️ كمّل اللعب'), 'gold'), btn('save', L('💾 احفظ الحين')), btn('set', L('⚙️ الإعدادات')), btn('main', L('🏠 القائمة الرئيسية')), btn('quit', L('🚪 احفظ واخرج'))];
-  el.innerHTML = `<div class="dm-box"><img class="dm-logo" src="assets/art/brand/untoldlife-wordmark.webp" alt="UntoldLife">${DM === 'set' ? `<p class="dm-title">${L('⚙️ الإعدادات')}</p>` : ''}${DM === 'pause' ? `<p class="dm-title">${L('اللعبة شغّالة في الخلفية')}</p>` : ''}<div class="dm-list">${list.join('')}</div><p class="dm-msg" id="dmMsg"></p></div>`;
+    ? [deskHasSave() ? btn('go', L('كمّل اللعب'), 'gold') : btn('go', L('لعبة جديدة'), 'gold'), btn('load', L('حمّل حفظ من ملف')), btn('set', L('الإعدادات')), btn('quit', L('خروج'))]
+    : [btn('go', L('كمّل اللعب'), 'gold'), btn('save', L('احفظ الحين')), btn('set', L('الإعدادات')), btn('main', L('القائمة الرئيسية')), btn('quit', L('احفظ واخرج'))];
+  el.innerHTML = `<img class="dm-logo" src="assets/art/brand/untoldlife-wordmark.webp" alt="UntoldLife"><div class="dm-mid">${DM === 'set' ? `<p class="dm-title">${L('الإعدادات')}</p>` : ''}${DM === 'pause' ? `<p class="dm-title">${L('اللعبة شغّالة في الخلفية')}</p>` : ''}<div class="dm-list">${list.join('')}</div><p class="dm-msg" id="dmMsg"></p></div>`;
 }
 let DM_BACK = 'main';
 function deskMenu(m) { DM = m || null; deskMenuDraw(); }
@@ -64,6 +78,8 @@ const DM_DO = {
   set: () => { DM_BACK = DM === 'pause' ? 'pause' : 'main'; deskMenu('set'); },
   back: () => deskMenu(DM_BACK),
   mute: () => { if (A.muteToggle) A.muteToggle(); deskMenuDraw(); },
+  theme: () => { A.theme(); deskMenuDraw(); },
+  pause: () => deskMenu(S && S.started ? 'pause' : 'main'),
   full: () => DESK.fullscreen(),
   lang: id => { if (id !== LANG) setLang(id); },
   more: () => { if (!(S && S.started)) return; deskMenu(null); closeModal(); tab = 'settings'; lastSig = ''; renderTabs(); render(true); scrollTo(0, 0); }, // only inside a game
@@ -73,15 +89,39 @@ const DM_DO = {
 };
 if (DESK) {
   const st = document.createElement('style');
-  st.textContent = '#deskMenu{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:#14100c center/cover no-repeat}'
-    + '#deskMenu.pause::before,#deskMenu.set::before{content:"";position:absolute;inset:0;background:#0b0805b8;backdrop-filter:blur(3px)}'
-    + '.dm-box{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;width:min(430px,88vw);padding:26px 28px 22px;border-radius:18px;background:#1b140ee0;border:1px solid #e0b45366;box-shadow:0 18px 60px #000a}'
-    + '.dm-logo{width:100%;height:auto;margin:-6px 0 2px}.dm-title{margin:0;color:#e9dcb8;font-size:14px}.dm-list{display:flex;flex-direction:column;gap:10px;width:100%}'
-    + '.dm-list .btn{width:100%;justify-content:center;font-size:17px;padding:13px 16px}.dm-msg{min-height:1.4em;margin:0;color:#b9e08c;font-size:14px}';
+  st.textContent = '#deskMenu{position:fixed;inset:0;z-index:100000;display:flex;flex-direction:column;align-items:center;background:#14100c center/cover no-repeat}'
+    + '#deskMenu::before{content:"";position:absolute;inset:0;background:linear-gradient(#0b080566,#0b080522 35%,#0b080588)}'
+    + '#deskMenu.pause::before,#deskMenu.set::before{background:#0b0805b8;backdrop-filter:blur(3px)}'
+    + '.dm-logo{position:relative;width:min(560px,62vw);height:auto;margin-top:5vh;filter:drop-shadow(0 6px 18px #000a)}'
+    + '.dm-mid{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;width:min(340px,86vw);padding-bottom:6vh}'
+    + '.dm-title{margin:0;color:#f3e6c2;font-size:15px;text-shadow:0 1px 6px #000}.dm-list{display:flex;flex-direction:column;gap:10px;width:100%}.dm-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}'
+    + '.dm-list .btn{width:100%;justify-content:center;font-size:17px;padding:13px 16px;box-shadow:0 6px 22px #0009}.dm-list .btn.ghost{background:#1b140eeb;border:1px solid #e0b45366;color:#f3e6c2}.dm-list .btn.ghost:hover{background:#2a1f15f2;border-color:#e0b453}'
+    + '.dm-row .btn{font-size:14px;padding:10px 8px}.dm-msg{min-height:1.4em;margin:0;color:#b9e08c;font-size:14px;text-shadow:0 1px 6px #000}'
+    // A clean header: the options sit in the menu (Esc or the Menu button), not in front of the player.
+    + '#themeBtn,#langBtn,#fbBtn,#muteBtn,#kofiBtn,#tabs [data-v="settings"]{display:none!important}'
+    + '#deskBoostBtn{margin-inline-start:auto}#deskBoostBtn.ready{background:linear-gradient(#e6c06a,#c99a3c);color:#2a1c0c;font-weight:700;border-radius:8px}#deskBoostBtn:disabled{opacity:.75;cursor:default}#deskBoostBtn+#deskMenuBtn{margin-inline-start:0!important;margin-right:0;margin-left:0}'
+    // The wide layout (a window 1100 px or wider): a short picture header whose status bar stays in view while the page
+    // scrolls, the places as a column at the side, the panel in the middle, the log on the other side.
+    + '@media (min-width:1100px){html.desk #top{position:sticky;top:-156px;z-index:40;min-height:220px!important;height:220px;margin:0!important;border-radius:0!important}'
+    + 'html.desk #top .brand{top:4px;transform-origin:top center;scale:.68}'
+    + 'html.desk #wrap{grid-template-columns:200px minmax(0,1fr) 270px;max-width:1840px;gap:20px;padding:16px 24px 40px}'
+    + 'html.desk #wrap>#tabs{position:sticky;top:76px;margin:0!important;max-width:none;width:auto;min-height:0;max-height:calc(100vh - 92px);flex-direction:column;align-items:stretch;justify-content:flex-start;gap:4px;padding:8px;overflow:hidden auto;scrollbar-width:thin}'
+    + 'html.desk #wrap>#tabs button{min-width:0;width:100%;justify-content:flex-start;padding:6px 10px;min-height:50px;flex:0 0 auto}'
+    + 'html.desk #side{top:76px;max-height:calc(100vh - 92px)}}'
+    + '@media (min-width:1500px){html.desk #wrap{grid-template-columns:230px minmax(0,1fr) 330px;gap:24px}}'
+    + '@media (max-width:1099px){html.desk #wrap>#tabs{grid-column:1/-1;margin-left:0;margin-right:0}}';
   document.head.appendChild(st);
   addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-dm]'); if (!b) return; const [k, v] = b.dataset.dm.split(':'); if (DM_DO[k]) { e.preventDefault(); e.stopPropagation(); DM_DO[k](v); } }, true);
   // Esc: close the menu if one is open, otherwise open the pause menu (the main menu when no game has started).
   addEventListener('keydown', e => { if (e.key !== 'Escape') return; e.preventDefault(); e.stopPropagation(); deskMenu(DM === 'set' ? DM_BACK : DM === 'pause' ? null : DM === 'main' ? (S && S.started ? null : 'main') : (S && S.started ? 'pause' : 'main')); }, true);
+  document.documentElement.classList.add('desk');
+  { const w = document.getElementById('wrap'), t = document.getElementById('tabs'); if (w && t) w.prepend(t); } // the places sit beside the panel (wide layout)
+  const hud = document.querySelector('header .hud');
+  if (hud) {
+    const b = document.createElement('button'); b.className = 'chip hidden'; b.id = 'deskBoostBtn'; b.dataset.a = 'deskBoost'; hud.appendChild(b);
+    const m = document.createElement('button'); m.className = 'chip'; m.id = 'deskMenuBtn'; m.dataset.dm = 'pause'; hud.appendChild(m);
+    setInterval(deskBoostDraw, 1000);
+  }
   deskMenu('main');
 }
 
@@ -108,8 +148,9 @@ function rwGive() {
   const secs = RW.hours * 3600, g0 = S.gold;
   S.leg.rwAt = Date.now();
   offline = true; simulate(secs, 4); offline = false;
-  log(L`📺 شكراً على المشاهدة! أخذت إنتاج ${RW.hours} ساعات: 💰 ${fmt(Math.max(0, S.gold - g0))}`, 'golden');
-  toast(L('📺 وصلك إنتاج ساعتين!')); save(); lastSig = '';
+  if (DESK) log(L('⚡ أخذت إنتاج ساعتين:') + ' 💰 ' + fmt(Math.max(0, S.gold - g0)), 'golden');
+  else log(L`📺 شكراً على المشاهدة! أخذت إنتاج ${RW.hours} ساعات: 💰 ${fmt(Math.max(0, S.gold - g0))}`, 'golden');
+  toast(DESK ? L('⚡ وصلك إنتاج ساعتين!') : L('📺 وصلك إنتاج ساعتين!')); save(); lastSig = '';
 }
 A.rwWatch = () => {
   if (rwLeft() > 0) return;
@@ -285,7 +326,8 @@ function platformPanel() {
   let h = '';
   if (deskOn()) {
     h += `<h3>${L('🖥️ نسخة الكمبيوتر')}</h3><div class="row"><button class="btn ghost" data-a="deskFull">${L('⛶ ملء الشاشة (F11)')}</button><button class="btn ghost" data-a="deskQuit">${L('🚪 خروج من اللعبة')}</button></div>`
-      + `<p class="hint">${L('حفظك ينكتب في ملف على جهازك، وستيم يرفعه لحسابك لحاله.')} ${L('زر Esc يفتح القائمة.')}</p>`;
+      + `<p class="hint">${L('حفظك ينكتب في ملف على جهازك، وستيم يرفعه لحسابك لحاله.')} ${L('زر Esc يفتح القائمة.')}</p>`
+      + `<p class="hint">${L('نسخة الكمبيوتر بدون إعلانات: إنتاج الساعتين ببلاش كل 4 ساعات من الشريط فوق، والتقدم وأنت غايب ضعف المدة.')}</p>`;
     return h + ntPanel();
   }
   if (rwOn()) {

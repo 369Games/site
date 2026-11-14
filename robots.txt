@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://369games.net/sitemap.xml

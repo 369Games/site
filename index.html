@@ -61,6 +61,10 @@ h2{font-size:24px;margin:0 0 18px}
 .feedback h2{margin:0 0 4px}
 .feedback p{margin:0;color:var(--muted)}
 .feedback .btn{margin:0}
+.about-game p,.lead{color:var(--muted);max-width:820px;line-height:1.9;margin:0 0 12px}
+.glinks{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:14px}
+.glinks a{display:block;padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:var(--panel);color:var(--ink);text-decoration:none;font-weight:600}
+.glinks a:hover{border-color:var(--gold);color:var(--gold)}
 footer{padding:26px 0 40px;color:#8f7b5c;font-size:13px;text-align:center}
 footer a{color:#b59d74}
 @media (max-width:600px){.hero{min-height:380px}.grid{grid-template-columns:1fr}section{padding:26px 0}}
@@ -79,78 +83,102 @@ footer a{color:#b59d74}
 </div></header>
 
 <div class="hero"><div class="wrap">
-  <h1 data-t="heroTitle"></h1>
-  <p data-t="heroText"></p>
+  <h1 data-t="heroTitle">ألعاب <span>idle</span> تكمل وأنت غايب</h1>
+  <p data-t="heroText">عوالم صغيرة تكبر حتى لو سكّرت الصفحة. ارجع ولقى مزرعتك ومملكتك وشارعك أكبر من ما تركتهم.</p>
 </div></div>
 
 <main class="wrap">
   <section>
-    <h2 data-t="gamesTitle"></h2>
+    <h2 data-t="gamesTitle">ألعابنا</h2>
     <div class="grid">
       <article class="card">
         <div class="cover" style="background-image:url('img/untoldlife-cover.jpg')">
-          <span class="badge" data-t="beta"></span>
+          <span class="badge" data-t="beta">نسخة تجريبية</span>
           <img class="logo" src="img/untoldlife-logo.png" alt="UntoldLife">
         </div>
         <div class="body">
           <h3>UntoldLife</h3>
-          <p data-t="ulText"></p>
-          <div class="tags"><span data-t="tag1"></span><span data-t="tag2"></span><span data-t="tag3"></span></div>
-          <a class="btn" href="untoldlife/" data-t="play"></a>
+          <p data-t="ulText">ورثت مزرعة جدك في وادي الصدى. ازرع، ربِّ الحيوانات، احفر المناجم، قاتل في الزنزانة، وسلّم المزرعة لأولادك جيلاً بعد جيل.</p>
+          <div class="tags"><span data-t="tag1">مزرعة</span><span data-t="tag2">أجيال</span><span data-t="tag3">4 لغات</span></div>
+          <a class="btn" href="untoldlife/" data-t="play">▶ العب الآن</a>
         </div>
       </article>
       <article class="card soon">
         <div class="cover kingdom" aria-hidden="true">👑</div>
         <div class="body">
-          <h3 data-t="soon1Title"></h3>
-          <p data-t="soon1Text"></p>
-          <span class="btn" data-t="soon"></span>
+          <h3 data-t="soon1Title">لعبة المملكة</h3>
+          <p data-t="soon1Text">أنت الملك. ابنِ المصانع، اجمع المواد الخام، وكبّر مملكتك من قرية صغيرة إلى إمبراطورية.</p>
+          <span class="btn" data-t="soon">قريباً</span>
         </div>
       </article>
       <article class="card soon">
         <div class="cover neon" aria-hidden="true">🌃</div>
         <div class="body">
-          <h3 data-t="soon2Title"></h3>
-          <p data-t="soon2Text"></p>
-          <span class="btn" data-t="soon"></span>
+          <h3 data-t="soon2Title">لعبة مدينة النيون</h3>
+          <p data-t="soon2Text">مدينة نيون ما تنام. تبدأ من الشارع بلا شيء، وتشق طريقك للقمة.</p>
+          <span class="btn" data-t="soon">قريباً</span>
         </div>
       </article>
     </div>
   </section>
 
+  <section class="about-game">
+    <h2 data-t="aboutTitle">عن UntoldLife</h2>
+    <p data-t="about1">UntoldLife لعبة مزرعة idle مجانية تنلعب في المتصفح بدون تحميل ولا تسجيل. تبدأ بحقل صغير وكيس بذور لفت، وتبني منه وادي كامل: حظيرة، منجم، بحيرة، نقابة مغامرين، حداد، وقرية أهلها يعرفون عائلتك.</p>
+    <p data-t="about2">مزارعك يكبر في العمر. لما يجي وقته تتقاعد وتسلّم المزرعة لولدك، ويبدأ من جديد ومعه نجوم الإرث والموروثات ومهارات دائمة. وبعد عشرة أجيال ينفتح العصر الصناعي: مصنع، خدمات عامة للقرية، والقطار الأول.</p>
+    <p data-t="about3">اللعبة تكمل وأنت غايب حتى 12 ساعة، وتحفظ لحالها، وتشتغل على الجوال والكمبيوتر بأربع لغات. ونحدّثها باستمرار على ملاحظات اللاعبين: أكثر من مئة تحديث من أول نسخة.</p>
+  </section>
+
+  <section>
+    <h2 data-t="guideTitle">دليل اللعبة</h2>
+    <p class="lead" data-t="guideText">صفحات كتبناها نحن اللي نصنع اللعبة، وجداولها طالعة من بيانات اللعبة نفسها.</p>
+    <div class="glinks">
+      <a data-g="getting-started" data-t="gStart" href="guide/ar/getting-started.html">البداية: أول ساعة</a>
+      <a data-g="crops" data-t="gCrops" href="guide/ar/crops.html">المحاصيل والمواسم</a>
+      <a data-g="animals-and-fishing" data-t="gAnimals" href="guide/ar/animals-and-fishing.html">الحيوانات والصيد</a>
+      <a data-g="mine-and-smith" data-t="gMine" href="guide/ar/mine-and-smith.html">المنجم والحداد</a>
+      <a data-g="legacy" data-t="gLegacy" href="guide/ar/legacy.html">الأجيال والإرث</a>
+      <a data-g="factory" data-t="gFactory" href="guide/ar/factory.html">المصنع</a>
+      <a data-g="achievements" data-t="gAch" href="guide/ar/achievements.html">كل الإنجازات</a>
+      <a data-g="faq" data-t="gFaq" href="guide/ar/faq.html">أسئلة شائعة</a>
+      <a data-g="updates" data-t="gUpdates" href="guide/ar/updates.html">سجل التحديثات</a>
+      <a data-g="index" data-t="gAll" href="guide/ar/index.html">كل الصفحات ←</a>
+    </div>
+  </section>
+
   <section id="fbSection" hidden>
     <div class="feedback">
-      <div><h2 data-t="fbTitle"></h2><p data-t="fbText"></p></div>
-      <a class="btn gold" id="fbLink" target="_blank" rel="noopener" data-t="fbBtn"></a>
+      <div><h2 data-t="fbTitle">جربت ألعابنا؟</h2><p data-t="fbText">كل الألعاب تجريبية، وملاحظاتك تفرق. أي شيء عجبك أو ضايقك أو خرب، قل لنا.</p></div>
+      <a class="btn gold" id="fbLink" target="_blank" rel="noopener" data-t="fbBtn">✍️ أرسل ملاحظاتك</a>
     </div>
   </section>
 </main>
 
-<footer>© <span id="year"></span> 369Games · <a href="about.html" data-t="about"></a> · <a href="privacy.html" data-t="privacy"></a> · <a href="contact.html" data-t="contact"></a> · <a href="https://ko-fi.com/369games" target="_blank" rel="noopener">☕ Ko-fi</a> · <a href="https://creators.sa/369games" target="_blank" rel="noopener">💝 Creators</a></footer>
+<footer>© <span id="year"></span> 369Games · <a data-g="index" data-t="guideTitle" href="guide/ar/index.html">دليل اللعبة</a> · <a href="about.html" data-t="about">عن الاستديو</a> · <a href="privacy.html" data-t="privacy">سياسة الخصوصية</a> · <a href="contact.html" data-t="contact">تواصل معنا</a> · <a href="https://ko-fi.com/369games" target="_blank" rel="noopener">☕ Ko-fi</a> · <a href="https://creators.sa/369games" target="_blank" rel="noopener">💝 Creators</a></footer>
 
 <script>
 'use strict';
 const FEEDBACK_URL = '';
 const T = {
-  ar: { about: 'عن الاستديو', privacy: 'سياسة الخصوصية', contact: 'تواصل معنا', heroTitle: 'ألعاب <span>idle</span> تكمل وأنت غايب', heroText: 'عوالم صغيرة تكبر حتى لو سكّرت الصفحة. ارجع ولقى مزرعتك ومملكتك وشارعك أكبر من ما تركتهم.',
+  ar: { aboutTitle: 'عن UntoldLife', about1: 'UntoldLife لعبة مزرعة idle مجانية تنلعب في المتصفح بدون تحميل ولا تسجيل. تبدأ بحقل صغير وكيس بذور لفت، وتبني منه وادي كامل: حظيرة، منجم، بحيرة، نقابة مغامرين، حداد، وقرية أهلها يعرفون عائلتك.', about2: 'مزارعك يكبر في العمر. لما يجي وقته تتقاعد وتسلّم المزرعة لولدك، ويبدأ من جديد ومعه نجوم الإرث والموروثات ومهارات دائمة. وبعد عشرة أجيال ينفتح العصر الصناعي: مصنع، خدمات عامة للقرية، والقطار الأول.', about3: 'اللعبة تكمل وأنت غايب حتى 12 ساعة، وتحفظ لحالها، وتشتغل على الجوال والكمبيوتر بأربع لغات. ونحدّثها باستمرار على ملاحظات اللاعبين: أكثر من مئة تحديث من أول نسخة.', guideTitle: 'دليل اللعبة', guideText: 'صفحات كتبناها نحن اللي نصنع اللعبة، وجداولها طالعة من بيانات اللعبة نفسها.', gStart: 'البداية: أول ساعة', gCrops: 'المحاصيل والمواسم', gAnimals: 'الحيوانات والصيد', gMine: 'المنجم والحداد', gLegacy: 'الأجيال والإرث', gFactory: 'المصنع', gAch: 'كل الإنجازات', gFaq: 'أسئلة شائعة', gUpdates: 'سجل التحديثات', gAll: 'كل الصفحات ←', about: 'عن الاستديو', privacy: 'سياسة الخصوصية', contact: 'تواصل معنا', heroTitle: 'ألعاب <span>idle</span> تكمل وأنت غايب', heroText: 'عوالم صغيرة تكبر حتى لو سكّرت الصفحة. ارجع ولقى مزرعتك ومملكتك وشارعك أكبر من ما تركتهم.',
     gamesTitle: 'ألعابنا', beta: 'نسخة تجريبية', ulText: 'ورثت مزرعة جدك في وادي الصدى. ازرع، ربِّ الحيوانات، احفر المناجم، قاتل في الزنزانة، وسلّم المزرعة لأولادك جيلاً بعد جيل.',
     tag1: 'مزرعة', tag2: 'أجيال', tag3: '4 لغات', play: '▶ العب الآن', soon: 'قريباً',
     soon1Title: 'لعبة المملكة', soon1Text: 'أنت الملك. ابنِ المصانع، اجمع المواد الخام، وكبّر مملكتك من قرية صغيرة إلى إمبراطورية.',
     soon2Title: 'لعبة مدينة النيون', soon2Text: 'مدينة نيون ما تنام. تبدأ من الشارع بلا شيء، وتشق طريقك للقمة.',
     fbTitle: 'جربت ألعابنا؟', fbText: 'كل الألعاب تجريبية، وملاحظاتك تفرق. أي شيء عجبك أو ضايقك أو خرب، قل لنا.', fbBtn: '✍️ أرسل ملاحظاتك' },
-  en: { about: 'About us', privacy: 'Privacy policy', contact: 'Contact us', heroTitle: '<span>Idle</span> games that keep going while you\'re away', heroText: 'Small worlds that grow even when the tab is closed. Come back to a bigger farm, kingdom or street than you left.',
+  en: { aboutTitle: 'About UntoldLife', about1: 'UntoldLife is a free idle farming game that plays in your browser, with no download and no sign-up. You start with a small field and a bag of turnip seeds, and build a whole valley from it: a barn, a mine, a lake, an adventurers\' guild, a smith and a village of people who know your family.', about2: 'Your farmer grows old. When the time comes you retire and hand the farm to your child, who starts again with legacy stars, heirlooms and permanent perks. After ten generations the Industrial Age opens: a factory, public services for the village, and the First Train.', about3: 'The game keeps going while you are away, for up to 12 hours, saves by itself, and runs on phones and computers in four languages. We update it constantly from player feedback: more than a hundred updates since the first beta.', guideTitle: 'Game guide', guideText: 'Pages written by the people who make the game, with tables produced from the game\'s own data.', gStart: 'Getting started', gCrops: 'Crops and seasons', gAnimals: 'Animals and fishing', gMine: 'The mine and the smith', gLegacy: 'Generations and legacy', gFactory: 'The factory', gAch: 'All achievements', gFaq: 'FAQ', gUpdates: 'Update log', gAll: 'All pages →', about: 'About us', privacy: 'Privacy policy', contact: 'Contact us', heroTitle: '<span>Idle</span> games that keep going while you\'re away', heroText: 'Small worlds that grow even when the tab is closed. Come back to a bigger farm, kingdom or street than you left.',
     gamesTitle: 'Our games', beta: 'Beta', ulText: 'Inherit your grandfather\'s farm in Echo Valley. Grow crops, raise animals, dig the mines, fight in the dungeon, and pass the farm down from generation to generation.',
     tag1: 'Farming', tag2: 'Generations', tag3: '4 languages', play: '▶ Play now', soon: 'Coming soon',
     soon1Title: 'Kingdom game', soon1Text: 'You are the king. Build factories, gather raw materials, and grow your kingdom from a small village into an empire.',
     soon2Title: 'Neon city game', soon2Text: 'A neon city that never sleeps. Start on the street with nothing and fight your way to the top.',
     fbTitle: 'Played our games?', fbText: 'Everything here is in beta, and your feedback matters. Anything you liked, anything that annoyed you, anything that broke — tell us.', fbBtn: '✍️ Send feedback' },
-  ru: { about: 'О студии', privacy: 'Конфиденциальность', contact: 'Контакты', heroTitle: '<span>Idle</span>-игры, которые идут, пока вас нет', heroText: 'Маленькие миры, которые растут, даже когда вкладка закрыта. Возвращайтесь — ферма, королевство или улица станут больше.',
+  ru: { aboutTitle: 'Об UntoldLife', about1: 'UntoldLife — бесплатная idle-ферма прямо в браузере, без загрузки и регистрации. Вы начинаете с маленького поля и мешочка семян репы и строите из него целую долину: хлев, шахту, озеро, гильдию искателей приключений, кузницу и деревню, где помнят вашу семью.', about2: 'Ваш фермер стареет. Когда приходит время, вы уходите на покой и передаёте ферму ребёнку, который начинает заново со звёздами наследия, реликвиями и постоянными навыками. Через десять поколений открывается индустриальная эпоха: фабрика, коммунальные службы для деревни и Первый поезд.', about3: 'Игра идёт, пока вас нет, до 12 часов, сохраняется сама и работает на телефонах и компьютерах на четырёх языках. Мы постоянно обновляем её по отзывам игроков: более ста обновлений с первой беты.', guideTitle: 'Руководство по игре', guideText: 'Страницы написаны создателями игры, а таблицы собраны из данных самой игры (на английском и арабском).', gStart: 'Первые шаги', gCrops: 'Культуры и сезоны', gAnimals: 'Животные и рыбалка', gMine: 'Шахта и кузнец', gLegacy: 'Поколения и наследие', gFactory: 'Фабрика', gAch: 'Все достижения', gFaq: 'Вопросы и ответы', gUpdates: 'Журнал обновлений', gAll: 'Все страницы →', about: 'О студии', privacy: 'Конфиденциальность', contact: 'Контакты', heroTitle: '<span>Idle</span>-игры, которые идут, пока вас нет', heroText: 'Маленькие миры, которые растут, даже когда вкладка закрыта. Возвращайтесь — ферма, королевство или улица станут больше.',
     gamesTitle: 'Наши игры', beta: 'Бета', ulText: 'Унаследуйте ферму деда в Долине Эха. Выращивайте урожай, разводите животных, копайте шахты, сражайтесь в подземелье и передавайте ферму детям из поколения в поколение.',
     tag1: 'Ферма', tag2: 'Поколения', tag3: '4 языка', play: '▶ Играть', soon: 'Скоро',
     soon1Title: 'Игра о королевстве', soon1Text: 'Вы — король. Стройте фабрики, добывайте сырьё и превратите маленькую деревню в империю.',
     soon2Title: 'Игра о неоновом городе', soon2Text: 'Неоновый город, который никогда не спит. Начните с улицы без гроша и пробейтесь на вершину.',
     fbTitle: 'Поиграли в наши игры?', fbText: 'Всё здесь в бете, и ваше мнение важно. Что понравилось, что раздражало, что сломалось — расскажите нам.', fbBtn: '✍️ Отправить отзыв' },
-  zh: { about: '关于我们', privacy: '隐私政策', contact: '联系我们', heroTitle: '你不在时也在运转的<span>放置</span>游戏', heroText: '即使关掉页面也会继续成长的小世界。回来时，你的农场、王国和街区都比离开时更大。',
+  zh: { aboutTitle: '关于 UntoldLife', about1: 'UntoldLife 是一款免费的放置农场游戏，直接在浏览器里玩，无需下载和注册。你从一小块田和一袋芜菁种子开始，一步步建起整个山谷：畜棚、矿井、湖泊、冒险者公会、铁匠铺，还有一个记得你家族的村庄。', about2: '你的农夫会变老。时候到了，你退休并把农场交给孩子，孩子带着传承之星、传家宝和永久技能重新开始。十代之后，工业时代开启：工厂、村庄的公共服务，以及第一列火车。', about3: '你离开时游戏仍会继续，最长 12 小时；自动存档，支持手机和电脑，提供四种语言。我们根据玩家反馈不断更新：自首个测试版以来已更新一百多次。', guideTitle: '游戏指南', guideText: '由游戏制作者撰写的页面，表格直接取自游戏数据（英文和阿拉伯文）。', gStart: '新手入门', gCrops: '作物与季节', gAnimals: '动物与钓鱼', gMine: '矿井与铁匠', gLegacy: '世代与传承', gFactory: '工厂', gAch: '全部成就', gFaq: '常见问题', gUpdates: '更新日志', gAll: '全部页面 →', about: '关于我们', privacy: '隐私政策', contact: '联系我们', heroTitle: '你不在时也在运转的<span>放置</span>游戏', heroText: '即使关掉页面也会继续成长的小世界。回来时，你的农场、王国和街区都比离开时更大。',
     gamesTitle: '我们的游戏', beta: '测试版', ulText: '继承爷爷在回声谷的农场。种植作物、饲养动物、挖掘矿井、闯荡地牢，把农场一代代传下去。',
     tag1: '农场', tag2: '世代传承', tag3: '4 种语言', play: '▶ 立即开玩', soon: '即将推出',
     soon1Title: '王国游戏', soon1Text: '你就是国王。建造工厂，收集原料，把小村庄发展成一个帝国。',
@@ -167,6 +195,7 @@ function apply(lang) {
   document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : lang;
   document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   document.querySelectorAll('[data-t]').forEach(el => { el.innerHTML = d[el.dataset.t]; });
+  document.querySelectorAll('[data-g]').forEach(el => { el.href = (lang === 'ar' ? 'guide/ar/' : 'guide/') + el.dataset.g + '.html'; });
   document.getElementById('lang').value = lang;
 }
 const sel = document.getElementById('lang');

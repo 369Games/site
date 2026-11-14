@@ -1414,17 +1414,20 @@ const GEN_TASKS = [
   { id: 'kil', e: '⚔️', stat: 'kills', base: 150, t: n => L`اهزم ${fmt(n)} وحش` },
   { id: 'qst', e: '📜', stat: 'quests', base: 10, t: n => L`أنجز ${fmt(n)} مهمة` },
   { id: 'fsh', e: '🎣', stat: 'fish', base: 60, gen: 2, t: n => L`اصطد ${fmt(n)} سمكة` },
-  { id: 'dun', e: '🕳️', need: () => Math.ceil(dunGoal() * 1.2), val: () => S.dun.max, t: n => L`انزل للطابق ${fmt(n)} في الزنزانة` },
+  { id: 'dun', e: '🕳️', need: () => dunTaskNeed(), val: () => S.dun.max, t: n => L`انزل للطابق ${fmt(n)} في الزنزانة` },
   { id: 'gld', e: '💰', need: () => genNice(Math.max(goldGoal() * 3, genRef('earned') * 0.6)), val: () => S.gen.earned, t: n => L`اكسب ${fmt(n)} ذهب في هذا الجيل` },
 ];
 const GEN_TASK_N = 3, GEN_TASK_PCT = 0.05, GEN_TASK_ALL = 0.05;
+// The dungeon task (1.22.5): 120% of the generation's own floor goal, or 30 floors above where this generation started when that is deeper.
+// It used to be 120% of dunGoal(), which with «Battle memory» is mostly the free start floor: a start at 1475 asked for floor 1788 (313 floors) while retiring asked for 15.
+function dunTaskNeed() { return Math.max(Math.ceil((30 + 3 * Math.max(0, S.leg.gen - 3)) * 1.2), (S.gen.dun0 || 1) + 30); }
 function genNice(n) { const p = Math.pow(10, Math.max(0, Math.floor(Math.log10(Math.max(1, n))) - 1)); return Math.max(1, Math.round(n / p) * p); }
 const GEN_STATS = ['harvests', 'products', 'blocks', 'kills', 'quests', 'fish'];
 // What a counting task is sized from: the last generation's total, or the family's average per generation if higher.
 function genRef(k) { const pv = S.leg.prev || {}, avg = (k === 'earned' ? S.stats.earned || 0 : S.stats[k] || 0) / S.leg.gen; return Math.max(pv[k] || 0, avg); }
 function genTasks() {
   const g = S.gen; if (!g.s0) g.s0 = Object.fromEntries(GEN_STATS.map(k => [k, S.stats[k] || 0])); // the counters when this generation began (or when this was first seen)
-  if (g.gq && g.gq.length) return g.gq;
+  if (g.gq && g.gq.length) { for (const q of g.gq) if (q.id === 'dun' && !q.d && q.n > dunTaskNeed()) q.n = dunTaskNeed(); return g.gq; } // a task drawn before 1.22.5 comes down to the new size
   const pool = GEN_TASKS.filter(x => !x.gen || S.leg.gen >= x.gen).sort(() => Math.random() - 0.5).slice(0, GEN_TASK_N);
   g.gq = pool.map(x => x.stat ? { id: x.id, n: genNice(Math.max(x.base, genRef(x.stat) * 0.6)), b: S.stats[x.stat] || 0 } : { id: x.id, n: x.need() });
   return g.gq;

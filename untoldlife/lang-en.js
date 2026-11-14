@@ -1650,6 +1650,8 @@
 "📋 الجولة الماضية: ما ساهمت": "📋 Last round: you didn't take part",
 "📋 الجولة الماضية: مركزك {0} من {1}، والهدف ما اكتمل": "📋 Last round: you placed {0} of {1}, but the goal wasn't reached",
 "📋 الجولة الماضية: مركزك {0} من {1} ← جائزة +{2}%": "📋 Last round: you placed {0} of {1} → prize +{2}%",
+"مهمة الزنزانة صارت عادلة": "A fair dungeon task",
+"🕳️ مهمة الجيل «انزل للطابق كذا» كانت تنحسب من رقم الطابق كله، فاللي يبدأ عميق بمهارة «ذاكرة المعارك» تطلب منه مئات الطوابق في جيل واحد. الحين تطلب 30 طابق فوق بدايتك (ضعف شرط التقاعد)، والمهمة اللي عندك الحين تنزل للرقم الجديد لحالها.": "🕳️ The generation task \"Reach floor N\" was sized from the whole floor number, so a deep start with the \"Battle memory\" perk asked for hundreds of floors in one generation. It now asks for 30 floors above your start (twice the retirement goal), and the task you have right now drops to the new number by itself.",
 "ترتيب السوق والقرية": "A tidier market and village",
 "🛒 بطاقات السوق صارت أعرض ومرتبة: الاسم والسعر والكمية وأزرار البيع في سطر واحد بدل ما تتراكم فوق بعض. وقلوب أهل القرية ما عادت تطلع برا البطاقة.": "🛒 Market cards are wider and tidy: the name, price, quantity and sell buttons sit on one line instead of piling on top of each other. And the villagers' hearts no longer run outside their card.",
 "دخول أسرع للعبة": "A quicker way in",

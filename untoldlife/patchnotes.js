@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.22.5', date: '2026-11-14', big: false, title: L('مهمة الزنزانة صارت عادلة'), items: [
+    L('🕳️ مهمة الجيل «انزل للطابق كذا» كانت تنحسب من رقم الطابق كله، فاللي يبدأ عميق بمهارة «ذاكرة المعارك» تطلب منه مئات الطوابق في جيل واحد. الحين تطلب 30 طابق فوق بدايتك (ضعف شرط التقاعد)، والمهمة اللي عندك الحين تنزل للرقم الجديد لحالها.'),
+  ] },
   { v: '1.22.4', date: '2026-11-14', big: false, title: L('ترتيب السوق والقرية'), items: [
     L('🛒 بطاقات السوق صارت أعرض ومرتبة: الاسم والسعر والكمية وأزرار البيع في سطر واحد بدل ما تتراكم فوق بعض. وقلوب أهل القرية ما عادت تطلع برا البطاقة.'),
   ] },

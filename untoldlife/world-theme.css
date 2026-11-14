@@ -487,3 +487,10 @@ html #tabs .world-btn{border-inline-start:1px solid #c9a35a44;margin-inline-star
 }
 /* The ending picture on top of the First Train ending. */
 .ending-pic{display:block;width:100%;height:auto;border-radius:10px;border:1px solid #c9a35a66;margin:0 0 12px}
+
+/* The first screen (1.22.3): the enter button comes right after the letter; name, character and language sit below it as options. */
+.intro-go{position:static;margin:0 0 6px;padding:0;background:none;box-shadow:none}
+.intro-opt{margin-top:18px;padding-top:6px;border-top:1px solid var(--line)}
+.intro-opt h3{font-size:15px;margin:14px 0 8px}.intro-opt label{display:block;margin:14px 0 6px}
+.letter:after{left:auto;inset-inline-start:24px}
+@media (max-width:600px),(max-height:760px){.letter .letter-more{display:none}.letter{margin-bottom:26px}}

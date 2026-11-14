@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.22.3', date: '2026-11-14', big: false, title: L('دخول أسرع للعبة'), items: [
+    L('🚪 أول شاشة أخف: زر «ادخل القرية» صار بعد الرسالة مباشرة، والاسم والشخصية واللغة تحته واختيارية. ومعها شاشة تحميل فيها الشعار بدل الصفحة الفاضية على الاتصال البطيء.'),
+  ] },
   { v: '1.22.2', date: '2026-11-13', big: false, title: L('تنبيهات لما تكون بعيد'), items: [
     L('🔔 تنبيهات اختيارية من «المزيد»: يوصلك تنبيه لما ترجع سفينة، يجهز عقد، يوقف المصنع، أو تقدر تتقاعد، وأنت في نافذة ثانية. تشتغل ما دامت اللعبة مفتوحة في الخلفية.'),
   ] },

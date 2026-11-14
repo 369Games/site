@@ -3069,13 +3069,13 @@ function showIntro() {
   <div class="letter"><p>عزيزي حفيدي،</p>
   <p>إذا وصلتك هذه الرسالة فأنا لم أعد هنا. تركت لك مزرعتي الصغيرة في قرية <b>وادي الصدى</b>.
   الأرض متعبة، والحظيرة فارغة، والمنجم القديم خلف التلة مهجور منذ سنين... ويقولون إن وحوشاً سكنت أعماقه.</p>
-  <p>أهل القرية طيبون، ونقابة المرتزقة تبحث دائماً عن أيادٍ قوية. ابدأ بالقليل، واصبر... وستكتب قصتك بنفسك.</p>
+  <p class="letter-more">أهل القرية طيبون، ونقابة المرتزقة تبحث دائماً عن أيادٍ قوية. ابدأ بالقليل، واصبر... وستكتب قصتك بنفسك.</p>
   <p style="text-align:end">— جدك</p></div>
-  ${langPick()}<label><b>ما اسمك؟</b></label><input id="nameIn" maxlength="20" placeholder="اكتب اسمك (اختياري)">
-  <label><b>أنت؟</b></label>${genderPick('introGender', introGender)}
   <div class="intro-go"><button class="btn gold" data-a="start" style="width:100%;font-size:17px">🏡 ادخل القرية</button></div>
+  <div class="intro-opt">${langPick()}<label><b>ما اسمك؟</b></label><input id="nameIn" maxlength="20" placeholder="اكتب اسمك (اختياري)">
+  <label><b>أنت؟</b></label>${genderPick('introGender', introGender)}</div>
   ${(siteConfig().firebase || {}).apiKey && location.protocol !== 'file:' ? L('<button class="btn ghost sm intro-cloud" data-a="introCloud">☁️ لعبت قبل؟ كمّل تقدمك بحساب Google</button>') : ''}`);
-  setTimeout(() => { const i = $('nameIn'); if (i) { i.focus(); i.onkeydown = e => { if (e.key === 'Enter') A.start(); }; } }, 50);
+  setTimeout(() => { const i = $('nameIn'); if (i) { if (!(window.matchMedia && matchMedia('(pointer:coarse)').matches)) i.focus(); i.onkeydown = e => { if (e.key === 'Enter') A.start(); }; } }, 50);
 }
 /* New version notice: an idle game tab can stay open for days, so every 10 minutes (and when the player comes back)
    the page checks whether a newer version is on the site and offers to reload. */
@@ -3325,6 +3325,7 @@ const tabBack = () => { if (tabStale) location.reload(); };
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { if (tabStale) tabBack(); else tabClaim(); } });
 document.addEventListener('pointerdown', tabBack, true);
 tabClaim();
+{ const b = $('boot'); if (b) b.remove(); } // the loading screen in index.html
 if (!S.started) showIntro();
 else {
   log(L`🏡 مرحباً بعودتك إلى وادي الصدى يا ${S.name}`);

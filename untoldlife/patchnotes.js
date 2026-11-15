@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.22.7', date: '2026-11-15', big: false, title: L('سيرفر ديسكورد 369Games'), items: [
+    L('💬 صار عندنا سيرفر ديسكورد: سوالف مع اللاعبين، نصايح، اقتراحات وبلاغات المشاكل. تلقى رابطه في «المزيد» ← «💬 ملاحظاتك»، وفي موقعنا.'),
+  ] },
   { v: '1.22.6', date: '2026-11-14', big: false, title: L('توظيف للأقصى في المنجم والبحيرة'), items: [
     L('⏫ زر «وظّف للأقصى» وصل المنجم والبحيرة: يوظّف كل العمال أو الصيادين اللي يكفيهم ذهبك بضغطة وحدة، مثل زر المصنع. ما عاد تحتاج عشرات الضغطات بعد كل تقاعد.'),
   ] },

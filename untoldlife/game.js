@@ -3035,8 +3035,10 @@ function sitePanel() {
   const home = C.home ? `<a class="btn ghost" href="${C.home}"${ext}>${L('🏠 كل ألعابنا')}</a>` : '';
   // Support links from tools/site/config.json: "kofi" (Ko-fi page name) and "creators" (creators.sa page).
   const kofi = supportLinks().map(([u, t]) => `<a class="btn kofi" href="${u}" target="_blank" rel="noopener">${t}</a>`).join('');
+  // Discord server (1.22.7): the invite link comes from tools/site/config.json ("discord").
+  const disc = /^https:\/\/discord\.gg\/\w+$/.test(C.discord || '') ? `<a class="btn ghost" href="${C.discord}" target="_blank" rel="noopener">${L('💬 سيرفر الديسكورد')}</a>` : '';
   const legal = !C.home && C.privacy ? `<p class="hint"><a href="${C.privacy}" target="_blank" rel="noopener">${L('سياسة الخصوصية')}</a></p>` : C.home ? `<p class="hint"><a href="${C.home}privacy.html"${ext}>${L('سياسة الخصوصية')}</a> · <a href="${C.home}about.html"${ext}>${L('عن الاستديو')}</a> · <a href="${C.home}contact.html"${ext}>${L('تواصل معنا')}</a></p>` : '';
-  return `${typeof platformPanel === 'function' ? platformPanel() : ''}<h3>${L('💬 ملاحظاتك')}</h3><p class="hint">${L('هذي نسخة تجريبية. أي شيء عجبك أو ضايقك أو خرب، قل لنا.')}</p><div class="row">${fb}${kofi}${home}</div>${legal}`;
+  return `${typeof platformPanel === 'function' ? platformPanel() : ''}<h3>${L('💬 ملاحظاتك')}</h3><p class="hint">${L('هذي نسخة تجريبية. أي شيء عجبك أو ضايقك أو خرب، قل لنا.')}</p><div class="row">${fb}${disc}${kofi}${home}</div>${legal}`;
 }
 function initSiteLinks() {
   const fb = $('fbBtn');

@@ -73,6 +73,7 @@ section{padding:72px 0;scroll-margin-top:70px}
 .values b{display:block;font-size:17px;margin-bottom:4px;color:var(--ink)}
 .values span{color:var(--muted);font-size:15px;line-height:1.75;display:block}
 .talk{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px;background:linear-gradient(120deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:20px;padding:28px 30px}
+.talk.disc{margin-bottom:18px;border-color:#5865f2aa}.btn.discord{background:#5865f2;color:#fff;box-shadow:0 8px 24px #5865f244}
 .talk h2{font-size:24px;margin:0 0 4px}.talk p{margin:0;color:var(--muted)}
 @media (max-width:860px){section{padding:52px 0}.game,.studio{grid-template-columns:1fr;gap:24px}.game + .game,.shots + .game{margin-top:44px;padding-top:44px}.news{grid-template-columns:1fr}.facts{grid-template-columns:repeat(2,1fr)}.shots{grid-template-columns:1fr 1fr}.shots img:last-child{display:none}}
 @media (prefers-reduced-motion:reduce){.btn{transition:none}}
@@ -89,7 +90,7 @@ section{padding:72px 0;scroll-margin-top:70px}
     <a data-g="index" data-t="navGuide" href="guide/index.html">Game guide</a>
     <a href="#news" data-t="navNews">Updates</a>
     <a href="about.html" data-t="navAbout">About</a>
-    <a href="contact.html" data-t="navContact">Contact</a>
+    <a href="contact.html" data-t="navContact">Contact</a><a href="https://discord.gg/jEVB3Mutjn" target="_blank" rel="noopener">Discord</a>
   </nav>
   <select class="lang" id="lang" aria-label="Language">
     <option value="ar">العربية</option><option value="en">English</option>
@@ -189,6 +190,7 @@ section{padding:72px 0;scroll-margin-top:70px}
   </div></section>
 
   <section style="padding-top:0"><div class="wrap">
+    <div class="talk disc"><div><h2 data-t="discTitle">Join our Discord server</h2><p data-t="discText">Chat with other players, share tips, suggest ideas and report bugs. News lands there first.</p></div><a class="btn discord" href="https://discord.gg/jEVB3Mutjn" target="_blank" rel="noopener" data-t="discBtn">Join the server</a></div>
     <div class="talk">
       <div><h2 data-t="talkTitle">Have feedback or an idea?</h2><p data-t="talkText">We would love to hear it. We answer email within a few days.</p></div>
       <a class="btn primary" href="contact.html" data-t="talkBtn">Contact us</a>
@@ -223,7 +225,7 @@ const T = {
     newsEyebrow: 'آخر الأخبار', newsTitle: 'وش الجديد في UntoldLife', newsLead: 'نحدّث اللعبة باستمرار، وأغلب التغييرات تبدأ برسالة من لاعب.', newsAll: 'سجل التحديثات كامل ←',
     stEyebrow: 'من نحن', stTitle: 'استوديو صغير يسوي اللي يحبه', st1: '369Games استوديو مستقل صغير. ما عندنا ناشر ولا مستثمرين، عندنا ألعاب نحب نصنعها ولاعبين نسمع لهم.', st2: 'نصمم ونبرمج ونختبر بأنفسنا. بدأنا بلعبة مزرعة لأننا نحب هالنوع، وبنجرب أنواع ثانية مع كل لعبة جديدة. هدفنا بسيط: ألعاب نكون فخورين فيها، وتحترم وقت اللي يلعبها.', stMore: 'اقرأ أكثر عنا',
     v1t: 'نلعب اللي نصنعه', v1: 'كل ميزة نجربها بأنفسنا قبل ما توصلك، وإذا ما كانت ممتعة ما تنزل.', v2t: 'اللاعب شريك', v2: 'نقرأ كل رسالة، وكثير من اللي في ألعابنا اليوم كان اقتراح من لاعب.', v3t: 'واضحين معك', v3: 'نكتب كل تغيير في سجل التحديثات، ونقول بصراحة كيف نصنع ألعابنا وأي أدوات نستخدم.',
-    talkTitle: 'عندك ملاحظة أو فكرة؟', talkText: 'يسعدنا نسمعها. نرد على الإيميل خلال أيام قليلة.', talkBtn: 'تواصل معنا',
+    talkTitle: 'عندك ملاحظة أو فكرة؟', talkText: 'يسعدنا نسمعها. نرد على الإيميل خلال أيام قليلة.', talkBtn: 'تواصل معنا', discTitle: 'انضم لسيرفرنا على ديسكورد', discText: 'سوالف مع اللاعبين، نصايح، اقتراحات وبلاغات المشاكل. والأخبار توصلك أول بأول.', discBtn: 'ادخل السيرفر',
     footText: 'استوديو ألعاب مستقل. نصنع الألعاب اللي نحب نلعبها.', footGames: 'الألعاب', footStudio: 'الاستديو', footSupport: 'ادعمنا' },
   en: { navGames: 'Games', navGuide: 'Game guide', navNews: 'Updates', navAbout: 'About', navContact: 'Contact', privacy: 'Privacy policy',
     heroEyebrow: 'Independent game studio', heroTitle: 'We make the games <span>we love to play</span>', heroText: '369Games is a small independent studio. We build our games ourselves, publish them free in your browser, and keep building on them with our players, update after update.',
@@ -238,7 +240,7 @@ const T = {
     newsEyebrow: 'Latest', newsTitle: 'What is new in UntoldLife', newsLead: 'We update the game constantly, and most changes begin as a message from a player.', newsAll: 'The full update log →',
     stEyebrow: 'About us', stTitle: 'A small studio doing what it loves', st1: '369Games is a small independent studio. We have no publisher and no investors; we have games we love making and players we listen to.', st2: 'We design, code and test our games ourselves. We began with a farming game because we love the genre, and we will try other kinds with each new game. The goal is simple: games we are proud of, that respect the time of the people who play them.', stMore: 'More about us',
     v1t: 'We play what we make', v1: 'Every feature is tried by us before it reaches you, and if it is not fun it does not ship.', v2t: 'Players are partners', v2: 'We read every message, and much of what is in our games today began as a player\'s suggestion.', v3t: 'Straight with you', v3: 'Every change is written in the update log, and we say openly how we make our games and which tools we use.',
-    talkTitle: 'Have feedback or an idea?', talkText: 'We would love to hear it. We answer email within a few days.', talkBtn: 'Contact us',
+    talkTitle: 'Have feedback or an idea?', talkText: 'We would love to hear it. We answer email within a few days.', talkBtn: 'Contact us', discTitle: 'Join our Discord server', discText: 'Chat with other players, share tips, suggest ideas and report bugs. News lands there first.', discBtn: 'Join the server',
     footText: 'An independent game studio. We make the games we love to play.', footGames: 'Games', footStudio: 'Studio', footSupport: 'Support us' },
   ru: { navGames: 'Игры', navGuide: 'Руководство', navNews: 'Обновления', navAbout: 'О нас', navContact: 'Контакты', privacy: 'Конфиденциальность',
     heroEyebrow: 'Независимая игровая студия', heroTitle: 'Мы делаем игры, <span>в которые любим играть</span>', heroText: '369Games — маленькая независимая студия. Мы сами делаем свои игры, выпускаем их бесплатно прямо в браузере и развиваем вместе с игроками, обновление за обновлением.',
@@ -253,7 +255,7 @@ const T = {
     newsEyebrow: 'Новости', newsTitle: 'Что нового в UntoldLife', newsLead: 'Мы постоянно обновляем игру, и большинство изменений начинается с сообщения игрока.', newsAll: 'Весь журнал обновлений →',
     stEyebrow: 'О нас', stTitle: 'Маленькая студия, которая делает то, что любит', st1: '369Games — маленькая независимая студия. У нас нет издателя и инвесторов; есть игры, которые мы любим делать, и игроки, которых мы слушаем.', st2: 'Мы сами придумываем, программируем и тестируем свои игры. Мы начали с фермы, потому что любим этот жанр, и с каждой новой игрой будем пробовать другие. Цель простая: игры, которыми мы гордимся и которые уважают время игроков.', stMore: 'Подробнее о нас',
     v1t: 'Играем в то, что делаем', v1: 'Каждую функцию мы пробуем сами, прежде чем она дойдёт до вас. Если не весело — не выпускаем.', v2t: 'Игроки — партнёры', v2: 'Мы читаем каждое сообщение, и многое в наших играх началось с предложения игрока.', v3t: 'Честно с вами', v3: 'Каждое изменение записано в журнале обновлений, и мы открыто говорим, как делаем игры и какими инструментами пользуемся.',
-    talkTitle: 'Есть отзыв или идея?', talkText: 'Будем рады услышать. Отвечаем на письма за несколько дней.', talkBtn: 'Связаться с нами',
+    talkTitle: 'Есть отзыв или идея?', talkText: 'Будем рады услышать. Отвечаем на письма за несколько дней.', talkBtn: 'Связаться с нами', discTitle: 'Заходите на наш Discord-сервер', discText: 'Общение с игроками, советы, предложения и сообщения об ошибках. Новости появляются там первыми.', discBtn: 'Войти на сервер',
     footText: 'Независимая игровая студия. Мы делаем игры, в которые любим играть.', footGames: 'Игры', footStudio: 'Студия', footSupport: 'Поддержать' },
   zh: { navGames: '游戏', navGuide: '游戏指南', navNews: '更新', navAbout: '关于我们', navContact: '联系我们', privacy: '隐私政策',
     heroEyebrow: '独立游戏工作室', heroTitle: '我们制作<span>自己爱玩的游戏</span>', heroText: '369Games 是一个小型独立工作室。我们亲手制作游戏，在浏览器里免费发布，并和玩家一起一次次更新，把它越做越好。',
@@ -268,7 +270,7 @@ const T = {
     newsEyebrow: '最新动态', newsTitle: 'UntoldLife 有什么新内容', newsLead: '我们持续更新游戏，大多数改动都始于玩家的一条留言。', newsAll: '完整更新日志 →',
     stEyebrow: '关于我们', stTitle: '一个做自己热爱之事的小工作室', st1: '369Games 是一个小型独立工作室。我们没有发行商，也没有投资人；我们有自己热爱制作的游戏，和愿意倾听的玩家。', st2: '我们自己设计、编程和测试游戏。我们从农场游戏起步，因为喜欢这个类型；以后每款新游戏都会尝试不同的类型。目标很简单：做出让我们自豪、也尊重玩家时间的游戏。', stMore: '了解更多',
     v1t: '我们玩自己做的游戏', v1: '每个功能都先由我们自己试玩，不好玩就不上线。', v2t: '玩家是伙伴', v2: '我们阅读每一条留言，游戏里的许多内容都来自玩家的建议。', v3t: '对你坦诚', v3: '每一处改动都写在更新日志里，我们也会公开说明游戏是怎么做的、用了哪些工具。',
-    talkTitle: '有反馈或想法？', talkText: '我们很乐意听到。邮件通常几天内回复。', talkBtn: '联系我们',
+    talkTitle: '有反馈或想法？', talkText: '我们很乐意听到。邮件通常几天内回复。', talkBtn: '联系我们', discTitle: '加入我们的 Discord 服务器', discText: '和其他玩家聊天、交流技巧、提建议、报告问题。新消息最先在那里发布。', discBtn: '加入服务器',
     footText: '独立游戏工作室。我们制作自己爱玩的游戏。', footGames: '游戏', footStudio: '工作室', footSupport: '支持我们' },
 };
 const KEY = 'untoldlife_lang'; // shared with the games, so the choice carries over

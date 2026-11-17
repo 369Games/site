@@ -3,6 +3,9 @@
    A glowing dot shows until the player opens the latest one. Add each new update at the TOP of PATCH_NOTES,
    wrap every text in L(), and translate it like any other game text (see MODEL_HANDOFF.md, "اللغات"). */
 const PATCH_NOTES = [
+  { v: '1.22.9', date: '2026-11-17', big: false, title: L('نافذة «أهلاً بعودتك» ما عادت تتكرر'), items: [
+    L('🪟 لما تكون اللعبة مفتوحة ورا نافذة ثانية، كانت نافذة «أهلاً بعودتك» تطلع كل دقيقة كأنك طالع من اللعبة. الحين اللعبة تكمّل بهدوء في الخلفية، ولما ترجع لها يطلع لك سطر واحد بكم اشتغلت.'),
+  ] },
   { v: '1.22.8', date: '2026-11-15', big: true, msg: true, title: L('النسخة النهائية، والجاية على ستيم'), items: [
     L('🙏 شكراً لكل واحد لعب واقترح وبلّغ عن مشكلة. كل تحديث نزل كان من ملاحظاتكم. هذي النسخة هي النسخة النهائية من UntoldLife على المتصفح.'),
     L('🛠️ من اليوم اللعبة في وضع الصيانة: تبقى شغالة مثل ما هي، وحفظك والمتصدرين باقين، ونصلّح أي مشكلة تظهر. بس ما فيه محتوى جديد هنا.'),
@@ -558,7 +561,8 @@ notesChip();
 // 1.22.8: a note with msg: true is a message to every returning player. It opens by itself once, when no other
 // window is open (so it waits for the welcome-back summary), and never for a brand-new player.
 (function () {
-  if (!PATCH_NOTES[0].msg || notesSeen() === GAME_VERSION || typeof S === 'undefined' || !S.started) return;
+  const mi = PATCH_NOTES.findIndex(n => n.msg);
+  if (mi < 0 || PATCH_NOTES.slice(0, mi + 1).some(n => n.v === notesSeen()) || typeof S === 'undefined' || !S.started) return;
   const t = setInterval(() => {
     if (notesSeen() === GAME_VERSION) { clearInterval(t); return; }
     const m = document.getElementById('modal');

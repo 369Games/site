@@ -3292,7 +3292,7 @@ function load() {
     return st;
   } catch (e) { return null; }
 }
-function runOffline(secs) {
+function runOffline(secs, quiet) {
   secs = Math.min(secs, offlineCap());
   const g0 = S.gold, inv0 = { ...S.inv }, ind0 = indOpen() ? { ...ind().r } : null; IND_UG = 0;
   // Long absences (or a browser that put the tab to sleep) used to replay every second and freeze the page for a while.
@@ -3300,6 +3300,7 @@ function runOffline(secs) {
   offline = true; simulate(secs, Math.min(10, Math.max(1, secs / 1800))); offline = false;
   const items = {};
   for (const id in S.inv) items[id] = S.inv[id] - (inv0[id] || 0);
+  if (quiet) { lastSig = ''; return; } // a background catch-up: no «welcome back» window, no log line
   log(L`🌙 مرّ ${ftime(secs)} وأنت غائب`, 'season');
   // The factory's part: what its stock gained, and the gold the public services paid.
   const indItems = {};
@@ -3312,8 +3313,16 @@ function frame() {
   const now = Date.now(), dt = (now - S.last) / 1000;
   S.last = now;
   if (dt <= 0) return;
-  if (dt > 30) runOffline(dt); else simulate(dt);
+  /* A window left behind another one (or a hidden tab) is not an absence: the browser slows its timers to about one a
+     minute, and every one of those gaps used to open the «welcome back» window. Gaps up to BG_GAP on a page that is
+     already running are caught up quietly; coming back to the page says once how long it ran in the background. */
+  if (dt > 30 && dt <= BG_GAP && frameN > 0) { bgSecs += dt; runOffline(dt, true); }
+  else if (dt > 30) runOffline(dt); else simulate(dt);
+  frameN++;
 }
+const BG_GAP = 300; let frameN = 0, bgSecs = 0;
+function bgBack() { if (document.hidden || bgSecs < 120) { if (!document.hidden) bgSecs = 0; return; } const s = bgSecs; bgSecs = 0; if (S && S.started) toast(L`🌙 اللعبة كمّلت شغلها ${ftime(s)} وهي في الخلفية`); }
+document.addEventListener('visibilitychange', bgBack); window.addEventListener('focus', bgBack);
 
 S = load() || newState();
 const loadedLast = S.last || 0; // when this device last saved (cloud.js compares it with the cloud copy)

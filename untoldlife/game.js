@@ -2049,7 +2049,7 @@ document.addEventListener('click', e => {
 /* ---------------- الواجهة ---------------- */
 const TABS = [
   ['farm', L('🌱 المزرعة')], ['barn', L('🐄 الحظيرة')], ['mine', L('⛏️ المنجم')], ['lake', L('🎣 البحيرة')], ['guild', L('⚔️ النقابة')],
-  ['smith', L('🔨 الحداد')], ['market', L('🛒 السوق')], ['village', L('🏘️ القرية')], ['legacy', L('🌳 الإرث')], ['settings', L('⚙️ المزيد')],
+  ['smith', L('🔨 الحداد')], ['market', L('🛒 السوق')], ['village', L('🏘️ القرية')], ['week', L('📅 هذا الأسبوع')], ['legacy', L('🌳 الإرث')], ['settings', L('⚙️ المزيد')],
 ];
 /* Tabs open step by step in the first generation, so a new player isn't flooded with ten tabs at once.
    A locked tab shows dimmed with a lock and says what opens it; when it opens, a small window says what it's for.
@@ -2057,6 +2057,8 @@ const TABS = [
 const TAB_UNLOCK = {
   village: { ok: () => S.stats.earned > 0, why: L('بِع أول محصول في السوق'),
     what: L('هنا أهل القرية والمباني. وظّف عمال يشتغلون عنك حتى وأنت مسكّر اللعبة، واعطِ أهل القرية هدايا عشان تكسب صداقتهم وبفاتهم.') },
+  week: { ok: () => S.stats.earned > 0, why: L('بِع أول محصول في السوق'),
+    what: L('تحدي الأسبوع، وأهداف القرية اليومية مع كل اللاعبين، ولوحات المتصدرين الأسبوعية.') },
   barn: { ok: () => (S.bld.harvester || 0) > 0, why: L('وظّف أول عامل حصاد في القرية'),
     what: L('اشترِ دجاج وأبقار وخرفان تنتج لك بيض وحليب وصوف لحالها. أول دجاجة بـ150 ذهب بس.') },
   mine: { ok: () => S.stats.earned >= 1000, why: L('اكسب 1,000 ذهب'),
@@ -2637,7 +2639,7 @@ function updMarket() {
 
 /* ----- القرية ----- */
 function viewVillage() {
-  let h = (typeof weeklyPanel === 'function' ? weeklyPanel() : '') + L`<div class="panel"><div class="ph"><h2>🏘️ أهل وادي الصدى</h2></div>
+  let h = L`<div class="panel"><div class="ph"><h2>🏘️ أهل وادي الصدى</h2></div>
   <p class="hint">أهدِ كل شخص ما يحبه مرة واحدة يومياً. كل قلبين تقريباً يمنحك مكافأة دائمة (حتى 10 قلوب). اللي يحبونه يتغير كل موسم، ولو ما أهديت أحد لمدة نص موسم يزعل ويقل حبه (الوقت اللي تكون فيه برا اللعبة ما ينحسب).</p>
   ${P('q_twin') && !(S.spouse && S.friend) ? twinIcon(L('<p class="hint">🌟 توأم الروح ينفتح لما يكون عندك زوج وصديق عمر.</p>')) : ''}${!S.gender ? L`<div class="zonebox"><b>🧑 حدد شخصيتك</b> <small class="hint">عشان يظهر لك خيار الزواج وصداقة العمر مع أهل القرية</small>${genderPick('setGender', null)}</div>` : ''}<div class="grid">`;
   for (const np of NPCS) {
@@ -2934,7 +2936,8 @@ const VIEWS = {
   }],
   smith: [viewSmith, updReqs, () => [S.leg.afOwn, S.af && [S.af.t, S.af.n], S.gold >= AF_COST, S.tools, S.tlg, S.leg.lgN && Object.values(S.leg.lgN).join(), TOOLS.map(t => lgCanPay(t.id)), have('mithril'), have('adamant'), S.leg.gen, hearts('smith'), TOOLS.map(t => { const l = S.tools[t.id] + 1; if (l > 6) return 0; const c = toolCost(l); return S.gold >= c.gold && have(c.ore) >= c.qty; })]],
   market: [viewMarket, updMarket, () => [S.off, dealCrop(), Object.keys(S.inv).sort(), Object.keys(S.locked).sort(), S.bld.bin, hearts('mayor')]],
-  village: [viewVillage, () => { if (typeof wkUpd === 'function') wkUpd(); }, () => [typeof wkSig === 'function' ? wkSig() : 0, dayAbs(), S.bld, S.npc, S.off, S.spouse, S.friend, S.twins, P('q_twin'), S.gender, S.leg.gen, donLv(), donorOn(), S.leg.donorAuto, Math.floor(Math.log2(Math.max(1, S.gold / DON_BASE))), NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
+  week: [() => typeof weeklyPanel === 'function' ? weeklyPanel() : '', () => { if (typeof wkUpd === 'function') wkUpd(); }, () => [typeof wkSig === 'function' ? wkSig() : 0]],
+  village: [viewVillage, () => {}, () => [dayAbs(), S.bld, S.npc, S.off, S.spouse, S.friend, S.twins, P('q_twin'), S.gender, S.leg.gen, donLv(), donorOn(), S.leg.donorAuto, Math.floor(Math.log2(Math.max(1, S.gold / DON_BASE))), NPCS.map(n => { const g = giftsOf(n); return [have(g.love) > 0, have(g.like) > 0, have(KING_GIFT[n.id]) > 0, (S.npc[n.id] || {}).kk === seasonKey()]; })]],
   lake: [viewLake, updLake, () => [S.off, S.lake.fishers, Math.min(S.skills.fish.l, 30), S.tools.rod, S.leg.gen, S.lake.spot, S.lake.autoBait, albumDone(), BAIT.map(id => have(id) >= BAIT_COST)]],
   legacy: [viewLegacy, updLegacy, () => { const LG = S.leg; return [LG.stars, LG.perks, S.gen.respec, startNow(), LG.heir, LG.ch, Object.keys(LG.ach).length, LG.gen, S.gen.ch, S.gen.chDone, LG.history.length, dunGoal()]; }],
   settings: [viewSettings, updSettings, () => [S.gender, S.spouse, typeof cloudSig === 'function' ? cloudSig() : 0, typeof platformSig === 'function' ? platformSig().join() : 0]],

@@ -335,7 +335,8 @@ a.chip.kofi-chip{margin-right:auto;background:#111;color:#f6e7b8;border:1px soli
 .wk .wk-box .bar{height:10px;border-radius:6px;background:#0003;overflow:hidden}
 .wk .wk-box .bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .4s}
 .wk .wk-box .bar.done i{background:var(--green)}
-.wk-boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px;margin-bottom:8px}
+.wk-boards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:8px}
+@media (max-width:760px){.wk-boards{grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))}}
 .wk-board{padding:12px;border:1px solid var(--line);border-radius:11px;background:var(--paper2)}
 .wk-board ol{margin:8px 0 0;padding:0 18px 0 0;font-size:13px}
 .wk-board li{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dashed var(--line)}

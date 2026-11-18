@@ -20,7 +20,7 @@
      when a round has started since we last saw it (about three times a day). */
 const WK_MS = 7 * 86400000;
 const WK_OFFSET = 3 * 3600000 - 3 * 86400000; // Riyadh time (+3h), and weeks start on Sunday (epoch day 0 was a Thursday)
-// Reading the boards costs ~31 Firestore reads (3 top-10 lists + goals), so they refresh every 10 minutes, not 2
+// Reading the boards costs ~61 Firestore reads (6 top-10 lists + goals), only on the week tab, so they refresh every 10 minutes, not 2
 // (the free plan allows 50K reads a day for everyone together).
 const WK_PUSH_MS = 5 * 60000, WK_PULL_MS = 10 * 60000, WK_PUSH_IDLE_MS = 15 * 60000;
 // A player who hasn't touched the game for 5 minutes gets no leaderboard refresh (it comes back on their next tap),
@@ -56,7 +56,7 @@ function vgNeed(g, r = vgRound(g)) {
   if (m[r] !== undefined) return m[r];
   if (r !== vgRound(g)) return g.n; // a round we never saw: the base
   // Only trust totals read after this round began (an older read may hold yesterday's total before it was final).
-  const start = r * 86400000 - (3 - g.hr) * 3600000, p = WK.pullAt >= start ? vgData(g, r - 1) : null;
+  const start = r * 86400000 - (3 - g.hr) * 3600000, p = Math.max(WK.pullAt, WK.gAt || 0) >= start ? vgData(g, r - 1) : null;
   if (!p) return g.n; // not read yet: the base, until the next refresh
   const t = Math.max(g.n, vgNice(p.n * 0.75));
   m[r] = t; for (const k of Object.keys(m)) if (+k < r - 2) delete m[k];
@@ -139,6 +139,7 @@ function wkVals() {
   for (const g of VG) v['g' + g.k] = Math.round(vgGot(g.st));
   return v;
 }
+const WK_BOARDS = ['gold', 'floor', 'fish', 'gh', 'gm', 'gen'];
 const WK_KEYS = ['gold', 'fish', 'floor', 'gen', 'name', ...VG.map(g => 'g' + g.k)];
 async function wkPush() {
   if (!wkAllowed() || WK.busy || Date.now() - WK.sentAt < (playerIdle() && !document.hidden ? WK_PUSH_IDLE_MS : WK_PUSH_MS)) return;
@@ -195,6 +196,14 @@ async function wkPush() {
   }
   WK.busy = false;
 }
+// Away from the week tab: just the goals document (one read every 10 minutes), for the prizes and the targets.
+async function wkPullGoals() {
+  if (!wkSignedIn() || !S.wk || WK.pulling || document.hidden || playerIdle() || Date.now() - Math.max(WK.pullAt, WK.gAt || 0) < WK_PULL_MS) return;
+  WK.pulling = true; WK.gAt = Date.now();
+  try { const { goals } = await wkRefs(), snap = await goals.get(); WK.g = snap.exists ? snap.data() : {}; WK.err = ''; }
+  catch (e) { WK.err = (e && e.code) || 'x'; console.warn('weekly', WK.err); }
+  WK.pulling = false; wkCheck();
+}
 async function wkPull() {
   if (!wkSignedIn() || !S.wk || WK.pulling || document.hidden || Date.now() - WK.pullAt < WK_PULL_MS || (WK.pullAt && playerIdle())) return;
   WK.pulling = true; WK.pullAt = Date.now();
@@ -206,7 +215,7 @@ async function wkPull() {
       WK.mod = { admins: d.admins || {}, ban: d.ban || {} }; WK.modAt = Date.now();
     }
     const top = {}, extra = Math.min(20, Object.keys(WK.mod.ban).length); // read a few more, so 10 are left after the banned
-    for (const k of ['gold', 'floor', 'fish']) {
+    for (const k of WK_BOARDS) {
       const q = await w.collection('p').orderBy(k, 'desc').limit(10 + extra).get();
       top[k] = q.docs.filter(d => !wkBanned(d.id)).map(d => ({ id: d.id, name: d.data().name, gen: d.data().gen, v: d.data()[k], me: d.id === uid })).filter(r => r.v > 0).slice(0, 10);
     }
@@ -216,16 +225,16 @@ async function wkPull() {
   WK.pulling = false; WK.ver++; wkCheck(); // ver redraws the panel once the lists have arrived
 }
 
-/* ---- the panel at the top of the village tab ---- */
+/* ---- the week tab ---- */
 function wkSig() { return [S.wk && S.wk.id, S.wk && S.wk.done, wkOn('buf'), ...VG.map(g => [vgRound(g), wkOn(g.b)]), wkSignedIn(), WK.ver, WK.err, !!(S.leg && S.leg.mod)]; }
 function wkBar(id, cls = '') { return `<div class="bar ${cls}"><i id="${id}"></i></div>`; }
-function wkBoard(title, k, unit) {
+function wkBoard(title, k, unit, noGen) {
   const rows = (WK.top && WK.top[k]) || [], adm = wkAdmin();
   // Players see a rude name as «…»; the developer sees the real name, the account id and a ban button.
   const nm = r => adm || !badName(r.name) ? esc(r.name) : '…';
   const tools = r => adm && !r.me ? `<button class="wk-ban" data-a="wkBan" data-v="${esc(r.id)}" data-n="${esc(r.name)}" title="${L('🚫 احظر من المتصدرين')}">🚫</button>` : '';
   const uidLine = r => adm ? `<small class="wk-uid" dir="ltr">${esc(r.id)}</small>` : '';
-  return `<div class="wk-board"><b>${title}</b>${rows.length ? `<ol>${rows.map(r => `<li class="${r.me ? 'me' : ''}"><span>${tools(r)}${nm(r)}${String(r.name || '').trim().endsWith(' ' + r.gen) ? '' : ` <small>${L`ج${r.gen}`}</small>`}${uidLine(r)}</span><b>${unit(r.v)}</b></li>`).join('')}</ol>` : L('<small class="hint">ما أحد للحين، كن الأول!</small>')}</div>`;
+  return `<div class="wk-board"><b>${title}</b>${rows.length ? `<ol>${rows.map(r => `<li class="${r.me ? 'me' : ''}"><span>${tools(r)}${nm(r)}${noGen || String(r.name || '').trim().endsWith(' ' + r.gen) ? '' : ` <small>${L`ج${r.gen}`}</small>`}${uidLine(r)}</span><b>${unit(r.v)}</b></li>`).join('')}</ol>` : L('<small class="hint">ما أحد للحين، كن الأول!</small>')}</div>`;
 }
 // Developer mode: the banned players, each with a button to let them back.
 function wkModPanel() {
@@ -266,7 +275,7 @@ function weeklyPanel() {
       ${on ? `<small>${L`✅ جائزتك شغالة: +${(S.wk[g.b + 'p'] || 0.1) * 100}% ${g.area}، باقي ${ftime((S.wk[g.b] - Date.now()) / 1000)}`}</small>` : ''}</div>`;
   }
   h += `</div></div>
-    ${wkModPanel()}<div class="wk-boards">${wkBoard(L('💰 أكثر ذهب'), 'gold', fmt)}${wkBoard(L('⚔️ أعمق طابق'), 'floor', v => fmt(v))}${wkBoard(L('🎣 أكثر صيد'), 'fish', fmt)}</div>
+    ${wkModPanel()}<div class="wk-boards">${wkBoard(L('💰 أكثر ذهب'), 'gold', fmt)}${wkBoard(L('⚔️ أعمق طابق'), 'floor', v => fmt(v))}${wkBoard(L('🎣 أكثر صيد'), 'fish', fmt)}${wkBoard(L('🌾 أكثر حصاد'), 'gh', fmt)}${wkBoard(L('🪨 أكثر صخور'), 'gm', fmt)}${wkBoard(L('👑 أعلى جيل'), 'gen', v => L`ج${v}`, true)}</div>
     <small class="hint">${WK.err ? L('⚠️ ما قدرنا نحدّث القائمة الحين، بنحاول بعد شوي.') : L('تتحدث كل 10 دقايق تقريباً. أرقامك تنرسل كل 5 دقايق.')}</small>`;
   return h + '</div>';
 }
@@ -304,7 +313,7 @@ function wkTick() {
   wkCheck();
   if (document.hidden) return;
   wkPush();
-  if (typeof tab !== 'undefined' && tab === 'village') wkPull();
+  if (typeof tab !== 'undefined' && tab === 'week') wkPull(); else wkPullGoals();
 }
 setInterval(wkTick, 15000);
 setTimeout(wkTick, 3000);

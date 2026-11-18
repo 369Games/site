@@ -1038,7 +1038,10 @@ function makeEnemy(f) {
 }
 function dmg(a, d) { return Math.max(1, a * a / (a + d)) * R(0.85, 1.15); }
 function regenRate() { return heroMaxHp() * 0.03 * (S.bld.inn ? 2 : 1) * Math.max(0.1, 1 + spv('leila', 'regen')); }
-function healOf(id) { return (ITEMS[id].price * 1.5 + 10) * (S.bld.kitchen ? 2 : 1) * (1 + gearPct(AMULET_HEAL, 'amulet')) * (1 + titleB('healer', 0.1)); }
+// 1.50: a bite also heals a share of max health (10% for the cheapest food, up to 30% for the dearest), so food
+// still matters deep in the dungeon where health runs to millions; the old amount stays when it is bigger (early game).
+function healPct(id) { return Math.min(0.3, Math.max(0.1, 0.05 + 0.05 * Math.log10(ITEMS[id].price + 1))); }
+function healOf(id) { return Math.max((ITEMS[id].price * 1.5 + 10) * (S.bld.kitchen ? 2 : 1) * (1 + gearPct(AMULET_HEAL, 'amulet')) * (1 + titleB('healer', 0.1)), heroMaxHp() * healPct(id)); }
 function foodList() {
   const cats = noFarm() ? ['crop', 'animal', 'fish', 'monster'] : ['crop', 'animal', 'fish'];
   return Object.keys(S.inv).filter(id => cats.includes(ITEMS[id].cat) && !S.locked[id] && !KINGS.some(k => k.id === id))
@@ -1087,7 +1090,7 @@ function killEnemy() {
   }
   D.kills++;
   if (D.kills >= (e.boss ? 1 : 5)) {
-    D.kills = 0; petFloor(f);
+    D.kills = 0; S.hero.hp = heroMaxHp(); petFloor(f);
     const st = saddled('dragon') ? 2 : 1; // the saddled dragon carries you two floors down
     if (D.floor === D.max && !deepLocked() && D.max < floorCap()) { D.max = Math.min(floorCap(), D.max + st); if (D.max % 5 < st || e.boss) log(L`🗝️ فتحت الطابق ${D.max} في الزنزانة`); }
     if (D.auto && !(D.retry > 0)) D.floor = Math.min(D.max, D.floor + st);

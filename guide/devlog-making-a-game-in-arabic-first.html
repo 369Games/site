@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Making a game in Arabic first: right-to-left, Gulf dialect and three more languages — UntoldLife</title>
+<meta name="description" content="Why UntoldLife is written in Gulf Arabic first, how it reaches English, Russian and Chinese, and the bidi bugs we met on the way.">
+<link rel="canonical" href="https://369games.net/guide/devlog-making-a-game-in-arabic-first.html">
+<link rel="alternate" hreflang="en" href="https://369games.net/guide/devlog-making-a-game-in-arabic-first.html">
+<link rel="alternate" hreflang="ar" href="https://369games.net/guide/ar/devlog-making-a-game-in-arabic-first.html">
+<link rel="icon" href="../img/favicon.png" type="image/png">
+<link rel="stylesheet" href="../page.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8456136782716547" crossorigin="anonymous"></script>
+<meta name="google-adsense-account" content="ca-pub-8456136782716547">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "d00635426d214e93938126001ce4a104"}'></script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../"><img class="brand-logo" src="../img/logo-mark.png" alt="" width="40" height="40">369Games</a>
+  <nav class="nav" aria-label="Site"><a href="../#games">Games</a><a href="index.html" aria-current="page">Game guide</a><a href="../about.html">About</a><a href="../contact.html">Contact</a></nav>
+  <a class="lang" href="ar/devlog-making-a-game-in-arabic-first.html">🌐 العربية</a>
+</div></header>
+<main class="wrap doc guide">
+<p class="crumb"><a href="index.html">← All guide pages</a></p><h1>Making a game in Arabic first: right-to-left, Gulf dialect and three more languages</h1>
+<p class="crumb"><a href="devlog.html">Devlog</a></p><p class="date">2026-11-23</p><p>Most games are written in English and translated into Arabic at the end, if at all. UntoldLife went the other way. Every line in the game, from the grandfather's letter to the smallest button, was first written in Arabic, in the everyday Gulf dialect we speak at home. English, Russian and Chinese come after. This post is about what that means in practice, and the bugs that appear when a screen must read both ways.</p>
+
+<h2>Why Gulf Arabic, and not formal Arabic</h2>
+<p>Formal Arabic is what you read in newspapers and textbooks. It is correct and understood everywhere, but in a cozy farming game it sounds like a government notice. We wanted villagers who talk like neighbours. So our FAQ answers «ايه» where formal Arabic would say «نعم», and the title of the 1.22.9 patch note says the window «ما عادت تتكرر», the way you would say it out loud. Our <a href="index.html">game guide</a> is written the same way.</p>
+<p>Writing in dialect means making many small word choices by ear. A couple of real examples from our history:</p>
+<ul>
+<li>On 4 November we changed the name of the camel to «ناقة», the word people actually use for a camel they raise. The camel grades kept their local names too: Majaheem, Wadha and the golden Shaqha are names of real camel types in the Gulf, and they stay that way in English.</li>
+<li>On 10 November, in the factory countdowns, we replaced «يفضى» with «يخلص» for «runs out». Both are understood, but the second felt more natural in that sentence.</li>
+</ul>
+
+<h2>How the other languages work</h2>
+<p>Inside the code, every text a player can see is wrapped in a small function that takes the Arabic sentence as its key. When you play in Arabic, the sentence is shown as it is. In any other language, the game looks the sentence up in that language's file and shows the translation. Values inside a sentence, such as a number or a name, are marked with placeholders like {0}, so each language can put them where its grammar wants them.</p>
+<p>Before any release, a build step checks every language for missing lines and for placeholders that do not match the Arabic. It has to report zero of both. It catches the most common mistake: a new Arabic line nobody has translated yet.</p>
+
+<h3>Six languages, then four</h3>
+<p>English arrived on 1 November, the same day as the first saved version of the game. Spanish, Portuguese, Russian and Simplified Chinese followed that day, so the first beta launched in six languages. Two days later, in <b>1.4.1</b> (3 November), we retired Spanish and Portuguese. We chose to keep four languages and keep them current while the game changed every day. Players who had chosen them were moved to English automatically. Since <b>1.15.4</b> (10 November) a new player gets the game in their browser's language straight away, if it is one of the four.</p>
+
+<h3>Names that belong to each language</h3>
+<p>The six villagers of Echo Valley have a different name in each language, chosen to sound local rather than translated. In Arabic the mayor is Abu Salem; in English he is Harold. The smith is Qasim in Arabic and Jack in English, and the healer Leila is Grace. Salma, the breeder who joined in November, kept her name in English. The <a href="village.html">village page</a> lists them all. It also means a patch note can say «Qasim's discount» in Arabic and «Jack's discount» in English, and both are right.</p>
+<p>On 10 November we did a full English pass: American spelling throughout, one name per villager everywhere, curly quotes and consistent terms. The next day we finished an English playtest from start to finish.</p>
+
+<h2>Right to left, left to right</h2>
+<p>Arabic pages run from right to left. When you switch to another language, the whole page flips to left to right. Most of the layout copes. The trouble starts when the two directions meet inside one line, which is called bidirectional text, or «bidi». Some of the real bugs we fixed:</p>
+<ul>
+<li><b>Arrows that point the wrong way.</b> On 3 November the blacksmith's upgrade arrow pointed backwards in left-to-right languages. On 8 November the factory recipes had an arrow from inputs to output that pointed the wrong way in Arabic. We replaced it with two plain rows, «Needs» and «Makes», which read correctly in every direction.</li>
+<li><b>Numbers that swap places.</b> A quest reward line in Arabic that mixed gold, XP and points could show the numbers in the wrong order, because the browser reorders runs of Latin numbers inside Arabic text. On 6 November we put each reward in its own small box, so nothing can move. On 10 November contract rewards got the same treatment: two clear chips, gold and blueprints, instead of one mixed line.</li>
+<li><b>Emoji that mean something else.</b> We used medal emoji for first, second and third place in the village goals. In our game, those gold, silver and bronze discs looked just like ore icons. We took them out of the patch notes and the goal messages on 5 November.</li>
+</ul>
+
+<h2>Numbers in every language</h2>
+<p>Idle games live on numbers, and Arabic has two sets of digits: the Western ones (1, 2, 3) and the Eastern Arabic ones (١، ٢، ٣). We chose Western digits in every language, with short suffixes for large values: K, M, B, T and beyond. There are two reasons. Large numbers with Latin suffixes read the same for every player, which matters for leaderboards that everyone shares. And keeping one style of digits avoids a whole family of bidi problems inside lines that already mix Arabic words and numbers.</p>
+
+<h2>The little things around the game</h2>
+<ul>
+<li>The sign-in email for cloud saves arrives in the player's language (2 November).</li>
+<li>The feedback box is translated into every language, and all answers come to us in one form we read in Arabic.</li>
+<li>The update log, the patch notes inside the game and this website all exist in Arabic and English.</li>
+<li>The weekly reset follows Riyadh time, and the daily village goals show their reset times in UTC so they are clear to everyone.</li>
+</ul>
+
+<h2>Was it worth it?</h2>
+<p>Writing in Arabic first is slower in some ways. Every new feature needs translation before it ships, and every new screen needs a check in both directions. But it gave UntoldLife a voice we could not have got any other way. The villagers sound like neighbours, the Arabic reads the way it was meant to, and the other languages get a source text that was never itself a translation. For a small studio, that is a good reason to keep doing it.</p>
+
+<p class="cta"><a class="playbtn" href="../untoldlife/">▶ Play UntoldLife free</a></p>
+<p class="date">Game version: 1.22.9 (2026-11-17)</p>
+</main>
+<footer><a href="../">369Games</a> · <a href="index.html">Game guide</a> · <a href="../about.html">About</a> · <a href="../contact.html">Contact</a> · <a href="../privacy.html">Privacy policy</a></footer>
+</body>
+</html>

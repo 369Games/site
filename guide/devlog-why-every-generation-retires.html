@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Why every generation retires: designing the legacy system — UntoldLife</title>
+<meta name="description" content="How legacy stars, the legacy tree, heirlooms and challenge generations came to be, and the fixes that kept retiring worth it.">
+<link rel="canonical" href="https://369games.net/guide/devlog-why-every-generation-retires.html">
+<link rel="alternate" hreflang="en" href="https://369games.net/guide/devlog-why-every-generation-retires.html">
+<link rel="alternate" hreflang="ar" href="https://369games.net/guide/ar/devlog-why-every-generation-retires.html">
+<link rel="icon" href="../img/favicon.png" type="image/png">
+<link rel="stylesheet" href="../page.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8456136782716547" crossorigin="anonymous"></script>
+<meta name="google-adsense-account" content="ca-pub-8456136782716547">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "d00635426d214e93938126001ce4a104"}'></script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../"><img class="brand-logo" src="../img/logo-mark.png" alt="" width="40" height="40">369Games</a>
+  <nav class="nav" aria-label="Site"><a href="../#games">Games</a><a href="index.html" aria-current="page">Game guide</a><a href="../about.html">About</a><a href="../contact.html">Contact</a></nav>
+  <a class="lang" href="ar/devlog-why-every-generation-retires.html">🌐 العربية</a>
+</div></header>
+<main class="wrap doc guide">
+<p class="crumb"><a href="index.html">← All guide pages</a></p><h1>Why every generation retires: designing the legacy system</h1>
+<p class="crumb"><a href="devlog.html">Devlog</a></p><p class="date">2026-11-23</p><p>Most idle games have a reset button. You throw away your progress, you get some kind of permanent currency, and you start again a little faster. It works, but it usually feels like a chore with a nicer name. When we started UntoldLife we wanted the reset to mean something inside the story, so we tied it to a family. Your farmer grows old with the seasons, and when the time comes they retire and hand the valley to their child. The farm starts over. The family does not.</p>
+<p>Here is how that system was built and what we got wrong on the way, taken from the game's code and the <a href="updates.html">update log</a>.</p>
+
+<h2>What retiring keeps, and what it leaves behind</h2>
+<p>A generation in UntoldLife is one life. The gold, the plots, the animals and the tools belong to that life and stay with it. What moves on is everything that belongs to the family: legacy stars, the perks bought with them, heirlooms, the fish album, legendary pets, guild titles and achievements. The <a href="legacy.html">Generations and legacy</a> page lists all of it.</p>
+<p>The idea is simple: the person changes, the name stays. The child even inherits the family name with an ordinal after it, so a long save reads like a family tree.</p>
+
+<h2>Legacy stars: paying for what you did</h2>
+<p>Legacy stars are the currency of the family. You earn them from three parts of a generation, and the formula has not changed much since the beginning:</p>
+<ul>
+<li><b>Gold.</b> Three stars times the square root of the gold earned in millions. Earning four times as much gives twice the stars, so gold matters without running away.</li>
+<li><b>The dungeon.</b> One star for every three floors climbed in this generation, not counting the floor a perk lets you start on.</li>
+<li><b>The mine.</b> One star for every ten floors below floor 20, with its own cap of 500.</li>
+</ul>
+<p>The square root was a deliberate choice. Idle numbers grow very fast, and if stars followed gold in a straight line, a strong family would earn absurd amounts in its tenth generation.</p>
+
+<h3>The cap, and why it moved three times</h3>
+<p>In the update of 4 November 2026, which players will remember as <b>1.7, «Your feedback became an update»</b>, we added a cap on stars per generation: 300 for generations 1 to 5, 500 from 6 to 10, and more after that. Without it, one very long generation could buy the whole tree.</p>
+<p>A cap brings its own problem: anything that multiplies stars is wasted once you hit it. In <b>1.7.12</b> (8 November) the perk «Wisdom of Generations» started raising the cap by the same percentage it adds to stars. In <b>1.13.2</b> (9 November) the Lucky amulet heirloom got the same treatment, because, in the words of the patch note, its bonus was wasted once you hit the cap. Then <b>1.13.4</b> raised the cap itself: it now starts at 500 and climbs to 900, 1,500, 2,400 and finally 3,600 from generation 21 on.</p>
+
+<h3>Generation tasks</h3>
+<p>Version <b>1.18</b> (11 November) added three tasks to every generation: harvest this much, break that many rocks, clear a deeper floor, and so on. Each finished task adds 5% of the generation's star cap, and all three together add 20%. That bonus sits on top of the cap on purpose, so a family that already reaches the cap still has something to chase.</p>
+<p>The first version sized tasks from the family's average generation. That was a mistake for long saves: early generations pulled the average down, so a strong family got tasks it finished in fifteen minutes. <b>1.21.1</b> changed it to use the last generation instead.</p>
+
+<h2>The legacy tree</h2>
+<p>At launch on 1 November the perks were a flat list. A day later, in <b>1.1</b>, they became a real tree with six branches: farming, ranching, mining, combat, trade and family. Today it holds 29 perks. Each branch has a special skill that unlocks after you spend ten levels in it, such as Eternal Seeds (planting never costs seeds), Dynamite (each cleared mine floor takes you down two) or Heirloom Tools (your tools pass down one tier lower instead of starting from nothing).</p>
+<p>Two small rules from 1.1 matter more than they look. You can reset your legacy points once per generation at no cost, so a bad plan is never permanent. And perks that shape the start of a life, such as extra plots or starting gold, still apply if you buy them in the first two days of a generation, so you are not punished for reading the tree after retiring.</p>
+
+<h2>Heirlooms: objects with a story</h2>
+<p>Perks are numbers in a tree. We also wanted things you could hold: a grandfather's sword, a father's armor, a grandmother's ring, an old seed bag. There are 12 heirlooms, each raised up to six levels. When you retire, you pick one from three choices, or four and five with the «Family vault» perk.</p>
+<p>Early on you could cancel the retirement window and open it again to get different choices. In <b>1.13.3</b> (9 November) the choices became fixed for each generation, even across a page reload.</p>
+
+<h2>Retiring should be a choice, not a minute</h2>
+<p>A strong family could, at one point, finish a generation in a few minutes. That kills the feeling of a life. So the goals grow. <b>1.3.1</b> (3 November) made the retirement goal grow after the third generation. <b>1.7.1</b> made retiring need both goals together, gold and a dungeon floor. <b>1.9.8</b> then made the gold goal gentler: 1 million up to generation 3, then ×1.7 a generation until 10, ×1.3 until 20, and ×1.1 after that.</p>
+
+<h2>Challenge generations</h2>
+<p>Once the family is settled you can start a generation under a special rule. There are six: Endless winter, No workers, Warrior only, Lean years, Slow time and Underground. «Warrior only» and «Underground» forbid farming and animals entirely, so in November we changed villagers who want crops or animal products to accept fish instead during those lives. Finishing a challenge pays a lasting family bonus, for example more legacy stars for surviving Lean years, or more mining power for Underground.</p>
+
+<h2>Where it leads</h2>
+<p>All of this feeds one long goal. At generation 10, with 80% of the legacy tree bought and 1,000 stars to pay, the family opens the Industrial Age. That gate used to ask for the whole tree; <b>1.22</b> (12 November) lowered it to 80% and shows how many levels are left. The next post is about the factory. Every fix above came from real saves, and many from players telling us where it felt wrong.</p>
+
+<p class="cta"><a class="playbtn" href="../untoldlife/">▶ Play UntoldLife free</a></p>
+<p class="date">Game version: 1.22.9 (2026-11-17)</p>
+</main>
+<footer><a href="../">369Games</a> · <a href="index.html">Game guide</a> · <a href="../about.html">About</a> · <a href="../contact.html">Contact</a> · <a href="../privacy.html">Privacy policy</a></footer>
+</body>
+</html>

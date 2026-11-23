@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building the Industrial Age: how the factory came to be — UntoldLife</title>
+<meta name="description" content="From a player&#x27;s request for crafting to a second world with furnaces, contracts, a harbor and the First Train, mostly built in five days.">
+<link rel="canonical" href="https://369games.net/guide/devlog-building-the-industrial-age.html">
+<link rel="alternate" hreflang="en" href="https://369games.net/guide/devlog-building-the-industrial-age.html">
+<link rel="alternate" hreflang="ar" href="https://369games.net/guide/ar/devlog-building-the-industrial-age.html">
+<link rel="icon" href="../img/favicon.png" type="image/png">
+<link rel="stylesheet" href="../page.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8456136782716547" crossorigin="anonymous"></script>
+<meta name="google-adsense-account" content="ca-pub-8456136782716547">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "d00635426d214e93938126001ce4a104"}'></script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../"><img class="brand-logo" src="../img/logo-mark.png" alt="" width="40" height="40">369Games</a>
+  <nav class="nav" aria-label="Site"><a href="../#games">Games</a><a href="index.html" aria-current="page">Game guide</a><a href="../about.html">About</a><a href="../contact.html">Contact</a></nav>
+  <a class="lang" href="ar/devlog-building-the-industrial-age.html">🌐 العربية</a>
+</div></header>
+<main class="wrap doc guide">
+<p class="crumb"><a href="index.html">← All guide pages</a></p><h1>Building the Industrial Age: how the factory came to be</h1>
+<p class="crumb"><a href="devlog.html">Devlog</a></p><p class="date">2026-11-23</p><p>UntoldLife started as a farming game about a family. Within days of the first beta, players were asking for something we had not planned: a way to make things. This post is how that request became the Industrial Age, the second half of the game, and the rule we set so the factory would never replace the farm.</p>
+
+<h2>Where the idea came from</h2>
+<p>On 3 November 2026 we added a short section to our roadmap called «big systems for later, from players' feedback». It had three lines. One asked for a better guild. Another was about combining smith tools. The third said, in plain words, that players wanted to collect materials like wool and iron and make new things from them to sell. That third line is where the factory began.</p>
+<p>We did not start with code. We wrote a design document first and the first rule in it was underlined: <b>the two worlds make each other bigger</b>. The village sends the factory its metals: copper, iron and silver from the mine. The factory sends back permanent upgrades to the village: cheaper miners and fishers, up to 90% off. The village never disappears and never freezes. You switch between the two worlds with one button, and both keep running, while you play and while you are away.</p>
+
+<h2>Who gets to open it</h2>
+<p>The factory is a reward for a family that has lived through the village. The first gate asked for generation 10, the whole legacy tree except «Blessing of the Valley», and 1,000 legacy stars. By our count the tree alone cost about 4,100 stars, so a family reaching the factory had spent over 5,000. To make the goal visible early, a locked card appears in the Legacy tab from generation 7 with the three conditions and a check mark next to each one.</p>
+<p>In <b>1.22</b> (12 November) we lowered the tree condition to 80% of its levels, and the card now shows how many are left. The <a href="factory.html">factory guide page</a> has the current conditions.</p>
+
+<h2>Five days, many small steps</h2>
+<p>The Industrial Age did not arrive in one update. It came in pieces, and almost every piece was followed by a fix within hours. In order:</p>
+<ol>
+<li><b>1.9, 8 November: phase one.</b> Three fields (the clay pit, the stone mountain and the forest) with workers you place yourself, furnaces for coal, bricks, cut stone and metal ingots, and a city with rails and a boat. The worker cap in the village mine and at the lake rose to 200.</li>
+<li><b>1.10, the same day: the Workshop.</b> Benches that turn ingots and bricks into planks, nails, gears, pipes and machines. Trader contracts that pay gold and blueprints. An engineer with permanent upgrades.</li>
+<li><b>1.11, 9 November: the town hall.</b> One building that caps every other building and field. Each level allows three more furnaces and benches of each kind, from 3 up to 33.</li>
+<li><b>1.12, also 9 November: renewal.</b> Once the town hall is a palace you can renew the factory, start it over, and earn patents for how far you got. Patents buy inventions that last, and public services (power, water, taxes) that pay gold every second.</li>
+<li><b>1.16, 10 November: the First Train.</b> The finale, in five stages. When it is done you see an ending screen with your stats, and the game goes on.</li>
+<li><b>1.17 to 1.21, 11 November:</b> the harbor with voyages that run while the game is closed, the quarries with glass and steel, the deep mine with drills, and a bigger invention map with 15 inventions.</li>
+</ol>
+
+<h2>What we got wrong, and how we found out</h2>
+<p>A factory is a chain, and chains break in places you do not expect. Some of our favourite fixes from those days:</p>
+<ul>
+<li><b>The warehouse that could never fill.</b> Some upgrades asked for exactly the warehouse's capacity. But furnaces keep eating from the warehouse, so the stock never reaches the cap. <b>1.10.4</b> made those costs slightly below capacity, for example 30,000 instead of 32,000.</li>
+<li><b>The line a comment swallowed.</b> In <b>1.10.5</b> a code comment accidentally hid the line that paid blueprints, so contracts paid gold and nothing else and the contract counter stopped. <b>1.10.6</b> fixed it the same day and gave every player 15 blueprints to make up for it.</li>
+<li><b>Furnaces too expensive to reach.</b> The town hall allowed 33 furnaces, but each one cost ×1.6 the last, so the 33rd coal furnace cost about 170T. <b>1.13.6</b> changed the step to ×1.3, and the same furnace now costs about 221B.</li>
+<li><b>Wood vanishing for no reason.</b> A furnace with a nearly full output kept saving up the work it could not do, then burned all its inputs at once. Players saw their wood drop by hundreds a second. <b>1.22</b> stopped furnaces from saving anything.</li>
+</ul>
+
+<h2>Making a chain readable</h2>
+<p>The hardest part of the factory was not the numbers. It was helping people understand why something had stopped. A few changes did most of the work:</p>
+<ul>
+<li>A net rate next to every material, green when it rises and red when the furnaces use more than is made (8 November).</li>
+<li>Countdowns everywhere (<b>1.14</b>, 10 November): how long until you have each missing material at your current speed, and when a field or furnace will fill the warehouse. The first version jumped around, so it now uses the last minute of production and a locked finish time.</li>
+<li>A stopped furnace or bench names the material it is out of and marks it in red (<b>1.22</b>).</li>
+<li>A short guide the first time you enter the factory (<b>1.15</b>), and tip cards for the deep mine, services, inventions, the train and the harbor (<b>1.21.2</b>).</li>
+</ul>
+
+<h2>The factory gives back to the farm</h2>
+<p>The link between the two worlds is not only about metal. The rails make mine workers cheaper and the boat makes fishers cheaper. When you build the power company, the village itself changes at night: street lamps along the paths and the bridge, and every house lit up. That came in <b>1.13</b>, together with a new banner: when you enter the factory, the picture at the top becomes an industrial town with chimneys and a train crossing a bridge. And the First Train's reward reaches the whole valley: +10% gold from every source, for good.</p>
+
+<h2>What we would keep</h2>
+<p>If we built it again, we would keep the rule from the first page of the design document. The later pieces follow it too: the deep mine can feed copper, iron and silver into the village stock, and one of the harbor's upgrades raises village gold.</p>
+
+<p class="cta"><a class="playbtn" href="../untoldlife/">▶ Play UntoldLife free</a></p>
+<p class="date">Game version: 1.22.9 (2026-11-17)</p>
+</main>
+<footer><a href="../">369Games</a> · <a href="index.html">Game guide</a> · <a href="../about.html">About</a> · <a href="../contact.html">Contact</a> · <a href="../privacy.html">Privacy policy</a></footer>
+</body>
+</html>

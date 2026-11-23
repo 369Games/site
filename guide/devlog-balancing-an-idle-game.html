@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Balancing an idle game: offline time, the first hour and numbers in the trillions — UntoldLife</title>
+<meta name="description" content="What we learned keeping UntoldLife fair, from catching up offline time to the deep dungeon fix in web 1.23.">
+<link rel="canonical" href="https://369games.net/guide/devlog-balancing-an-idle-game.html">
+<link rel="alternate" hreflang="en" href="https://369games.net/guide/devlog-balancing-an-idle-game.html">
+<link rel="alternate" hreflang="ar" href="https://369games.net/guide/ar/devlog-balancing-an-idle-game.html">
+<link rel="icon" href="../img/favicon.png" type="image/png">
+<link rel="stylesheet" href="../page.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8456136782716547" crossorigin="anonymous"></script>
+<meta name="google-adsense-account" content="ca-pub-8456136782716547">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "d00635426d214e93938126001ce4a104"}'></script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../"><img class="brand-logo" src="../img/logo-mark.png" alt="" width="40" height="40">369Games</a>
+  <nav class="nav" aria-label="Site"><a href="../#games">Games</a><a href="index.html" aria-current="page">Game guide</a><a href="../about.html">About</a><a href="../contact.html">Contact</a></nav>
+  <a class="lang" href="ar/devlog-balancing-an-idle-game.html">🌐 العربية</a>
+</div></header>
+<main class="wrap doc guide">
+<p class="crumb"><a href="index.html">← All guide pages</a></p><h1>Balancing an idle game: offline time, the first hour and numbers in the trillions</h1>
+<p class="crumb"><a href="devlog.html">Devlog</a></p><p class="date">2026-11-23</p><p>An idle game is a promise: your farm keeps working while you are not looking. Keeping that promise without breaking the game is most of the work. Here are the balance problems we met in UntoldLife's first weeks and the fixes we shipped, with version numbers you can look up in the <a href="updates.html">update log</a>.</p>
+
+<h2>Time away</h2>
+<p>When you come back, the game works out what the valley produced while you were gone. The base limit is 12 hours. The legacy perk «Sound sleep» adds six hours per level, up to 36 hours at its fourth level. The limit is deliberate: otherwise opening the game once a week would pay the same as checking in every evening.</p>
+<p>The first catch-up ran the whole simulation in small steps, and after a long night the page could freeze for more than a second when you opened it. On 7 November (<b>1.7.2</b>) we made the catch-up use bigger steps of up to ten seconds. Ten hours away now takes about half a second to work out.</p>
+<p>Some offline problems only show up in real browsers. A browser slows the timers of a page that is hidden or covered by another window to roughly once a minute. Our game read every one of those gaps as «the player left», so the «welcome back» window kept popping up while the game was simply open behind something else. <b>1.22.9</b> (17 November) catches up gaps of up to five minutes quietly, and shows one line when you return saying how long it ran in the background.</p>
+
+<h2>The first hour</h2>
+<p>Every generation starts small: 50 gold, a few plots and turnip seeds that grow in 20 seconds. The first hour of the first generation decides whether someone stays, so we watch it closely.</p>
+<p>Our anonymous play statistics showed a painful number in mid-November: 66 of 243 players opened the game and never started it, and on iPhone it was a third of all visitors. On a phone the page stayed empty for four to seven seconds, then asked for a language, a name and a character before showing the button to enter. <b>1.22.3</b> (14 November) added a loading screen with the logo, put the «Enter the village» button right after grandpa's letter, and made the name and character optional.</p>
+<p>Earlier, on 8 November, we made tabs unlock one by one in the first generation, each with a small celebration and a hint on the locked tabs. A new player sees the farm first, then the market, and so on, instead of a dozen tabs at once. The <a href="getting-started.html">getting started</a> page follows the same order.</p>
+
+<h2>Clicks are not a strategy</h2>
+<p>On 2 November (<b>1.2.4</b>) we limited digging and casting to the speed of a human hand. Auto-clickers now get no more than a normal player. Later, in <b>1.7</b>, you could hold «Dig!» and «Cast!» instead of tapping, with Worker's gloves raising it to ten hits a second. Playing well should not mean hurting your finger.</p>
+
+<h2>Keeping numbers meaningful in the trillions</h2>
+<p>Idle numbers explode. UntoldLife shows them with short suffixes, K, M, B, T and beyond, in every language. The hard part is keeping each number worth reading when it is that large. Some of the rules we use:</p>
+<ul>
+<li><b>Grow goals in stages.</b> The retirement gold goal is 1 million up to generation 3, then ×1.7 a generation until 10, ×1.3 until 20 and ×1.1 after that (<b>1.9.8</b>). Without the slowdown, late goals would outrun any income.</li>
+<li><b>Add inside a bucket, multiply across buckets.</b> Since <b>1.6</b> every speed has a «This generation» bucket and a «The family» bucket. Many small bonuses stay readable, and a retirement always shows.</li>
+<li><b>Put ceilings where growth has no end.</b> Hunt rewards grew with every generation without limit, and high generations were getting hunts worth tens of billions. <b>1.7.10</b> capped the multiplier at ×200, reached at generation 16. Contracts in the factory grow 12% each, up to 300 delivered contracts (<b>1.15.2</b>).</li>
+<li><b>Check the curve at both ends.</b> Mine XP once gave 40 times more on floor 1 than on the deepest floor. <b>1.13.8</b> turned it around: deeper floors now level you about 16 times faster than floor 1.</li>
+<li><b>Look at real saves.</b> On 11 November we reviewed four real saves side by side. They showed that public services paid under 1% of what contracts paid, so <b>1.21.1</b> raised their income 50 times.</li>
+</ul>
+
+<h2>A case study: the deep dungeon (web 1.23)</h2>
+<p>Our latest balance fix shows how a number can lie. In the dungeon, every floor gets a label: Easy, Fitting, Hard, Very hard or Deadly. The label compares how fast you kill a floor's monsters with how fast they would kill you, and it is calculated from your <b>full</b> health.</p>
+<p>The fight itself did not work that way. Your health carried over from floor to floor. On deep floors, where health runs into the millions, you entered the next floor half dead, and food barely helped: the best food in the game healed less than 4% of your health. So players were losing on floors that said «Easy», and they were right to be annoyed.</p>
+<p>Version <b>1.23</b>, released on 18 November, fixed the fight instead of the label:</p>
+<ul>
+<li>Every time you clear a floor, your health is restored to full. The label is now telling the truth, because every floor really does start from full health.</li>
+<li>Food heals at least 10% of your maximum health per bite, and up to 30% for the most valuable food. The share grows with the food's price. Early in the game the old fixed amount is still used when it is bigger, so nothing changed for new players.</li>
+</ul>
+<p>This was the same fix we had just made in the build we are preparing for Steam, and we brought it to the browser version as one of its maintenance updates.</p>
+
+<h2>How we test balance</h2>
+<p>Two tools help us avoid surprises. The first is a smoke test that runs inside the game before every release and checks systems end to end; when 1.23 shipped it ran 106 checks with no failures. The second is a small bot, written on 11 November, that plays the game by pressing its own buttons and times each generation. It cannot judge fun, but it notices when a generation suddenly takes five minutes or five days.</p>
+<p>The rest comes from players. A lot of what you read above began as a message saying «this feels wrong». Balance in an idle game is never finished; it is just checked again with every update.</p>
+
+<p class="cta"><a class="playbtn" href="../untoldlife/">▶ Play UntoldLife free</a></p>
+<p class="date">Game version: 1.22.9 (2026-11-17)</p>
+</main>
+<footer><a href="../">369Games</a> · <a href="index.html">Game guide</a> · <a href="../about.html">About</a> · <a href="../contact.html">Contact</a> · <a href="../privacy.html">Privacy policy</a></footer>
+</body>
+</html>

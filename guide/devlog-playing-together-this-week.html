@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playing together in a single-player game: the weekly challenge, village goals and six leaderboards — UntoldLife</title>
+<meta name="description" content="How UntoldLife added shared goals and weekly boards without a game server, and why web 1.24 gave them their own «This week» tab.">
+<link rel="canonical" href="https://369games.net/guide/devlog-playing-together-this-week.html">
+<link rel="alternate" hreflang="en" href="https://369games.net/guide/devlog-playing-together-this-week.html">
+<link rel="alternate" hreflang="ar" href="https://369games.net/guide/ar/devlog-playing-together-this-week.html">
+<link rel="icon" href="../img/favicon.png" type="image/png">
+<link rel="stylesheet" href="../page.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8456136782716547" crossorigin="anonymous"></script>
+<meta name="google-adsense-account" content="ca-pub-8456136782716547">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "d00635426d214e93938126001ce4a104"}'></script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../"><img class="brand-logo" src="../img/logo-mark.png" alt="" width="40" height="40">369Games</a>
+  <nav class="nav" aria-label="Site"><a href="../#games">Games</a><a href="index.html" aria-current="page">Game guide</a><a href="../about.html">About</a><a href="../contact.html">Contact</a></nav>
+  <a class="lang" href="ar/devlog-playing-together-this-week.html">🌐 العربية</a>
+</div></header>
+<main class="wrap doc guide">
+<p class="crumb"><a href="index.html">← All guide pages</a></p><h1>Playing together in a single-player game: the weekly challenge, village goals and six leaderboards</h1>
+<p class="crumb"><a href="devlog.html">Devlog</a></p><p class="date">2026-11-23</p><p>UntoldLife is a single-player game. Your farm, your family and your save belong to you. But an idle game can feel lonely: you never know whether your numbers are big or small, and nobody notices the night you finally reached a deep floor. In early November we started looking for ways to let players feel each other's presence without turning the game into something else. Here is what we built, how it works, and why web 1.24 gave it a tab of its own.</p>
+
+<h2>Three pieces, one week</h2>
+<p>On 5 November 2026 we added three things at once, at the top of the Village tab:</p>
+<ul>
+<li><b>A weekly challenge.</b> One challenge for every player, changing every Sunday.</li>
+<li><b>A village goal.</b> A target that all players fill together.</li>
+<li><b>A leaderboard.</b> A weekly ranking for most gold, deepest dungeon floor and most fish.</li>
+</ul>
+<p>The week starts on Sunday at midnight Riyadh time. The game was written in Arabic first, and its clock for shared events has followed Riyadh time from day one.</p>
+
+<h2>The weekly challenge needs no server</h2>
+<p>The challenge is the simplest piece, and it works for everyone, signed in or not. Every week has a number, counted from a fixed date. The game takes that number and picks one of seven challenges from a list: harvest 1,500 crops, collect 1,500 animal products, catch 400 fish, break 800 rocks in the mine, defeat 400 monsters, finish 12 guild quests, or earn half of your generation's retirement gold. Because every copy of the game does the same sum on the same week number, every player gets the same challenge, with no server involved.</p>
+<p>Progress is measured as the change in counters the game already keeps, from the moment the week began. Finishing the challenge gives +10% gold and XP for seven days.</p>
+
+<h2>From one village goal to three</h2>
+<p>The village goal is where players really play together. The first version was a single goal that restarted every day. The same day we launched it, we made the goals ten times bigger.</p>
+<p>Later that day, in <b>1.3</b>, one goal became three, each restarting at its own hour so there is always something open:</p>
+<ul>
+<li>🌱 <b>Crops</b>, every day at 06:00 UTC (a base of 300,000 harvests).</li>
+<li>🪨 <b>Mine rocks</b>, every day at 12:00 UTC (150,000 rocks).</li>
+<li>🐠 <b>Fish</b>, every day at 18:00 UTC (80,000 fish).</li>
+</ul>
+<p>If the village reaches a goal, prizes go by how much each player gave: +10% for first place, +7.5% for second, +5% for third and +2% for everyone else who helped. The prize lasts seven days and speeds up the goal's own area: crop growth, mining or fishing.</p>
+
+<h3>Goals that follow the village</h3>
+<p>A fixed target has a problem: when more people play, it becomes trivial; when fewer play, it becomes impossible. <b>1.15.1</b> (10 November) made each day's target 75% of the previous round's total, and never below the base. The more of you play, the bigger the goal, and it really takes teamwork.</p>
+<p>We also raised how much a single player can add. At first each player could add only a small amount per second, so the strongest players could not race for first place. <b>1.7.6</b> (7 November) raised it to 1,000 points a second.</p>
+
+<h2>Fair boards on a small budget</h2>
+<p>The goals and the leaderboard live in a small cloud database, and they only count players who have linked an account. That brings two worries: cheating and cost.</p>
+<p>For cheating, the database rules do most of the work. They refuse a player's write if it comes less than two minutes after their last one, they cap how fast each number can grow, and a village goal can only grow by exactly what that player's own row grew. A save that was edited outside the game is never sent. On 6 November we added a ban list that hides a player from the boards, and a filter for rude names.</p>
+<p>The rules also taught us something about our own game. On 10 November players with big factory incomes noticed their rows had stopped moving. Their gold per second was above the limit the rules allowed, so every write was refused. We raised the gold limit to one trillion a second and made the game cap each send to the rules' limits, so rows keep moving.</p>
+<p>For cost, we stay inside the limits of our database plan, which allows a fixed number of reads per day for everyone together. So the game sends your numbers at most every five minutes, refreshes the boards every ten minutes (<b>1.13.5</b> moved it from two to ten), and stops refreshing when you have not touched the game for five minutes.</p>
+
+<h2>Why 1.24 gave the week its own tab</h2>
+<p>By mid-November the top of the Village tab was crowded. The weekly challenge, three goals with their places and prizes, and three leaderboards all sat above the villagers, and on a phone you had to scroll past all of it to give someone a gift.</p>
+<p>A player wrote to us through the feedback box inside the game and suggested giving the week a place of its own. It cleans up the village and gives the shared side of the game a door you can see. Web <b>1.24</b>, released on 18 November, did exactly that:</p>
+<ul>
+<li>A new <b>«This week»</b> tab beside the Village tab, with a painted calendar icon. The weekly challenge, the three daily goals and the leaderboards all moved there.</li>
+<li>Three new leaderboards: 🌾 most harvests, 🪨 most rocks and 👑 highest generation. There are now six boards in total.</li>
+</ul>
+<p>The new boards were cheap to add. Every player's weekly row already carried their harvests and rocks, because the village goals need them, so the database rules did not change at all. The tab also helped the budget: the full read of six top-ten lists now only happens when you open the week tab. Everywhere else the game reads the goals once every ten minutes, just enough to keep targets and prizes right.</p>
+<p>The patch note for 1.24 ends with a line we were happy to write: the idea came from a player in the feedback box, thank you.</p>
+
+<h2>What we learned</h2>
+<p>Shared goals work best as small promises: a daily goal you can help with in an evening, a challenge that resets on Sunday, a board with a name you might recognise. None of it changes the farm; it just makes the valley feel less empty. The boards are in the «This week» tab, and the <a href="faq.html">FAQ</a> explains who appears on them.</p>
+
+<p class="cta"><a class="playbtn" href="../untoldlife/">▶ Play UntoldLife free</a></p>
+<p class="date">Game version: 1.22.9 (2026-11-17)</p>
+</main>
+<footer><a href="../">369Games</a> · <a href="index.html">Game guide</a> · <a href="../about.html">About</a> · <a href="../contact.html">Contact</a> · <a href="../privacy.html">Privacy policy</a></footer>
+</body>
+</html>

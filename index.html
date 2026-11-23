@@ -13,70 +13,88 @@
 <link rel="stylesheet" href="page.css">
 <style>
 /* Home page only. The shared look (colours, fonts, the top bar, the footer) is in page.css. */
-body{line-height:1.7}
-.wrap{max-width:1180px}
-h2{font-size:clamp(26px,3.4vw,36px);line-height:1.25;margin:0 0 8px;letter-spacing:-.2px}
-.eyebrow{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.6px;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
-.lead{color:var(--muted);font-size:17px;max-width:640px;margin:0}
-section{padding:72px 0;scroll-margin-top:70px}
-.sec-head{margin-bottom:34px}
-/* hero */
-.hero{position:relative;min-height:min(78vh,640px);display:flex;align-items:flex-end;background:#0b0d14 url('untoldlife/assets/art/menu-village.webp') center 62%/cover no-repeat;overflow:hidden;margin-top:-64px}
-.hero:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#0b0d1488 0%,#14100c11 28%,#14100cb8 66%,var(--bg) 100%)}
-.hero .wrap{position:relative;z-index:2;padding-bottom:56px;width:100%}
-.hero h1{margin:0;font-size:clamp(36px,6.4vw,68px);line-height:1.12;font-weight:800;letter-spacing:-.5px;max-width:820px;text-shadow:0 3px 22px #000b}
-.hero h1 span{color:var(--gold)}
-.hero p{margin:16px 0 0;max-width:600px;font-size:clamp(16px,2vw,19px);color:#eadbb8;text-shadow:0 2px 10px #000c}
-.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;border-radius:12px;border:1px solid transparent;font:inherit;font-weight:800;font-size:16px;text-decoration:none;cursor:pointer;transition:transform .15s,filter .15s,border-color .15s,background .15s}
-.btn:hover{transform:translateY(-1px);filter:brightness(1.06)}
-.btn:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
-.btn.primary{background:linear-gradient(180deg,#f0cd7e,var(--gold2));color:#2a1d0e;box-shadow:0 8px 24px #c9973f44}
-.btn.ghost{background:#ffffff10;border-color:#ffffff2e;color:var(--ink);backdrop-filter:blur(6px)}
-.btn.ghost:hover{border-color:var(--gold)}
-.btn.off{background:#ffffff0c;border-color:var(--line);color:var(--muted);cursor:default;transform:none;filter:none}
-/* numbers under the hero */
-.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-top:-28px;position:relative;z-index:3}
-.facts div{background:var(--panel);padding:18px 20px}
-.facts b{display:block;font-size:26px;color:var(--gold);line-height:1.2}
-.facts span{color:var(--muted);font-size:14px}
-/* a game: picture on one side, words on the other */
-.game{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:44px;align-items:center}
-.game + .game,.shots + .game{margin-top:72px;padding-top:72px;border-top:1px solid #57442f88}
-.media{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line);aspect-ratio:16/10;background:#0d0a07 center/cover no-repeat;display:grid;place-items:center;box-shadow:0 24px 60px #0009}
-.media img.logo{width:74%;max-width:420px;filter:drop-shadow(0 8px 16px #000b)}
-.tag{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;padding:4px 12px;border-radius:99px;border:1px solid #a6bd7066;color:#c5dc8e;background:#a6bd7014;margin-bottom:14px}
-.tag:before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor}
-.tag.soon{border-color:#ff5fd266;color:#ff9be6;background:#ff2bd612}
-.game h3{font-size:clamp(28px,3.6vw,40px);line-height:1.15;margin:0 0 12px}
-.game p{color:#dccfae;margin:0 0 12px;font-size:16.5px;line-height:1.85}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px;padding:0;list-style:none}
-.chips li{font-size:13.5px;border:1px solid var(--line);border-radius:99px;padding:4px 13px;color:var(--muted);background:var(--panel)}
-.more{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:16px;font-size:15px}
-.more a{color:var(--gold);text-decoration:none;border-bottom:1px solid #e2bc6c55}
-.more a:hover{border-color:var(--gold)}
-.shots{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:34px}
-.shots img{width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line)}
-.media.runner{place-items:center end;direction:ltr}.media.runner img.logo{width:64%;height:auto;max-width:none;margin-right:4%;filter:drop-shadow(0 0 18px #ff2bd688)}
-/* latest updates */
-.news{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.news article{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px}
-.news small{color:var(--gold);font-weight:700;font-size:13px}
-.news h3{font-size:18px;margin:6px 0 8px;line-height:1.4}
-.news p{color:var(--muted);font-size:14.5px;margin:0;line-height:1.75;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-.band{background:linear-gradient(180deg,#1b1510,var(--bg));border-top:1px solid #57442f66;border-bottom:1px solid #57442f66}
+body{line-height:1.6}
+h1,h2,h3,p{margin:0}
+.wrap{max-width:1280px}
+section{scroll-margin-top:76px}
+/* hero: the words on one side, the farm on a cube on the other */
+.hero{position:relative;isolation:isolate;overflow:hidden;border-bottom:1px solid var(--line);background:radial-gradient(ellipse at 26% 49%,#46304f 0,#2b1e34 24%,#1c1524 52%,var(--bg) 79%)}
+[dir=ltr] .hero{background:radial-gradient(ellipse at 74% 49%,#46304f 0,#2b1e34 24%,#1c1524 52%,var(--bg) 79%)}
+.hero:before{content:'';position:absolute;inset:0;z-index:-1;background-image:radial-gradient(#f7e8ff30 .85px,transparent 1px);background-size:29px 29px;-webkit-mask-image:linear-gradient(85deg,#000 10%,transparent 65%);mask-image:linear-gradient(85deg,#000 10%,transparent 65%)}
+[dir=ltr] .hero:before{-webkit-mask-image:linear-gradient(275deg,#000 10%,transparent 65%);mask-image:linear-gradient(275deg,#000 10%,transparent 65%)}
+.hero .wrap{display:flex;align-items:center;gap:2%;min-height:535px;padding-top:34px;padding-bottom:34px}
+.words{flex:0 0 48%;position:relative;z-index:2}
+.kicker{display:inline-flex;align-items:center;gap:11px;font:700 21px/1.25 Arial,sans-serif;letter-spacing:-.6px;color:#f1d4bf}
+.pix{width:9px;height:9px;background:var(--peach);transform:rotate(45deg);display:inline-block;flex:none}
+.hero h1{font-size:clamp(46px,5.6vw,86px);font-weight:600;line-height:1.2;letter-spacing:-1px;margin:14px 0 16px}
+.hero h1 em{font-style:normal;color:var(--cream)}
+.hero .desc{max-width:480px;color:#dacfdc;font-size:clamp(17px,1.5vw,21px);line-height:1.55}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:23px;margin-top:26px}
+.btn{display:inline-flex;min-height:50px;align-items:center;justify-content:center;gap:10px;padding:6px 24px;border:0;border-radius:4px 4px 4px 0;background:var(--peach);color:#25101a;font:inherit;font-weight:600;font-size:17px;text-decoration:none;white-space:nowrap;cursor:pointer;clip-path:polygon(0 0,100% 0,100% 100%,9px 100%,0 calc(100% - 9px))}
+.btn:hover{filter:brightness(1.07)}.btn:focus-visible{outline:2px solid var(--violet);outline-offset:3px}
+.btn.discord{background:#5865f2;color:#fff}
+.sub-link{color:var(--ink);border-bottom:1px solid #957d9e;font-size:17px;padding:3px 0;text-decoration:none}
+.sub-link:hover{border-color:var(--ink)}
+.world{flex:1;min-width:0;display:grid;place-items:center;direction:ltr}
+.world svg{width:110%;max-height:500px;overflow:visible}
+/* the games */
+.games{padding:36px 0 48px}
+.sechead{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:6px 20px;margin-bottom:23px}
+.sechead h2,.updates h2,.studio h2{font-size:clamp(25px,2.6vw,36px);line-height:1.35}
+.sechead span{font-size:16px;color:#c9b7c9}
+.gamegrid{display:grid;grid-template-columns:1.3fr 1fr;gap:22px}
+.card{border:1px solid #4c3a51;border-radius:7px;overflow:hidden;background:var(--panel)}
+.art{height:224px;background-position:50% 57%;background-size:cover;display:flex;align-items:center;justify-content:center;direction:ltr}
+.ac1{background-image:linear-gradient(0deg,#140f2070,transparent 60%),url('untoldlife/assets/art/menu-village.webp')}
+.ac2{background-image:linear-gradient(0deg,#21112b60,transparent 65%),url('img/runnerlife-cover.jpg')}
+.ac1 img{width:56%;max-width:340px;height:auto;filter:drop-shadow(0 4px 10px #160c08a8)}
+.ac2 img{width:69%;max-width:350px;height:auto;filter:drop-shadow(0 3px 6px #160c08)}
+.cardbody{padding:17px 24px 21px}
+.status{display:flex;align-items:center;gap:9px;font-size:14px;color:#dfc5f6}
+.status:before{content:'';width:7px;height:7px;background:var(--violet);display:inline-block;transform:rotate(45deg)}
+.status.on{color:#ffc2ae}.status.on:before{background:var(--peach)}
+.card h3{font:700 29px/1.2 Arial,sans-serif;letter-spacing:-1px;margin:8px 0}
+.card p{font-size:18px;color:#d3c6d7}
+.linkrow{margin-top:13px;display:flex;flex-wrap:wrap;gap:8px 23px;font-size:16px}
+.linkrow a{color:var(--ink);text-decoration:underline;text-underline-offset:4px}
+.linkrow a.play{color:#ffad96;font-weight:600;text-decoration:none}
+.linkrow a:hover{color:var(--cream)}
+/* latest updates: one row each */
+.updates{border-top:1px solid var(--line);background:#1d1525;padding:32px 0}
+.news article{display:grid;grid-template-columns:auto 1fr auto;gap:4px 25px;align-items:center;padding:18px 0;border-bottom:1px solid var(--line)}
+.news small{font-size:16px;color:#cbbcd0;direction:ltr;unicode-bidi:isolate}
+.news h3{font-size:20px;font-weight:600}
+.news time{font-size:16px;color:#cbbcd0}
+.news p{grid-column:2/4;color:#cbbcd0;font-size:15.5px;line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.updates .linkrow{margin-top:18px}
 /* the studio */
-.studio{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:44px;align-items:start}
-.studio p{color:#dccfae;font-size:16.5px;line-height:1.9;margin:0 0 12px}
-.values{display:grid;gap:14px}
-.values div{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
-.values b{display:block;font-size:17px;margin-bottom:4px;color:var(--ink)}
-.values span{color:var(--muted);font-size:15px;line-height:1.75;display:block}
-.talk{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px;background:linear-gradient(120deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:20px;padding:28px 30px}
-.talk.disc{margin-bottom:18px;border-color:#5865f2aa}.btn.discord{background:#5865f2;color:#fff;box-shadow:0 8px 24px #5865f244}
-.talk h2{font-size:24px;margin:0 0 4px}.talk p{margin:0;color:var(--muted)}
-@media (max-width:860px){section{padding:52px 0}.game,.studio{grid-template-columns:1fr;gap:24px}.game + .game,.shots + .game{margin-top:44px;padding-top:44px}.news{grid-template-columns:1fr}.facts{grid-template-columns:repeat(2,1fr)}.shots{grid-template-columns:1fr 1fr}.shots img:last-child{display:none}}
-@media (prefers-reduced-motion:reduce){.btn{transition:none}}
+.studio{padding:44px 0}
+.studio .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:44px;align-items:start}
+.studio p{color:#d3c6d7;font-size:17px;line-height:1.85;margin:12px 0 0}
+.values{display:grid;gap:12px}
+.values div{border:1px solid #4c3a51;border-radius:7px;background:var(--panel);padding:16px 20px}
+.values b{display:flex;align-items:center;gap:10px;font-size:18px;margin-bottom:4px}
+.values b:before{content:'';width:7px;height:7px;background:var(--peach);transform:rotate(45deg);flex:none}
+.values span{color:#cbbcd0;font-size:15.5px;line-height:1.75;display:block}
+.talks{padding:0 0 48px}
+.talk{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px;border:1px solid #4c3a51;border-radius:7px;background:var(--panel);padding:24px 28px}
+.talk + .talk{margin-top:14px}.talk.disc{border-color:#5865f2aa}
+.talk h2{font-size:24px;margin:0 0 4px}.talk p{color:#cbbcd0}
+@media (max-width:920px){.hero h1{font-size:54px}.studio .wrap{grid-template-columns:1fr;gap:24px}}
+@media (max-width:650px){
+  .hero,[dir=ltr] .hero{background:radial-gradient(ellipse at 49% 24%,#483051 0,#291d33 32%,#19131f 71%)}
+  .hero:before,[dir=ltr] .hero:before{-webkit-mask-image:linear-gradient(180deg,#000,transparent 71%);mask-image:linear-gradient(180deg,#000,transparent 71%)}
+  .hero .wrap{flex-direction:column-reverse;align-items:stretch;min-height:0;padding-top:0;padding-bottom:26px}
+  .world{height:211px}.world svg{height:224px;width:auto}
+  .kicker{font-size:16px;gap:8px}.pix{width:6px;height:6px}
+  .hero h1{font-size:43px;line-height:1.15;margin:7px 0 10px}.hero .desc{font-size:16px;line-height:1.45}
+  .actions{gap:16px;margin-top:16px}.btn{min-height:45px;padding:6px 18px;font-size:15px}.sub-link{font-size:15px}
+  .games{padding:21px 0 26px}.sechead{margin-bottom:14px}.sechead span{font-size:13px}
+  .gamegrid{grid-template-columns:1fr;gap:14px}.art{height:149px}.art img{max-height:90px;object-fit:contain}
+  .cardbody{padding:10px 15px 12px}.card h3{font-size:22px;margin:4px 0}.card p{font-size:14.5px}.status{font-size:12px}.linkrow{font-size:14px;margin-top:6px}
+  .updates{padding:20px 0}.news article{grid-template-columns:1fr auto;gap:2px 10px;padding:12px 0}.news h3{grid-column:1/3;font-size:16px}.news small,.news time{font-size:12.5px}.news p{grid-column:1/3;font-size:14px}
+  .studio{padding:28px 0}.studio p{font-size:15.5px}.talk{padding:18px}.talk h2{font-size:20px}
+}
 </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8456136782716547" crossorigin="anonymous"></script>
 <meta name="google-adsense-account" content="ca-pub-8456136782716547">
@@ -84,7 +102,7 @@ section{padding:72px 0;scroll-margin-top:70px}
 </head>
 <body>
 <header class="top"><div class="wrap">
-  <a class="brand" href="./"><img class="brand-logo" src="img/logo-mark.png" alt="" width="40" height="40">369Games</a>
+  <a class="brand" href="./"><img class="brand-logo" src="img/logo-mark.png" alt="" width="40" height="40"><b dir="ltr">369Games</b></a>
   <nav class="nav" aria-label="Site">
     <a href="#games" data-t="navGames">Games</a>
     <a data-g="index" data-t="navGuide" href="guide/index.html">Game guide</a>
@@ -98,176 +116,150 @@ section{padding:72px 0;scroll-margin-top:70px}
   </select>
 </div></header>
 
-<div class="hero"><div class="wrap">
-  <span class="eyebrow" data-t="heroEyebrow">Independent game studio</span>
-  <h1 data-t="heroTitle">We make the games <span>we love to play</span></h1>
-  <p data-t="heroText">369Games is a small independent studio. We build our games ourselves, publish them free in your browser, and keep building on them with our players, update after update.</p>
-  <div class="actions">
-    <a class="btn primary" href="untoldlife/" data-t="heroPlay">▶ Play UntoldLife</a>
-    <a class="btn ghost" href="about.html" data-t="heroAbout">Meet the studio</a>
-  </div>
-</div></div>
-
 <main>
-  <div class="wrap"><div class="facts">
-    <div><b data-t="f1n">100+</b><span data-t="f1t">updates since the first beta</span></div>
-    <div><b data-t="f2n">4</b><span data-t="f2t">languages</span></div>
-    <div><b data-t="f3n">54</b><span data-t="f3t">achievements in UntoldLife</span></div>
-    <div><b data-t="f4n">Free</b><span data-t="f4t">no download, no sign-up</span></div>
-  </div></div>
-
-  <section id="games"><div class="wrap">
-    <div class="sec-head">
-      <span class="eyebrow" data-t="gamesEyebrow">Our games</span>
-      <h2 data-t="gamesTitle">One game out, one on the way</h2>
-      <p class="lead" data-t="gamesLead">We work on one game until it deserves your time, and then we start the next.</p>
+<section class="hero"><div class="wrap">
+  <div class="words">
+    <div class="kicker" dir="ltr"><i class="pix"></i>UntoldLife</div>
+    <h1 data-t="heroTitle">One farm.<br><em>Generations of stories.</em></h1>
+    <p class="desc" data-t="heroText">You inherit your grandfather's farm in Echo Valley. Plant your first season, and build a village your children will carry on.</p>
+    <div class="actions">
+      <a class="btn" href="untoldlife/" data-t="heroPlay">Play in your browser ▶</a>
+      <a class="sub-link" data-g="index" data-t="guideBtn" href="guide/index.html">Game guide</a>
     </div>
+  </div>
+  <div class="world">
+    <svg viewBox="0 0 590 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="UntoldLife"><defs>
+      <filter id="blur" x="-50%" y="-250%" width="200%" height="600%"><feGaussianBlur stdDeviation="18"/></filter>
+      <symbol id="star" viewBox="-12 -12 24 24"><path d="m0 -10 2.2 7.8 7.8 2.2-7.8 2.2L0 10l-2.2-7.8L-10 0l7.8-2.2z" fill="#faecd3"/></symbol></defs>
+      <ellipse cx="299" cy="379" rx="157" ry="17" fill="#09050c" opacity=".9" filter="url(#blur)"/>
+      <g fill="none" stroke="#9a689f" opacity=".34"><path d="m35 251 259 145 264-146M56 265l239 132 238-131" stroke-dasharray="3 7"/><path d="m31 177 261-147 266 148" stroke-dasharray="3 8"/></g>
+      <path d="m60 246 234 132 231-132" opacity=".35" fill="none" stroke="#d598fb" stroke-width="1.1"/>
+      <image href="img/hero-farm.webp" x="39" y="24" width="509" height="344" preserveAspectRatio="xMidYMid meet"/>
+      <g transform="translate(67 89)"><path d="m0 0 10-6 10 6-10 6z" fill="#ffbca5"/><path d="m0 0 10 6v10L0 10z" fill="#fa7052"/><path d="m10 6 10-6v10l-10 6z" fill="#a34959"/></g>
+      <g transform="translate(506 81)"><path d="m0 0 7-4 7 4-7 4z" fill="#d4a8ff"/><path d="m0 0 7 4v7L0 7z" fill="#8054a3"/><path d="m7 4 7-4v7l-7 4z" fill="#b274fa"/></g>
+      <use href="#star" x="418" y="58" width="22" height="22"/><use href="#star" x="115" y="318" width="13" height="13"/><use href="#star" x="538" y="242" width="9" height="9"/>
+    </svg>
+  </div>
+</div></section>
 
-    <article class="game">
-      <a class="media" href="untoldlife/" style="background-image:url('img/untoldlife-cover.jpg')" aria-label="UntoldLife">
-        <img class="logo" src="img/untoldlife-logo.png" alt="UntoldLife">
-      </a>
-      <div>
-        <span class="tag" data-t="ulTag">Available now · Free</span>
+<section class="games" id="games"><div class="wrap">
+  <div class="sechead"><h2 data-t="gamesTitle">Studio games</h2><span data-t="gamesSub">One out now, one in development</span></div>
+  <div class="gamegrid">
+    <article class="card">
+      <a class="art ac1" href="untoldlife/" aria-label="UntoldLife"><img src="img/untoldlife-logo.png" alt="UntoldLife" width="640" height="213"></a>
+      <div class="cardbody">
+        <div class="status on" data-t="ulTag">Available now</div>
         <h3>UntoldLife</h3>
-        <p data-t="ul1">You inherit your grandfather's farm in Echo Valley. You start with a small field and a bag of turnip seeds, and build a whole valley from it: a barn, a mine, a lake, an adventurers' guild, a smith and a village of people who know your family.</p>
-        <p data-t="ul2">Your farmer grows old, and when the time comes hands the farm to their child. Each generation starts stronger than the last, and after ten generations the Industrial Age opens: a factory, services for the village, and the First Train.</p>
-        <ul class="chips"><li data-t="c1">24 crops, 4 seasons</li><li data-t="c2">Generations and legacy</li><li data-t="c3">A mine and a dungeon</li><li data-t="c4">A factory and a train</li><li data-t="c5">Keeps going while you are away</li></ul>
-        <div class="actions">
-          <a class="btn primary" href="untoldlife/" data-t="play">▶ Play now</a>
-          <a class="btn ghost" data-g="index" data-t="guideBtn" href="guide/index.html">Game guide</a>
-        </div>
-        <div class="more">
-          <a data-g="getting-started" data-t="gStart" href="guide/getting-started.html">Getting started</a>
-          <a data-g="crops" data-t="gCrops" href="guide/crops.html">Crops and seasons</a>
-          <a data-g="legacy" data-t="gLegacy" href="guide/legacy.html">Generations and legacy</a>
-          <a data-g="factory" data-t="gFactory" href="guide/factory.html">The factory</a>
-          <a data-g="faq" data-t="gFaq" href="guide/faq.html">FAQ</a>
-        </div>
+        <p data-t="ulShort">A family farm that grows with every generation in Echo Valley.</p>
+        <div class="linkrow"><a class="play" href="untoldlife/" data-t="play">▶ Play now</a><a data-g="index" data-t="guideBtn" href="guide/index.html">Game guide</a><a data-g="getting-started" data-t="gStart" href="guide/getting-started.html">Getting started</a><a data-g="faq" data-t="gFaq" href="guide/faq.html">FAQ</a></div>
       </div>
     </article>
-    <div class="shots">
-      <img src="img/shot-farm.jpg" width="960" height="600" loading="lazy" alt="UntoldLife: the farm">
-      <img src="img/shot-village.jpg" width="960" height="600" loading="lazy" alt="UntoldLife: the village">
-      <img src="img/shot-factory.jpg" width="960" height="600" loading="lazy" alt="UntoldLife: the factory">
-    </div>
-
-    <article class="game">
-      <div class="media runner" style="background-image:url('img/runnerlife-cover.jpg')"><img class="logo" src="img/runnerlife-logo.png" alt="RunnerLife" width="1100" height="185" loading="lazy"></div>
-      <div>
-        <span class="tag soon" data-t="neonTag">In development</span>
+    <article class="card">
+      <div class="art ac2"><img src="img/runnerlife-logo.png" alt="RunnerLife" width="1100" height="185" loading="lazy"></div>
+      <div class="cardbody">
+        <div class="status" data-t="neonTag">In development</div>
         <h3>RunnerLife</h3>
         <p data-t="neon1">A neon city that never sleeps. You start on the street with nothing and work your way to the top, one district at a time.</p>
-        <p data-t="neon2">The game is at the very start of its development. We will share how it looks and plays here as soon as there is something worth showing.</p>
-        <div class="actions"><span class="btn off" data-t="soon">Coming soon</span></div>
       </div>
     </article>
-  </div></section>
+  </div>
+</div></section>
 
-  <section id="news" class="band"><div class="wrap">
-    <div class="sec-head">
-      <span class="eyebrow" data-t="newsEyebrow">Latest</span>
-      <h2 data-t="newsTitle">What is new in UntoldLife</h2>
-      <p class="lead" data-t="newsLead">We update the game constantly, and most changes begin as a message from a player.</p>
-    </div>
-    <div class="news" id="newsList"><article><small>1.22.9 · 2026-11-17</small><h3>The "welcome back" window no longer repeats</h3><p>🪟 With the game open behind another window, the "welcome back" window used to pop up every minute, as if you had left. The game now keeps going quietly in the background, and one line tells you how long it ran when you come back.</p></article><article><small>1.22.8 · 2026-11-15</small><h3>The final version, and next stop Steam</h3><p>🙏 Thank you to everyone who played, suggested ideas and reported problems. Every update came from your feedback. This is the final version of UntoldLife in the browser. 🛠️ From today the game is in maintenance mode: it stays playable as it is, your save and the leaderboard stay, and we will fix any problem that shows up. There will be no new content here. 🎮 Our next step: UntoldLife is coming to Steam with big update</p></article><article><small>1.22.7 · 2026-11-15</small><h3>The 369Games Discord server</h3><p>💬 We now have a Discord server: chat with other players, tips, suggestions and bug reports. You will find the link in "More" → "💬 Feedback", and on our website.</p></article></div>
-    <div class="more"><a data-g="updates" data-t="newsAll" href="guide/updates.html">The full update log →</a></div>
-  </div></section>
+<section class="updates" id="news"><div class="wrap">
+  <h2 data-t="newsTitle">Latest updates</h2>
+  <div class="news" id="newsList"><article><small>UntoldLife · 1.22.9</small><h3>The "welcome back" window no longer repeats</h3><time>2026-11-17</time><p>🪟 With the game open behind another window, the "welcome back" window used to pop up every minute, as if you had left. The game now keeps going quietly in the background, and one line tells you how long it ran when you come back.</p></article><article><small>UntoldLife · 1.22.8</small><h3>The final version, and next stop Steam</h3><time>2026-11-15</time><p>🙏 Thank you to everyone who played, suggested ideas and reported problems. Every update came from your feedback. This is the final version of UntoldLife in the browser. 🛠️ From today the game is in maintenance mode: it stays playable as it is, your save and the leaderboard stay, and we will fix any problem that shows up. There will be no new content here. 🎮 Our next step: UntoldLife is coming to Steam with big update</p></article><article><small>UntoldLife · 1.22.7</small><h3>The 369Games Discord server</h3><time>2026-11-15</time><p>💬 We now have a Discord server: chat with other players, tips, suggestions and bug reports. You will find the link in "More" → "💬 Feedback", and on our website.</p></article></div>
+  <div class="linkrow"><a data-g="updates" data-t="newsAll" href="guide/updates.html">The full update log →</a></div>
+</div></section>
 
-  <section id="studio"><div class="wrap studio">
-    <div>
-      <span class="eyebrow" data-t="stEyebrow">About us</span>
-      <h2 data-t="stTitle">A small studio doing what it loves</h2>
-      <p data-t="st1">369Games is a small independent studio. We have no publisher and no investors; we have games we love making and players we listen to.</p>
-      <p data-t="st2">We design, code and test our games ourselves. We began with a farming game because we love the genre, and we will try other kinds with each new game. The goal is simple: games we are proud of, that respect the time of the people who play them.</p>
-      <div class="actions"><a class="btn ghost" href="about.html" data-t="stMore">More about us</a></div>
-    </div>
-    <div class="values">
-      <div><b data-t="v1t">We play what we make</b><span data-t="v1">Every feature is tried by us before it reaches you, and if it is not fun it does not ship.</span></div>
-      <div><b data-t="v2t">Players are partners</b><span data-t="v2">We read every message, and much of what is in our games today began as a player's suggestion.</span></div>
-      <div><b data-t="v3t">Straight with you</b><span data-t="v3">Every change is written in the update log, and we say openly how we make our games and which tools we use.</span></div>
-    </div>
-  </div></section>
+<section class="studio" id="studio"><div class="wrap">
+  <div>
+    <h2 data-t="stTitle">A small studio doing what it loves</h2>
+    <p data-t="st1">369Games is a small independent studio. We have no publisher and no investors; we have games we love making and players we listen to.</p>
+    <p data-t="st2">We design, code and test our games ourselves. We began with a farming game because we love the genre, and we will try other kinds with each new game. The goal is simple: games we are proud of, that respect the time of the people who play them.</p>
+    <div class="actions"><a class="sub-link" href="about.html" data-t="stMore">More about us</a></div>
+  </div>
+  <div class="values">
+    <div><b data-t="v1t">We play what we make</b><span data-t="v1">Every feature is tried by us before it reaches you, and if it is not fun it does not ship.</span></div>
+    <div><b data-t="v2t">Players are partners</b><span data-t="v2">We read every message, and much of what is in our games today began as a player's suggestion.</span></div>
+    <div><b data-t="v3t">Straight with you</b><span data-t="v3">Every change is written in the update log, and we say openly how we make our games and which tools we use.</span></div>
+  </div>
+</div></section>
 
-  <section style="padding-top:0"><div class="wrap">
-    <div class="talk disc"><div><h2 data-t="discTitle">Join our Discord server</h2><p data-t="discText">Chat with other players, share tips, suggest ideas and report bugs. News lands there first.</p></div><a class="btn discord" href="https://discord.gg/jEVB3Mutjn" target="_blank" rel="noopener" data-t="discBtn">Join the server</a></div>
-    <div class="talk">
-      <div><h2 data-t="talkTitle">Have feedback or an idea?</h2><p data-t="talkText">We would love to hear it. We answer email within a few days.</p></div>
-      <a class="btn primary" href="contact.html" data-t="talkBtn">Contact us</a>
-    </div>
-  </div></section>
+<section class="talks"><div class="wrap">
+  <div class="talk disc"><div><h2 data-t="discTitle">Join our Discord server</h2><p data-t="discText">Chat with other players, share tips, suggest ideas and report bugs. News lands there first.</p></div><a class="btn discord" href="https://discord.gg/jEVB3Mutjn" target="_blank" rel="noopener" data-t="discBtn">Join the server</a></div>
+  <div class="talk">
+    <div><h2 data-t="talkTitle">Have feedback or an idea?</h2><p data-t="talkText">We would love to hear it. We answer email within a few days.</p></div>
+    <a class="btn" href="contact.html" data-t="talkBtn">Contact us</a>
+  </div>
+</div></section>
 </main>
 
 <footer class="foot"><div class="wrap">
   <div class="fcols">
-    <div><a class="brand" href="./"><img class="brand-logo" src="img/logo-mark.png" alt="" width="40" height="40">369Games</a><p data-t="footText">An independent game studio. We make the games we love to play.</p></div>
+    <div><a class="brand" href="./"><img class="brand-logo" src="img/logo-mark.png" alt="" width="40" height="40"><b dir="ltr">369Games</b></a><p data-t="footText">An independent game studio. We make the games we love to play.</p></div>
     <div><b data-t="footGames">Games</b><a href="untoldlife/">UntoldLife</a><a data-g="index" data-t="navGuide" href="guide/index.html">Game guide</a><a data-g="updates" data-t="gUpdates" href="guide/updates.html">Update log</a><a data-g="faq" data-t="gFaq" href="guide/faq.html">FAQ</a></div>
     <div><b data-t="footStudio">Studio</b><a href="about.html" data-t="navAbout">About</a><a href="contact.html" data-t="navContact">Contact</a><a href="https://discord.gg/jEVB3Mutjn" target="_blank" rel="noopener">Discord</a><a href="https://x.com/369GamesNet" target="_blank" rel="noopener">X</a><a href="privacy.html" data-t="privacy">Privacy policy</a></div>
     <div><b data-t="footSupport">Support us</b><a href="https://ko-fi.com/369games" target="_blank" rel="noopener">Ko-fi</a><a href="https://creators.sa/369games" target="_blank" rel="noopener">Creators</a></div>
   </div>
-  <p class="copy">© <span id="year">2026</span> 369Games</p>
+  <p class="copy">© <span id="year">2026</span> <bdi>369Games</bdi></p>
 </div></footer>
 
 <script>
 'use strict';
 const NEWS = {"ar": [{"v": "1.22.9", "date": "2026-11-17", "title": "نافذة «أهلاً بعودتك» ما عادت تتكرر", "text": "🪟 لما تكون اللعبة مفتوحة ورا نافذة ثانية، كانت نافذة «أهلاً بعودتك» تطلع كل دقيقة كأنك طالع من اللعبة. الحين اللعبة تكمّل بهدوء في الخلفية، ولما ترجع لها يطلع لك سطر واحد بكم اشتغلت."}, {"v": "1.22.8", "date": "2026-11-15", "title": "النسخة النهائية، والجاية على ستيم", "text": "🙏 شكراً لكل واحد لعب واقترح وبلّغ عن مشكلة. كل تحديث نزل كان من ملاحظاتكم. هذي النسخة هي النسخة النهائية من UntoldLife على المتصفح. 🛠️ من اليوم اللعبة في وضع الصيانة: تبقى شغالة مثل ما هي، وحفظك والمتصدرين باقين، ونصلّح أي مشكلة تظهر. بس ما فيه محتوى جديد هنا. 🎮 خطتنا الجاية: UntoldLife بتنزل على ستيم مع تحديثات كبيرة. تابعونا في سيرفر الديسكورد وعلى حسابنا في إكس عشان توصلكم الأخبار أول بأول."}, {"v": "1.22.7", "date": "2026-11-15", "title": "سيرفر ديسكورد 369Games", "text": "💬 صار عندنا سيرفر ديسكورد: سوالف مع اللاعبين، نصايح، اقتراحات وبلاغات المشاكل. تلقى رابطه في «المزيد» ← «💬 ملاحظاتك»، وفي موقعنا."}], "en": [{"v": "1.22.9", "date": "2026-11-17", "title": "The \"welcome back\" window no longer repeats", "text": "🪟 With the game open behind another window, the \"welcome back\" window used to pop up every minute, as if you had left. The game now keeps going quietly in the background, and one line tells you how long it ran when you come back."}, {"v": "1.22.8", "date": "2026-11-15", "title": "The final version, and next stop Steam", "text": "🙏 Thank you to everyone who played, suggested ideas and reported problems. Every update came from your feedback. This is the final version of UntoldLife in the browser. 🛠️ From today the game is in maintenance mode: it stays playable as it is, your save and the leaderboard stay, and we will fix any problem that shows up. There will be no new content here. 🎮 Our next step: UntoldLife is coming to Steam with big update"}, {"v": "1.22.7", "date": "2026-11-15", "title": "The 369Games Discord server", "text": "💬 We now have a Discord server: chat with other players, tips, suggestions and bug reports. You will find the link in \"More\" → \"💬 Feedback\", and on our website."}]};
 const T = {
-  ar: { navGames: 'ألعابنا', navGuide: 'دليل اللعبة', navNews: 'التحديثات', navAbout: 'من نحن', navContact: 'تواصل معنا', privacy: 'سياسة الخصوصية',
-    heroEyebrow: 'استوديو ألعاب مستقل', heroTitle: 'نصنع الألعاب اللي <span>نحب نلعبها</span>', heroText: '369Games استوديو صغير مستقل. نطوّر ألعابنا بأنفسنا، ننشرها لك مجاناً في المتصفح، ونكمل نبني عليها مع اللاعبين تحديث بعد تحديث.',
-    heroPlay: '▶ العب UntoldLife', heroAbout: 'تعرّف علينا',
+  ar: { heroTitle: 'مزرعة واحدة.<br><em>حكايات أجيال.</em>', heroText: 'ترث مزرعة جدّك في وادي الصدى. ازرع أول موسم، وابنِ قريةً يكمل قصتها أبناؤك.', heroPlay: 'العب في المتصفح ◀', navGames: 'ألعابنا', navGuide: 'دليل اللعبة', navNews: 'التحديثات', navAbout: 'من نحن', navContact: 'تواصل معنا', privacy: 'سياسة الخصوصية',
+    heroEyebrow: 'استوديو ألعاب مستقل', heroAbout: 'تعرّف علينا',
     f1n: '100+', f1t: 'تحديث من أول نسخة', f2n: '4', f2t: 'لغات', f3n: '54', f3t: 'إنجاز في UntoldLife', f4n: 'مجانية', f4t: 'بدون تحميل ولا تسجيل',
-    gamesEyebrow: 'ألعابنا', gamesTitle: 'لعبة منشورة، ولعبة في الطريق', gamesLead: 'نشتغل على لعبة وحدة لين تستاهل وقتك، وبعدها نبدأ اللي بعدها.',
-    ulTag: 'متوفرة الآن · مجانية', ul1: 'ورثت مزرعة جدك في وادي الصدى. تبدأ بحقل صغير وكيس بذور لفت، وتبني منه وادي كامل: حظيرة، منجم، بحيرة، نقابة مغامرين، حداد، وقرية أهلها يعرفون عائلتك.',
+    gamesTitle: 'ألعاب الاستوديو', gamesSub: 'لعبة متاحة وأخرى قيد التطوير', ulShort: 'مزرعة عائلية تكبر مع كل جيل في وادي الصدى.', gamesEyebrow: 'ألعابنا', gamesLead: 'نشتغل على لعبة وحدة لين تستاهل وقتك، وبعدها نبدأ اللي بعدها.',
+    ulTag: 'متاحة الآن', ul1: 'ورثت مزرعة جدك في وادي الصدى. تبدأ بحقل صغير وكيس بذور لفت، وتبني منه وادي كامل: حظيرة، منجم، بحيرة، نقابة مغامرين، حداد، وقرية أهلها يعرفون عائلتك.',
     ul2: 'مزارعك يكبر في العمر، ولما يجي وقته يتقاعد ويسلّم المزرعة لولده. كل جيل يبدأ أقوى من اللي قبله، وبعد عشرة أجيال ينفتح العصر الصناعي: مصنع، خدمات للقرية، والقطار الأول.',
     c1: '24 محصول على 4 مواسم', c2: 'أجيال وإرث', c3: 'منجم وزنزانة', c4: 'مصنع وقطار', c5: 'تكمل وأنت غايب',
     play: '▶ العب الآن', guideBtn: 'دليل اللعبة', gStart: 'البداية', gCrops: 'المحاصيل والمواسم', gLegacy: 'الأجيال والإرث', gFactory: 'المصنع', gFaq: 'أسئلة شائعة', gUpdates: 'سجل التحديثات',
     neonTag: 'قيد التطوير', neon1: 'مدينة نيون ما تنام. تبدأ من الشارع بلا شيء، وتشق طريقك للقمة حي بعد حي.', neon2: 'اللعبة لسا في بداية تطويرها. بنشارك شكلها وتفاصيلها هنا أول ما يصير عندنا شيء يستاهل تشوفه.', soon: 'قريباً',
-    newsEyebrow: 'آخر الأخبار', newsTitle: 'وش الجديد في UntoldLife', newsLead: 'نحدّث اللعبة باستمرار، وأغلب التغييرات تبدأ برسالة من لاعب.', newsAll: 'سجل التحديثات كامل ←',
+    newsEyebrow: 'آخر الأخبار', newsTitle: 'آخر التحديثات', newsLead: 'نحدّث اللعبة باستمرار، وأغلب التغييرات تبدأ برسالة من لاعب.', newsAll: 'سجل التحديثات كامل ←',
     stEyebrow: 'من نحن', stTitle: 'استوديو صغير يسوي اللي يحبه', st1: '369Games استوديو مستقل صغير. ما عندنا ناشر ولا مستثمرين، عندنا ألعاب نحب نصنعها ولاعبين نسمع لهم.', st2: 'نصمم ونبرمج ونختبر بأنفسنا. بدأنا بلعبة مزرعة لأننا نحب هالنوع، وبنجرب أنواع ثانية مع كل لعبة جديدة. هدفنا بسيط: ألعاب نكون فخورين فيها، وتحترم وقت اللي يلعبها.', stMore: 'اقرأ أكثر عنا',
     v1t: 'نلعب اللي نصنعه', v1: 'كل ميزة نجربها بأنفسنا قبل ما توصلك، وإذا ما كانت ممتعة ما تنزل.', v2t: 'اللاعب شريك', v2: 'نقرأ كل رسالة، وكثير من اللي في ألعابنا اليوم كان اقتراح من لاعب.', v3t: 'واضحين معك', v3: 'نكتب كل تغيير في سجل التحديثات، ونقول بصراحة كيف نصنع ألعابنا وأي أدوات نستخدم.',
     talkTitle: 'عندك ملاحظة أو فكرة؟', talkText: 'يسعدنا نسمعها. نرد على الإيميل خلال أيام قليلة.', talkBtn: 'تواصل معنا', discTitle: 'انضم لسيرفرنا على ديسكورد', discText: 'سوالف مع اللاعبين، نصايح، اقتراحات وبلاغات المشاكل. والأخبار توصلك أول بأول.', discBtn: 'ادخل السيرفر',
     footText: 'استوديو ألعاب مستقل. نصنع الألعاب اللي نحب نلعبها.', footGames: 'الألعاب', footStudio: 'الاستديو', footSupport: 'ادعمنا' },
-  en: { navGames: 'Games', navGuide: 'Game guide', navNews: 'Updates', navAbout: 'About', navContact: 'Contact', privacy: 'Privacy policy',
-    heroEyebrow: 'Independent game studio', heroTitle: 'We make the games <span>we love to play</span>', heroText: '369Games is a small independent studio. We build our games ourselves, publish them free in your browser, and keep building on them with our players, update after update.',
-    heroPlay: '▶ Play UntoldLife', heroAbout: 'Meet the studio',
+  en: { heroTitle: 'One farm.<br><em>Generations of stories.</em>', heroText: 'You inherit your grandfather\'s farm in Echo Valley. Plant your first season, and build a village your children will carry on.', heroPlay: 'Play in your browser ▶', navGames: 'Games', navGuide: 'Game guide', navNews: 'Updates', navAbout: 'About', navContact: 'Contact', privacy: 'Privacy policy',
+    heroEyebrow: 'Independent game studio', heroAbout: 'Meet the studio',
     f1n: '100+', f1t: 'updates since the first beta', f2n: '4', f2t: 'languages', f3n: '54', f3t: 'achievements in UntoldLife', f4n: 'Free', f4t: 'no download, no sign-up',
-    gamesEyebrow: 'Our games', gamesTitle: 'One game out, one on the way', gamesLead: 'We work on one game until it deserves your time, and then we start the next.',
-    ulTag: 'Available now · Free', ul1: 'You inherit your grandfather\'s farm in Echo Valley. You start with a small field and a bag of turnip seeds, and build a whole valley from it: a barn, a mine, a lake, an adventurers\' guild, a smith and a village of people who know your family.',
+    gamesTitle: 'Studio games', gamesSub: 'One out now, one in development', ulShort: 'A family farm that grows with every generation in Echo Valley.', gamesEyebrow: 'Our games', gamesLead: 'We work on one game until it deserves your time, and then we start the next.',
+    ulTag: 'Available now', ul1: 'You inherit your grandfather\'s farm in Echo Valley. You start with a small field and a bag of turnip seeds, and build a whole valley from it: a barn, a mine, a lake, an adventurers\' guild, a smith and a village of people who know your family.',
     ul2: 'Your farmer grows old, and when the time comes hands the farm to their child. Each generation starts stronger than the last, and after ten generations the Industrial Age opens: a factory, services for the village, and the First Train.',
     c1: '24 crops, 4 seasons', c2: 'Generations and legacy', c3: 'A mine and a dungeon', c4: 'A factory and a train', c5: 'Keeps going while you are away',
     play: '▶ Play now', guideBtn: 'Game guide', gStart: 'Getting started', gCrops: 'Crops and seasons', gLegacy: 'Generations and legacy', gFactory: 'The factory', gFaq: 'FAQ', gUpdates: 'Update log',
     neonTag: 'In development', neon1: 'A neon city that never sleeps. You start on the street with nothing and work your way to the top, one district at a time.', neon2: 'The game is at the very start of its development. We will share how it looks and plays here as soon as there is something worth showing.', soon: 'Coming soon',
-    newsEyebrow: 'Latest', newsTitle: 'What is new in UntoldLife', newsLead: 'We update the game constantly, and most changes begin as a message from a player.', newsAll: 'The full update log →',
+    newsEyebrow: 'Latest', newsTitle: 'Latest updates', newsLead: 'We update the game constantly, and most changes begin as a message from a player.', newsAll: 'The full update log →',
     stEyebrow: 'About us', stTitle: 'A small studio doing what it loves', st1: '369Games is a small independent studio. We have no publisher and no investors; we have games we love making and players we listen to.', st2: 'We design, code and test our games ourselves. We began with a farming game because we love the genre, and we will try other kinds with each new game. The goal is simple: games we are proud of, that respect the time of the people who play them.', stMore: 'More about us',
     v1t: 'We play what we make', v1: 'Every feature is tried by us before it reaches you, and if it is not fun it does not ship.', v2t: 'Players are partners', v2: 'We read every message, and much of what is in our games today began as a player\'s suggestion.', v3t: 'Straight with you', v3: 'Every change is written in the update log, and we say openly how we make our games and which tools we use.',
     talkTitle: 'Have feedback or an idea?', talkText: 'We would love to hear it. We answer email within a few days.', talkBtn: 'Contact us', discTitle: 'Join our Discord server', discText: 'Chat with other players, share tips, suggest ideas and report bugs. News lands there first.', discBtn: 'Join the server',
     footText: 'An independent game studio. We make the games we love to play.', footGames: 'Games', footStudio: 'Studio', footSupport: 'Support us' },
-  ru: { navGames: 'Игры', navGuide: 'Руководство', navNews: 'Обновления', navAbout: 'О нас', navContact: 'Контакты', privacy: 'Конфиденциальность',
-    heroEyebrow: 'Независимая игровая студия', heroTitle: 'Мы делаем игры, <span>в которые любим играть</span>', heroText: '369Games — маленькая независимая студия. Мы сами делаем свои игры, выпускаем их бесплатно прямо в браузере и развиваем вместе с игроками, обновление за обновлением.',
-    heroPlay: '▶ Играть в UntoldLife', heroAbout: 'О студии',
+  ru: { heroTitle: 'Одна ферма.<br><em>Истории поколений.</em>', heroText: 'Вы наследуете ферму деда в Долине Эха. Посадите первый урожай и постройте деревню, историю которой продолжат ваши дети.', heroPlay: 'Играть в браузере ▶', navGames: 'Игры', navGuide: 'Руководство', navNews: 'Обновления', navAbout: 'О нас', navContact: 'Контакты', privacy: 'Конфиденциальность',
+    heroEyebrow: 'Независимая игровая студия', heroAbout: 'О студии',
     f1n: '100+', f1t: 'обновлений с первой беты', f2n: '4', f2t: 'языка', f3n: '54', f3t: 'достижения в UntoldLife', f4n: 'Бесплатно', f4t: 'без загрузки и регистрации',
-    gamesEyebrow: 'Наши игры', gamesTitle: 'Одна игра вышла, одна в пути', gamesLead: 'Мы работаем над одной игрой, пока она не станет достойной вашего времени, и только потом начинаем следующую.',
-    ulTag: 'Доступна сейчас · Бесплатно', ul1: 'Вы наследуете ферму деда в Долине Эха. Начинаете с маленького поля и мешочка семян репы и строите из него целую долину: хлев, шахту, озеро, гильдию искателей приключений, кузницу и деревню, где знают вашу семью.',
+    gamesTitle: 'Игры студии', gamesSub: 'Одна уже вышла, другая в разработке', ulShort: 'Семейная ферма, которая растёт с каждым поколением в Долине Эха.', gamesEyebrow: 'Наши игры', gamesLead: 'Мы работаем над одной игрой, пока она не станет достойной вашего времени, и только потом начинаем следующую.',
+    ulTag: 'Доступна сейчас', ul1: 'Вы наследуете ферму деда в Долине Эха. Начинаете с маленького поля и мешочка семян репы и строите из него целую долину: хлев, шахту, озеро, гильдию искателей приключений, кузницу и деревню, где знают вашу семью.',
     ul2: 'Ваш фермер стареет и, когда приходит время, передаёт ферму ребёнку. Каждое поколение начинает сильнее предыдущего, а через десять поколений открывается индустриальная эпоха: фабрика, службы для деревни и Первый поезд.',
     c1: '24 культуры, 4 сезона', c2: 'Поколения и наследие', c3: 'Шахта и подземелье', c4: 'Фабрика и поезд', c5: 'Идёт, пока вас нет',
     play: '▶ Играть', guideBtn: 'Руководство', gStart: 'Первые шаги', gCrops: 'Культуры и сезоны', gLegacy: 'Поколения и наследие', gFactory: 'Фабрика', gFaq: 'Вопросы и ответы', gUpdates: 'Журнал обновлений',
     neonTag: 'В разработке', neon1: 'Неоновый город, который никогда не спит. Вы начинаете на улице без гроша и пробиваетесь на вершину, район за районом.', neon2: 'Игра в самом начале разработки. Мы покажем её здесь, как только будет что показать.', soon: 'Скоро',
-    newsEyebrow: 'Новости', newsTitle: 'Что нового в UntoldLife', newsLead: 'Мы постоянно обновляем игру, и большинство изменений начинается с сообщения игрока.', newsAll: 'Весь журнал обновлений →',
+    newsEyebrow: 'Новости', newsTitle: 'Последние обновления', newsLead: 'Мы постоянно обновляем игру, и большинство изменений начинается с сообщения игрока.', newsAll: 'Весь журнал обновлений →',
     stEyebrow: 'О нас', stTitle: 'Маленькая студия, которая делает то, что любит', st1: '369Games — маленькая независимая студия. У нас нет издателя и инвесторов; есть игры, которые мы любим делать, и игроки, которых мы слушаем.', st2: 'Мы сами придумываем, программируем и тестируем свои игры. Мы начали с фермы, потому что любим этот жанр, и с каждой новой игрой будем пробовать другие. Цель простая: игры, которыми мы гордимся и которые уважают время игроков.', stMore: 'Подробнее о нас',
     v1t: 'Играем в то, что делаем', v1: 'Каждую функцию мы пробуем сами, прежде чем она дойдёт до вас. Если не весело — не выпускаем.', v2t: 'Игроки — партнёры', v2: 'Мы читаем каждое сообщение, и многое в наших играх началось с предложения игрока.', v3t: 'Честно с вами', v3: 'Каждое изменение записано в журнале обновлений, и мы открыто говорим, как делаем игры и какими инструментами пользуемся.',
     talkTitle: 'Есть отзыв или идея?', talkText: 'Будем рады услышать. Отвечаем на письма за несколько дней.', talkBtn: 'Связаться с нами', discTitle: 'Заходите на наш Discord-сервер', discText: 'Общение с игроками, советы, предложения и сообщения об ошибках. Новости появляются там первыми.', discBtn: 'Войти на сервер',
     footText: 'Независимая игровая студия. Мы делаем игры, в которые любим играть.', footGames: 'Игры', footStudio: 'Студия', footSupport: 'Поддержать' },
-  zh: { navGames: '游戏', navGuide: '游戏指南', navNews: '更新', navAbout: '关于我们', navContact: '联系我们', privacy: '隐私政策',
-    heroEyebrow: '独立游戏工作室', heroTitle: '我们制作<span>自己爱玩的游戏</span>', heroText: '369Games 是一个小型独立工作室。我们亲手制作游戏，在浏览器里免费发布，并和玩家一起一次次更新，把它越做越好。',
-    heroPlay: '▶ 开始玩 UntoldLife', heroAbout: '认识工作室',
+  zh: { heroTitle: '一座农场，<br><em>几代人的故事。</em>', heroText: '你继承了爷爷在回声谷的农场。种下第一季作物，建起一座由子孙续写故事的村庄。', heroPlay: '在浏览器中开玩 ▶', navGames: '游戏', navGuide: '游戏指南', navNews: '更新', navAbout: '关于我们', navContact: '联系我们', privacy: '隐私政策',
+    heroEyebrow: '独立游戏工作室', heroAbout: '认识工作室',
     f1n: '100+', f1t: '次更新（自首个测试版）', f2n: '4', f2t: '种语言', f3n: '54', f3t: '个 UntoldLife 成就', f4n: '免费', f4t: '无需下载或注册',
-    gamesEyebrow: '我们的游戏', gamesTitle: '一款已发布，一款在路上', gamesLead: '我们专心做好一款游戏，直到它值得你的时间，再开始下一款。',
-    ulTag: '现已上线 · 免费', ul1: '你继承了爷爷在回声谷的农场。从一小块田和一袋芜菁种子开始，一步步建起整个山谷：畜棚、矿井、湖泊、冒险者公会、铁匠铺，还有一个认识你家族的村庄。',
+    gamesTitle: '工作室作品', gamesSub: '一款已上线，一款开发中', ulShort: '在回声谷，一座随每一代人成长的家族农场。', gamesEyebrow: '我们的游戏', gamesLead: '我们专心做好一款游戏，直到它值得你的时间，再开始下一款。',
+    ulTag: '现已上线', ul1: '你继承了爷爷在回声谷的农场。从一小块田和一袋芜菁种子开始，一步步建起整个山谷：畜棚、矿井、湖泊、冒险者公会、铁匠铺，还有一个认识你家族的村庄。',
     ul2: '你的农夫会变老，时候到了就把农场交给孩子。每一代都比上一代起点更高，十代之后工业时代开启：工厂、村庄的公共服务，以及第一列火车。',
     c1: '24 种作物，4 个季节', c2: '世代与传承', c3: '矿井与地牢', c4: '工厂与火车', c5: '离开时也在运转',
     play: '▶ 立即开玩', guideBtn: '游戏指南', gStart: '新手入门', gCrops: '作物与季节', gLegacy: '世代与传承', gFactory: '工厂', gFaq: '常见问题', gUpdates: '更新日志',
     neonTag: '开发中', neon1: '一座永不入眠的霓虹之城。你从街头一无所有开始，一个街区接一个街区地打拼到顶端。', neon2: '这款游戏刚刚开始开发。等有值得展示的内容时，我们会第一时间在这里分享。', soon: '即将推出',
-    newsEyebrow: '最新动态', newsTitle: 'UntoldLife 有什么新内容', newsLead: '我们持续更新游戏，大多数改动都始于玩家的一条留言。', newsAll: '完整更新日志 →',
+    newsEyebrow: '最新动态', newsTitle: '最新更新', newsLead: '我们持续更新游戏，大多数改动都始于玩家的一条留言。', newsAll: '完整更新日志 →',
     stEyebrow: '关于我们', stTitle: '一个做自己热爱之事的小工作室', st1: '369Games 是一个小型独立工作室。我们没有发行商，也没有投资人；我们有自己热爱制作的游戏，和愿意倾听的玩家。', st2: '我们自己设计、编程和测试游戏。我们从农场游戏起步，因为喜欢这个类型；以后每款新游戏都会尝试不同的类型。目标很简单：做出让我们自豪、也尊重玩家时间的游戏。', stMore: '了解更多',
     v1t: '我们玩自己做的游戏', v1: '每个功能都先由我们自己试玩，不好玩就不上线。', v2t: '玩家是伙伴', v2: '我们阅读每一条留言，游戏里的许多内容都来自玩家的建议。', v3t: '对你坦诚', v3: '每一处改动都写在更新日志里，我们也会公开说明游戏是怎么做的、用了哪些工具。',
     talkTitle: '有反馈或想法？', talkText: '我们很乐意听到。邮件通常几天内回复。', talkBtn: '联系我们', discTitle: '加入我们的 Discord 服务器', discText: '和其他玩家聊天、交流技巧、提建议、报告问题。新消息最先在那里发布。', discBtn: '加入服务器',
@@ -291,7 +283,7 @@ function apply(lang) {
   document.querySelectorAll('[data-t]').forEach(el => { el.innerHTML = d[el.dataset.t]; });
   document.querySelectorAll('[data-g]').forEach(el => { el.href = (lang === 'ar' ? 'guide/ar/' : 'guide/') + el.dataset.g + '.html'; });
   const news = NEWS[lang] || NEWS.en; // the update log exists in Arabic and English
-  if (news) document.getElementById('newsList').innerHTML = news.map(n => '<article><small>' + esc(n.v) + ' · ' + esc(n.date) + '</small><h3>' + esc(n.title) + '</h3><p>' + esc(n.text) + '</p></article>').join('');
+  if (news) document.getElementById('newsList').innerHTML = news.map(n => '<article><small>UntoldLife · ' + esc(n.v) + '</small><h3>' + esc(n.title) + '</h3><time>' + esc(n.date) + '</time><p>' + esc(n.text) + '</p></article>').join('');
   document.getElementById('lang').value = lang;
 }
 const sel = document.getElementById('lang');
